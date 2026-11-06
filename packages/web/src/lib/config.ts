@@ -17,7 +17,6 @@ function defaultPin() {
 export const config = {
 	chainId: sepolia.chainId,
 	sepoliaRpc: env.VITE_SEPOLIA_RPC_URL || undefined,
-	anvilRpc: env.VITE_ANVIL_RPC_URL || "http://127.0.0.1:8545",
 	arkivAccessKey: env.VITE_ARKIV_ACCESS_KEY || "",
 	thresholds: defaultThresholds,
 	defaultPin: defaultPin(),
@@ -30,7 +29,4 @@ export const config = {
 	repoUrl: env.VITE_REPO_URL || "https://github.com/marsian83/codemark",
 	demoDelegate: env.VITE_DEMO_DELEGATE || "",
 	demoSweeper: env.VITE_DEMO_SWEEPER || "",
-	anvilAccountKey:
-		env.VITE_ANVIL_ACCOUNT_KEY ||
-		"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
 };

@@ -1,4 +1,3 @@
-import { createArkivReader } from "@codemark/shared/arkiv/client";
 import { createArkivSource } from "@codemark/shared/arkiv/source";
 import {
 	type CheckResult,
@@ -6,36 +5,48 @@ import {
 	type Pin,
 	type Target,
 } from "@codemark/shared/check";
-import { createEnsClient } from "@codemark/shared/ens/client";
 import { config } from "./config";
+import { arkivReader, ens } from "./rpc";
 
-export type CheckSource = "sepolia" | "fork";
+const retryDelaysMs = [1000, 2000, 4000];
 
-export function ensFor(source: CheckSource) {
-	return createEnsClient(
-		source === "fork" ? config.anvilRpc : config.sepoliaRpc,
+export function isUnfinished(result: CheckResult) {
+	return result.results.some(
+		(r) =>
+			r.error !== undefined ||
+			r.indexUnavailable === true ||
+			r.verdicts.some((v) => v.checkFailed !== undefined),
 	);
 }
 
+export async function retryUntilFinished<T>(
+	run: () => Promise<T>,
+	unfinished: (value: T) => boolean,
+	delaysMs: number[] = retryDelaysMs,
+): Promise<T> {
+	for (const delay of delaysMs) {
+		try {
+			const value = await run();
+			if (!unfinished(value)) return value;
+		} catch {}
+		await new Promise((resolve) => setTimeout(resolve, delay));
+	}
+	return run();
+}
+
 export async function runCheck(
-	source: CheckSource,
 	targets: Target[],
 	pins: Pin[],
 ): Promise<{ result: CheckResult; now: number }> {
-	const ens = ensFor(source);
-	const head = await ens.publicClient.getBlock({ blockTag: "latest" });
-	const now =
-		source === "fork" ? Number(head.timestamp) : Math.floor(Date.now() / 1000);
-	const arkiv = createArkivSource(createArkivReader(config.arkivAccessKey));
-	const result = await checkTargets(
-		{ targets, pins },
-		{
-			ens,
-			arkiv,
-			headLag: source === "fork" ? 0n : undefined,
-			now,
-			...config.thresholds,
-		},
+	const now = Math.floor(Date.now() / 1000);
+	const arkiv = createArkivSource(arkivReader);
+	const result = await retryUntilFinished(
+		() =>
+			checkTargets(
+				{ targets, pins },
+				{ ens, arkiv, now, ...config.thresholds },
+			),
+		isUnfinished,
 	);
 	return { result, now };
 }

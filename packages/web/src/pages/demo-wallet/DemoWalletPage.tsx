@@ -104,7 +104,6 @@ export default function DemoWalletPage() {
 		enabled: target !== undefined,
 		queryFn: () =>
 			runCheck(
-				"sepolia",
 				[
 					{
 						address: target as `0x${string}`,

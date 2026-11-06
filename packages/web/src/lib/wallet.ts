@@ -1,11 +1,11 @@
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { ensFor } from "./checker";
 import { config } from "./config";
+import { ens } from "./rpc";
 
 export const account = privateKeyToAccount(generatePrivateKey());
 
 export async function readChainHead() {
-	const block = await ensFor("sepolia").publicClient.getBlock({
+	const block = await ens.publicClient.getBlock({
 		blockTag: "latest",
 	});
 	return { blockNumber: block.number, timestamp: Number(block.timestamp) };

@@ -2,7 +2,6 @@ import { formatDuration } from "@codemark/shared/check/explain";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { Address, BlockLink, ExternalLink } from "../../components/Links";
-import { ensFor } from "../../lib/checker";
 import { ensExplorer } from "../../lib/ensExplorer";
 import { formatDay, formatTimestamp, rpcErrorMessage } from "../../lib/format";
 import {
@@ -11,6 +10,7 @@ import {
 	loadPublisher,
 	loadReleases,
 } from "../../lib/publisher";
+import { ens } from "../../lib/rpc";
 import { useTitle } from "../../lib/useTitle";
 import { Badge, type Tone } from "../../ui/Badge";
 import { buttonVariants } from "../../ui/Button";
@@ -33,7 +33,7 @@ const td = "px-3 py-2.5 align-middle first:pl-5 last:pr-5";
 function Releases({ keyInfo, now }: { keyInfo: KeyInfo; now: number }) {
 	const releases = useQuery({
 		queryKey: ["releases", keyInfo.registry],
-		queryFn: () => loadReleases(ensFor("sepolia"), keyInfo.registry),
+		queryFn: () => loadReleases(ens, keyInfo.registry),
 		retry: false,
 	});
 	if (releases.isPending)
@@ -186,7 +186,7 @@ export default function PublisherPage() {
 	useTitle(publisher);
 	const view = useQuery({
 		queryKey: ["publisher", publisher],
-		queryFn: () => loadPublisher(ensFor("sepolia"), publisher),
+		queryFn: () => loadPublisher(ens, publisher),
 	});
 	const data = view.data;
 	const live = data?.keys.filter((k) => k.status === "live").length ?? 0;

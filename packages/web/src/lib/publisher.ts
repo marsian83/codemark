@@ -1,5 +1,4 @@
 import { labelId } from "@codemark/shared";
-import { createArkivReader } from "@codemark/shared/arkiv/client";
 import type { ReleaseColumns } from "@codemark/shared/arkiv/rows";
 import { createArkivSource } from "@codemark/shared/arkiv/source";
 import { registryAbi } from "@codemark/shared/ens/abi";
@@ -9,7 +8,7 @@ import { findResolver, readText } from "@codemark/shared/ens/resolve";
 import { ROOT_RESOURCE, registryRoles } from "@codemark/shared/ens/roles";
 import { keysRecordKey, parseKeys } from "@codemark/shared/record";
 import { type Address, zeroAddress } from "viem";
-import { config } from "./config";
+import { arkivReader } from "./rpc";
 
 export type KeyStatus = "live" | "cut" | "lapsed";
 
@@ -109,7 +108,7 @@ export async function loadReleases(
 	ens: EnsClient,
 	registry: Address,
 ): Promise<{ rows: ReleaseWithTime[]; rejected: number }> {
-	const source = createArkivSource(createArkivReader(config.arkivAccessKey));
+	const source = createArkivSource(arkivReader);
 	const found = await source.findReleasesByKeyRegistry(registry);
 	const rows: ReleaseWithTime[] = [];
 	let rejected = found.malformed;

@@ -206,6 +206,8 @@ bun web:build
 
 The site is static: it reads Sepolia and Arkiv straight from the browser, so any static host works. Serve `index.html` for every path under `/app` so the client-side routes load. The account-upgrade demo page checks live Sepolia and signs with a throwaway key made in the browser. It never sends the upgrade, so it needs no gas or server. Set `VITE_DEMO_DELEGATE` and `VITE_DEMO_SWEEPER` at build time to show its two preset contracts.
 
+The site keeps working when an RPC rate limits or goes down. It tries `VITE_SEPOLIA_RPC_URL` first if you set one, then several public Sepolia RPCs in a random order per visitor, and it reruns a check that couldn't finish. With `VITE_ARKIV_ACCESS_KEY` set, it falls back to Arkiv's public endpoint if the key stops working. Both values are public in the built site, so restrict them to your domain where the provider allows it.
+
 ### Snap in MetaMask Flask
 
 The Snap needs [MetaMask Flask](https://metamask.io/flask/), the developer build, because network access for Snaps is only allowed for allowlisted Snaps in stable MetaMask. The deployed site installs the published `npm:@marsian/codemark-snap`; the local site (`bun web:dev`) installs `local:http://localhost:8080`, and `VITE_SNAP_ID` overrides either.

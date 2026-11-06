@@ -65,7 +65,6 @@ export default function LookupPage() {
 		enabled: isAddress(address),
 		queryFn: () =>
 			runCheck(
-				"sepolia",
 				[
 					{
 						address: address as `0x${string}`,

@@ -5,8 +5,8 @@ import {
 } from "@codemark/shared/ens/publisher";
 import { useCallback, useSyncExternalStore } from "react";
 import { isAddress } from "viem";
-import { ensFor } from "./checker";
 import { config } from "./config";
+import { ens } from "./rpc";
 
 const storageKey = "codemark.pins";
 const listeners = new Set<() => void>();
@@ -69,7 +69,7 @@ export async function resolvePin(name: string): Promise<Pin> {
 	const parsed = parsePublisherName(name);
 	return {
 		name: parsed,
-		pubRegistry: await resolvePubRegistry(ensFor("sepolia"), parsed),
+		pubRegistry: await resolvePubRegistry(ens, parsed),
 	};
 }
 
