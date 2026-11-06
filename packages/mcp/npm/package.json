@@ -1,6 +1,7 @@
 {
 	"name": "@marsian/codemark-mcp",
-	"version": "0.1.0",
+	"version": "0.1.2",
+	"license": "MIT",
 	"description": "MCP server that checks who released a contract before an agent signs a payment, approval or account upgrade.",
 	"type": "module",
 	"bin": {
@@ -8,7 +9,8 @@
 	},
 	"files": [
 		"codemark-mcp.js",
-		"README.md"
+		"README.md",
+		"LICENSE"
 	],
 	"publishConfig": {
 		"access": "public"
