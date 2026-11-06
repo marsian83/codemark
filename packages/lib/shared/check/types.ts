@@ -66,6 +66,7 @@ export type PublisherVerdict = {
 	verdict: Verdict;
 	release?: ReleaseInfo;
 	reason?: string;
+	checkFailed?: "network" | "error";
 	source: "pinned" | "index";
 };
 

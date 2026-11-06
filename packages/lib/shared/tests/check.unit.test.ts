@@ -233,6 +233,9 @@ describe("index row authentication (shape)", () => {
 	test("incident reasons are display text: control and bidi characters are stripped", () => {
 		expect(sanitizeReason("CI key‮ leaked\n")).toBe("CI key leaked");
 		expect(sanitizeReason("x".repeat(400)).length).toBe(280);
+		expect(sanitizeReason("acme\u200bswap\ufeff \u0085ok\u2060")).toBe(
+			"acmeswap ok",
+		);
 	});
 });
 

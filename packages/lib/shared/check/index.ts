@@ -3,6 +3,7 @@ import { contractArtifact } from "../names";
 import type { Ctx } from "./chain";
 import { publisherOfIncident } from "./incidents";
 import { evaluatePublisher } from "./publisherVerdict";
+import { releaseRowProblem } from "./rows";
 import { decide, maxSeverity } from "./severity";
 import type {
 	CheckDeps,
@@ -42,7 +43,9 @@ async function readIndex(
 			arkiv.findIncidentsByArtifact(artifact, { maxPages }),
 		]);
 		return {
-			releases: releases.rows.filter((r) => r.row.artifact === artifact),
+			releases: releases.rows.filter(
+				(r) => r.row.artifact === artifact && "split" in releaseRowProblem(r),
+			),
 			pulls: pulls.rows.filter((r) => r.row.artifact === artifact),
 			flooded: releases.indexFlooded || pulls.indexFlooded,
 			incomplete: releases.incomplete || pulls.incomplete,
@@ -103,6 +106,7 @@ async function checkTarget(
 				pinned: true,
 				source: "pinned",
 				verdict: "MISMATCH",
+				checkFailed: isNetworkError(err) ? "network" : "error",
 				reason: `the check of this pinned publisher failed: ${errorText(err)}`,
 			});
 		}
@@ -124,6 +128,23 @@ async function checkTarget(
 		indexUnavailable: index.unavailable || undefined,
 		skippedPublishers: skipped.length > 0 ? skipped : undefined,
 	};
+}
+
+const networkErrors = new Set([
+	"HttpRequestError",
+	"TimeoutError",
+	"RpcRequestError",
+	"LimitExceededRpcError",
+	"ResourceUnavailableRpcError",
+	"InternalRpcError",
+]);
+
+function isNetworkError(err: unknown): boolean {
+	for (let e: unknown = err, depth = 0; e && depth < 6; depth++) {
+		if (e instanceof Error && networkErrors.has(e.name)) return true;
+		e = e instanceof Error ? e.cause : undefined;
+	}
+	return false;
 }
 
 function errorText(err: unknown) {
