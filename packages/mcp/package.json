@@ -1,0 +1,19 @@
+{
+	"name": "@codemark/mcp",
+	"private": true,
+	"type": "module",
+	"bin": {
+		"codemark-mcp": "./index.ts"
+	},
+	"scripts": {
+		"start": "bun index.ts",
+		"build": "bun build index.ts --target bun --outfile npm/codemark-mcp.js",
+		"tests": "bun test"
+	},
+	"dependencies": {
+		"@codemark/shared": "workspace:*",
+		"@modelcontextprotocol/sdk": "^1.32.2",
+		"viem": "catalog:",
+		"zod": "catalog:"
+	}
+}

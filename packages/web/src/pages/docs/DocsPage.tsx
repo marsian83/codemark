@@ -14,6 +14,7 @@ import { Step } from "./Step";
 const sections = [
 	{ id: "check", label: "Check a contract" },
 	{ id: "snap", label: "Check every transaction" },
+	{ id: "agents", label: "Protect an agent" },
 	{ id: "publish", label: "Publish your releases" },
 	{ id: "limits", label: "Limits" },
 ];
@@ -96,6 +97,35 @@ const action = `- uses: marsian83/codemark/.github/actions/codemark-publish@<com
     target: \${{ steps.deployed.outputs.address }}
     ci-key: \${{ secrets.CODEMARK_CI_KEY }}
     arkiv-access-key: \${{ secrets.ARKIV_ACCESS_KEY }}`;
+
+const mcpPin = "bunx @marsian83/codemark-mcp pin pwnmeswap.eth";
+
+const mcpConfig = `{
+  "mcpServers": {
+    "codemark": {
+      "command": "bunx",
+      "args": ["@marsian83/codemark-mcp"],
+      "env": {
+        "CODEMARK_PINS": "pwnmeswap.eth=0x..."
+      }
+    }
+  }
+}`;
+
+const agentActions = [
+	[
+		"proceed",
+		"A team you pinned released every contract, and each release is over an hour old, or a day for account upgrades.",
+	],
+	[
+		"ask_user",
+		"A contract is unknown, is vouched for only by a team you haven't pinned, or is new. The agent stops and asks you.",
+	],
+	[
+		"refuse",
+		"The team withdrew the release, your pin no longer matches, an account upgrade isn't trusted, or the check couldn't finish. The agent doesn't sign.",
+	],
+] as const;
 
 function Section({
 	id,
@@ -298,6 +328,55 @@ export default function DocsPage() {
 							<li>Reject the transaction. You only needed to read it.</li>
 						</ol>
 					</Sub>
+					<Sub title="Run the Snap from source">
+						<p className="text-sm text-typography-secondary">
+							From the <Mono>packages</Mono> folder of the repository, run{" "}
+							<Mono>bun snap:build</Mono>, then <Mono>bun snap:serve</Mono> to
+							serve it at <Mono>http://localhost:8080</Mono>, and{" "}
+							<Mono>bun web:dev</Mono>. The local site installs{" "}
+							<Mono>local:http://localhost:8080</Mono> instead of the published
+							Snap. Set <Mono>CODEMARK_SITE_ORIGIN</Mono> before building if you
+							serve the site from an address other than{" "}
+							<Mono>https://codemark.hetairoi.xyz</Mono> or{" "}
+							<Mono>http://localhost:3020</Mono>.
+						</p>
+					</Sub>
+				</Section>
+
+				<Section
+					id="agents"
+					title="Protect an agent that spends"
+					intro="Nobody reads the signing screen when an agent signs. The MCP server checks the contracts behind each approval, swap and account upgrade first. It holds no keys and signs nothing."
+				>
+					<ol className="flex flex-col gap-5">
+						<Step n={1} title="Get a pin for each team you trust" code={mcpPin}>
+							You need <ExternalLink href="https://bun.sh">Bun</ExternalLink>{" "}
+							1.4.2 or newer.
+						</Step>
+						<Step n={2} title="Add the server to your agent" code={mcpConfig}>
+							Use the line the last command printed. Separate several pins with
+							commas. Only you can add a pin: the agent has no tool for it, and{" "}
+							<Mono>.env</Mono> files are ignored.
+						</Step>
+					</ol>
+					<Sub title="What your agent gets back">
+						<div className="flex flex-col gap-2">
+							{agentActions.map(([action, text]) => (
+								<Card
+									key={action}
+									className="flex flex-col items-start gap-1 p-4"
+								>
+									<Mono>{action}</Mono>
+									<p className="text-sm text-typography-secondary">{text}</p>
+								</Card>
+							))}
+						</div>
+					</Sub>
+					<Callout tone="warning">
+						This helps an honest agent that was handed a bad address. A hijacked
+						agent can skip the check, and amounts and recipients aren't checked,
+						so keep your spending limits.
+					</Callout>
 				</Section>
 
 				<Section

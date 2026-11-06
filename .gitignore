@@ -33,3 +33,4 @@ coverage
 /packages/demo/state
 
 /packages/cli/npm/codemark.js
+/packages/mcp/npm/codemark-mcp.js

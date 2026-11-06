@@ -24,12 +24,13 @@ Account upgrades (EIP-7702) raise the stakes: one signature lets a contract cont
 
 Codemark tells you who published something and whether they still stand behind it. It does not assess what the code does.
 
-## Three ways to use it
+## Four ways to use it
 
 | You are | Use | What you need |
 |---|---|---|
 | Anyone about to sign | The lookup site at [codemark.hetairoi.xyz](https://codemark.hetairoi.xyz) | A browser. No wallet, no sign-up |
 | A MetaMask user | The Codemark Snap, which checks every transaction before MetaMask asks you to confirm | [MetaMask Flask](https://metamask.io/flask/) for now |
+| Running an AI agent that spends | The Codemark MCP server, which tells your agent to proceed, ask you or refuse before it signs | Bun and an MCP-capable agent. It holds no keys |
 | A team shipping contracts | The CLI and the GitHub Action, which publish each release under your ENS name | Sepolia ETH. `init` registers the name and sets up the team Safe for you |
 
 ## Get started
@@ -39,6 +40,20 @@ The full guide, with every command explained, is at [codemark.hetairoi.xyz/app/d
 **Check a contract.** Open [codemark.hetairoi.xyz/app](https://codemark.hetairoi.xyz/app), paste an address, and read the verdict. Pin the publishers you trust; only they can mark a contract as verified.
 
 **Check every transaction in MetaMask.** Install [MetaMask Flask](https://metamask.io/flask/) in a separate browser profile, open [Check](https://codemark.hetairoi.xyz/app) and select Install the Snap. It installs `npm:@marsian83/codemark-snap`.
+
+**Protect an agent that spends.** Nobody reads the signing screen when an agent signs, so a web page can hand it a lookalike router or an attacker's account upgrade. The MCP server checks the contracts behind each approval, swap and account upgrade first. Get a pin with `bunx @marsian83/codemark-mcp pin pwnmeswap.eth`, then add the server to your agent:
+
+```json
+{
+  "mcpServers": {
+    "codemark": {
+      "command": "bunx",
+      "args": ["@marsian83/codemark-mcp"],
+      "env": { "CODEMARK_PINS": "pwnmeswap.eth=0x8a8d97f3F4d1235c62aE61cDB3644f574162d204" }
+    }
+  }
+}
+```
 
 **Publish your releases.** You need [Bun](https://bun.sh) 1.4.2 or newer and three keys: a root key that owns the team Safe, a security key that can only withdraw things, and a CI key that can only add releases. Put them in `.env` in the folder you run the CLI from (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`), then:
 
@@ -143,6 +158,7 @@ Arkiv is an untrusted, searchable index. ENS can say whether a name is valid but
 |---|---|
 | `packages/lib/shared` | checker, ENSv2 addresses/ABIs/reads, record codec, calldata decoding, Arkiv row types. Runs in browser and Snap |
 | `packages/cli` | publisher tool; the only place that signs ENS or Arkiv transactions |
+| `packages/mcp` | MCP server for agents: read-only, holds no keys, returns proceed, ask_user or refuse |
 | `packages/snap` | MetaMask Snap (`onTransaction`, `onSignature`) |
 | `packages/web` | landing page at `/`, lookup site and demo 7702 wallet page under `/app` (Vite, React) |
 | `packages/demo` | Anvil fork, seed and attack scripts, live-run script. Nothing here ships |
@@ -173,7 +189,7 @@ bun run --cwd demo abi:check   # check the ABIs against live Sepolia
 ### Tests
 
 ```sh
-bun tests              # shared, cli and web tests
+bun tests              # shared, cli, mcp and web tests
 bun run --cwd demo tests   # spikes; starts its own Anvil on :18545
 bun fmt-lint && bun typecheck
 ```
@@ -295,6 +311,7 @@ Limits:
 - Beacon proxies, diamonds and factory-made contracts are "not attested".
 - Mainnet is out of scope: Sepolia runs contracts-v2 commit `07e55a05`, mainnet a different one.
 - Privacy: Arkiv sees the queried artifact and client IP, and the RPC sees the checked name. There is no read-privacy claim.
+- The MCP server protects an honest agent that was handed a bad address. A hijacked agent can skip the check; stopping that takes enforcement in the signer. It does not check amounts or recipients, so a plain transfer returns `ask_user`.
 - Codemark does not assess code behaviour.
 
 ## Partners and prize tracks

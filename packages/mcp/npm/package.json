@@ -1,0 +1,34 @@
+{
+	"name": "@marsian83/codemark-mcp",
+	"version": "0.1.0",
+	"description": "MCP server that checks who released a contract before an agent signs a payment, approval or account upgrade.",
+	"type": "module",
+	"bin": {
+		"codemark-mcp": "./codemark-mcp.js"
+	},
+	"files": [
+		"codemark-mcp.js",
+		"README.md"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"engines": {
+		"bun": ">=1.4.2"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/marsian83/codemark.git",
+		"directory": "packages/mcp"
+	},
+	"homepage": "https://codemark.hetairoi.xyz/app/docs",
+	"keywords": [
+		"mcp",
+		"agent",
+		"payments",
+		"security",
+		"ens",
+		"ensv2",
+		"sepolia"
+	]
+}

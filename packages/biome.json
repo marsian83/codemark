@@ -15,7 +15,8 @@
 			"!**/coverage",
 			"!**/*.tsbuildinfo",
 			"!snap/snap.manifest.json",
-			"!cli/npm/codemark.js"
+			"!cli/npm/codemark.js",
+			"!mcp/npm/codemark-mcp.js"
 		]
 	},
 	"formatter": {
