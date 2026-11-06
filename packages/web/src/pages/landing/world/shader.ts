@@ -154,11 +154,12 @@ void main() {
 	vec2 sky = land;
 	float textShade = (1.0 - uNight) * (1.0 - uDawn) * mix(1.0, smoothstep(aspect * 0.84, aspect * 0.3, p.x), smoothstep(0.9, 1.3, aspect));
 	float portraitShade = uDawn * (1.0 - smoothstep(0.9, 1.3, aspect));
-	float height = (sky.y - 0.27) / (0.56 + uLift * 0.3) + textShade * 0.6 + portraitShade * 0.42;
+	float footerShade = uDawn * smoothstep(0.9, 1.3, aspect) * smoothstep(0.42, 0.62, sky.y);
+	float height = (sky.y - 0.27) / (0.56 + uLift * 0.3) + textShade * 0.6 + portraitShade * 0.42 + footerShade * 0.34;
 	vec3 color = skyColor(height, grain);
 
 	float sun = length(sky - uSun);
-	float glow = exp(-sun * 4.6) * (1.0 - uNight) * (1.0 - textShade * 0.8) * (1.0 - portraitShade * 0.85);
+	float glow = exp(-sun * 4.6) * (1.0 - uNight) * (1.0 - textShade * 0.8) * (1.0 - portraitShade * 0.85) * (1.0 - footerShade);
 	if (glow > 0.001) color = mix(color, tod(rgb(255., 178., 92.), rgb(0., 0., 0.), rgb(255., 224., 180.)), grainy(glow * 0.85, grain2, 0.4));
 
 	if (uNight < 0.995) {
