@@ -151,6 +151,12 @@ Without ENSv2 the publisher identity users already know disappears, and a key ca
 
 Arkiv is an untrusted, searchable index. ENS can say whether a name is valid but cannot be searched by address. Arkiv adds discovery (which publisher claims an unknown address), withdrawal reasons (a pulled release otherwise looks never published), and the two proof block numbers per release. Rows are never trusted: each one is re-checked against ENS before it can change a verdict, and a missing or flooded index never turns anything green. Schemas, query examples and the trust model are in [arkiv/README.md](arkiv/README.md).
 
+### Arkiv details
+
+Wallets that wrote our entities on Rabdi: the CI key `0x47Fccf73d86473357c74c8ae393C7099Cdc06934` writes release rows, and the security key `0x703389487942788EC4AD8461A51e03a9F79F9186` writes incident rows.
+
+One query you can run, which lists who claims the demo router, is in [arkiv/how-you-use-arkiv.md](arkiv/how-you-use-arkiv.md#one-query-you-can-run). The rest of the write-up: [schema](arkiv/schema.md), [friction](arkiv/friction.md), [reach](arkiv/reach.md), [why Arkiv](arkiv/why-arkiv.md) and [how we use it](arkiv/how-you-use-arkiv.md).
+
 ## Repository layout
 
 | Path | What |
@@ -272,8 +278,11 @@ Outputs are `name` and `forward-name`. The CI key only has `ROLE_REGISTRAR` on o
 | Router 3.1.0, published by CI | [router-3-1-0.ci-1.pwnmeswap.eth](https://explorer.ens.domains/router-3-1-0.ci-1.pwnmeswap.eth) | [`0xe1b956a1…`](https://sepolia.etherscan.io/tx/0xe1b956a1edb7759ef33cb21263856d4a8a2bfa037885cd5183b016cb6fc18e72) [`0x2ae77cae…`](https://sepolia.etherscan.io/tx/0x2ae77cae1701bdb694a7d45c789e6c71147a0c31a400d257e7e68fe024618da7) |
 | Portal 2.0.0 (proxy, implementation pinned) | [portal-2-0-0.ci-1.pwnmeswap.eth](https://explorer.ens.domains/portal-2-0-0.ci-1.pwnmeswap.eth) | [`0x3ca5b578…`](https://sepolia.etherscan.io/tx/0x3ca5b578a0d452580ac1dfd93457331b3ff39bc918c5b09683c2af9feea9fd7b) [`0x1e67f392…`](https://sepolia.etherscan.io/tx/0x1e67f39296a1cef481394448c03127295b33b16fbcbc21079c328b58bb5adcd8) |
 | EIP-7702 delegate 1.0.0, published by root | [delegate-1-0-0.delegates.pwnmeswap.eth](https://explorer.ens.domains/delegate-1-0-0.delegates.pwnmeswap.eth) | [`0x5213f6c6…`](https://sepolia.etherscan.io/tx/0x5213f6c61d071f60dcb0f4d30094f37e456aa84b32078e526f39e7061ee984aa) [`0x911e9e58…`](https://sepolia.etherscan.io/tx/0x911e9e5814f348602df662f76f5a7a780cddfacff337b9f2da6e5a4fffe9e5fa) |
+| Withdrawn demo release, published then pulled by root | withdrawn-1-0-0.ci-1.pwnmeswap.eth | [`0xb1febb21…`](https://sepolia.etherscan.io/tx/0xb1febb21e80e035fbb902fbc77b12735ac48e829acd4c457128b947cfd848a5f) [`0x5f43c019…`](https://sepolia.etherscan.io/tx/0x5f43c019f4eb4d383a62f4cc79e89b011e096d41426c68217d17b2f8b1a07c2d) |
 
-The router and portal rows are indexed on Arkiv's Rabdi testnet; the delegate has none, because delegates are only trusted when pinned. Check any of the three targets with `codemark verify <address> --pin pwnmeswap.eth`, or on the lookup page.
+The withdrawn release shows what a pull looks like: check [`0x65aF…DAE5`](https://codemark.hetairoi.xyz/app?a=0x65aF9C81B6351c61F3657D47Ef29AEA319B7DAE5&role=call) and the site says Don't sign, with the reason read from its Arkiv incident row. The router and portal, under the same key, still verify. No `cut` has run live, because it would withdraw those too; cuts are tested on an Anvil fork.
+
+The router, portal and withdrawn release are indexed on Arkiv's Rabdi testnet; the delegate has none, because delegates are only trusted when pinned. Check any of the three targets with `codemark verify <address> --pin pwnmeswap.eth`, or on the lookup page.
 
 To see the records without any Codemark code, ask the canonical Universal Resolver through plain viem (save it as a `.ts` file in `packages/lib/shared`, where viem is installed, and run it with `bun`). The address sits under the Sepolia coin type (ENSIP-11), and the `codemark` text record holds the code hash:
 
@@ -319,3 +328,11 @@ Limits:
 
 - **ENS, Best Use of ENSv2 (Sepolia).** Publisher identity, scoped keys, subtree revocation and expiry all come from ENSv2 registries, EAC roles, PermissionedResolver and the Universal Resolver, with no custom contracts. See "Where ENSv2 is load-bearing".
 - **Arkiv, Build on Arkiv.** Two entity types on Rabdi (`codemark.release.v1`, `codemark.incident.v1`) provide discovery, withdrawal reasons and proof block numbers; the checker reads them with the SDK and re-verifies every row against ENS. See [arkiv/README.md](arkiv/README.md).
+
+## How AI was used
+
+Claude Code wrote most of the code, tests and docs across `packages/` under our direction, including the WebGL landing scene. We set the problem, the security model and its limits, the product's wording and the visual direction, and reviewed the results. We also used Claude to generate and critique project ideas and to check our assumptions against the live Sepolia deployment. `AGENTS.md` and `.claude/skills` show the instructions it worked under.
+
+## License
+
+[MIT](LICENSE). `.claude/skills/unslop` is by Damir Sokolovsky under CC BY 4.0, as credited in that file.
