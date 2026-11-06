@@ -1,0 +1,20 @@
+{
+	"editor.quickSuggestions": {
+		"strings": "on"
+	},
+	"css.lint.unknownAtRules": "ignore",
+	"biome.lsp.bin": "packages/node_modules/@biomejs/biome/bin/biome",
+	"biome.configurationPath": "packages/biome.json",
+	"prettier.enable": false,
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.biome": "explicit",
+		"source.organizeImports.biome": "explicit"
+	},
+	"[typescript]": { "editor.defaultFormatter": "biomejs.biome" },
+	"[typescriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
+	"[javascript]": { "editor.defaultFormatter": "biomejs.biome" },
+	"[json]": { "editor.defaultFormatter": "biomejs.biome" },
+	"[jsonc]": { "editor.defaultFormatter": "biomejs.biome" },
+	"[css]": { "editor.defaultFormatter": "biomejs.biome" }
+}

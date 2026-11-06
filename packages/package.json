@@ -1,0 +1,47 @@
+{
+	"name": "codemark",
+	"private": true,
+	"type": "module",
+	"packageManager": "bun@1.4.2",
+	"engines": {
+		"bun": ">=1.4.2"
+	},
+	"workspaces": {
+		"packages": [
+			"lib/shared",
+			"cli",
+			"snap",
+			"web",
+			"demo"
+		],
+		"catalog": {
+			"@arkiv-network/sdk": "1.0.1",
+			"viem": "^2.57.16",
+			"zod": "^4.6.7"
+		}
+	},
+	"scripts": {
+		"prepare": "cd .. && husky",
+		"fmt-lint": "biome check --write",
+		"typecheck": "tsc -p lib/shared --noEmit && tsc -p lib/shared/tests --noEmit && tsc -p cli --noEmit && tsc -p snap --noEmit && tsc -p demo --noEmit && tsc -b web",
+		"tests": "bun run --cwd lib/shared tests && bun run --cwd cli tests",
+		"cli": "bun run --cwd cli start",
+		"snap:build": "bun run --cwd snap build",
+		"snap:serve": "bun run --cwd snap serve",
+		"web:dev": "bun run --cwd web dev",
+		"web:build": "bun run --cwd web build",
+		"demo:fork": "bun run --cwd demo fork",
+		"demo:seed": "bun run --cwd demo seed",
+		"demo:attack": "bun run --cwd demo attack"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.6.5",
+		"@types/bun": "^1.4.4",
+		"husky": "^9.1.7",
+		"lint-staged": "^16.2.7",
+		"typescript": "~5.9.3"
+	},
+	"lint-staged": {
+		"*.{js,ts,tsx,jsx,json,css}": "biome check --write"
+	}
+}

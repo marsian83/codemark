@@ -1,0 +1,139 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.6.5/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"includes": [
+			"**",
+			"!**/dist",
+			"!demo/state",
+			"!**/out",
+			"!**/coverage",
+			"!**/*.tsbuildinfo",
+			"!snap/snap.manifest.json"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab"
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "recommended",
+			"correctness": {
+				"useExhaustiveDependencies": "off"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["lib/shared/**", "snap/src/**", "web/src/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"bun",
+											"bun:*",
+											"node:*",
+											"@codemark/cli",
+											"@codemark/cli/**",
+											"@codemark/demo",
+											"@codemark/demo/**"
+										],
+										"message": "This code runs in the browser or the Snap sandbox: Bun and Node APIs belong in cli or demo."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["snap/src/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"bun",
+											"bun:*",
+											"node:*",
+											"@codemark/cli",
+											"@codemark/cli/**",
+											"@codemark/demo",
+											"@codemark/demo/**"
+										],
+										"message": "This code runs in the Snap sandbox: Bun and Node APIs belong in cli or demo."
+									},
+									{
+										"group": ["react", "react-dom", "react/**"],
+										"message": "Snap UI uses @metamask/snaps-sdk/jsx, not React."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["lib/shared/tests/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": [
+											"node:*",
+											"@codemark/cli",
+											"@codemark/cli/**",
+											"@codemark/demo",
+											"@codemark/demo/**"
+										],
+										"message": "Shared tests may use bun:test but nothing else that the browser lacks."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		}
+	],
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	}
+}

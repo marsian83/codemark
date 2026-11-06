@@ -1,0 +1,33 @@
+# dependencies (bun install)
+node_modules
+
+# output
+out
+dist
+*.tgz
+
+/packages/**/bun.lock
+!/packages/bun.lock
+
+# coverage and logs
+coverage
+*.lcov
+*.log
+
+# dotenv environment variable files
+.env*
+!.env.example
+
+# caches
+.cache
+*.tsbuildinfo
+
+# editors / OS
+.idea
+.vscode/*
+!.vscode/settings.json
+.DS_Store
+
+# local / generated
+**/*.local*
+/packages/demo/state
