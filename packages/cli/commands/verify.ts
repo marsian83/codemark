@@ -1,6 +1,7 @@
 import { createArkivReader } from "@codemark/shared/arkiv/client";
 import { createArkivSource } from "@codemark/shared/arkiv/source";
 import { checkTargets } from "@codemark/shared/check";
+import { defaultThresholds } from "@codemark/shared/check/severity";
 import type { Pin, TargetRole } from "@codemark/shared/check/types";
 import { parsePublisherName } from "@codemark/shared/ens/publisher";
 import { env } from "../env";
@@ -47,8 +48,10 @@ export const verify: Command = async (args, flags) => {
 				: createArkivSource(createArkivReader(env.ARKIV_ACCESS_KEY)),
 			block: block ? BigInt(block) : undefined,
 			now: Math.floor(Date.now() / 1000),
-			delegateMinAgeSeconds: Number(stringFlag(flags, "min-age") ?? 86_400),
-			freshCallAgeSeconds: 3_600,
+			delegateMinAgeSeconds: Number(
+				stringFlag(flags, "min-age") ?? defaultThresholds.delegateMinAgeSeconds,
+			),
+			freshCallAgeSeconds: defaultThresholds.freshCallAgeSeconds,
 		},
 	);
 	if (flags.json) {

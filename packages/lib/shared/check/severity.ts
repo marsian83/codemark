@@ -37,6 +37,11 @@ export type Thresholds = {
 	freshCallAgeSeconds: number;
 };
 
+export const defaultThresholds: Thresholds = {
+	delegateMinAgeSeconds: 86400,
+	freshCallAgeSeconds: 3600,
+};
+
 export type Flags = {
 	indexIncomplete?: boolean;
 	indexFlooded?: boolean;
