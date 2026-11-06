@@ -8,11 +8,11 @@ import { Heading, Lede, Section } from "./Section";
 
 const holdMs = 3400;
 
-const activeTone: Record<Severity, string> = {
-	info: "text-signal",
-	amber: "text-fox",
-	warning: "text-fox",
-	critical: "text-flare",
+const dot: Record<Severity, string> = {
+	info: "bg-signal",
+	amber: "bg-fox",
+	warning: "bg-fox",
+	critical: "bg-flare",
 };
 
 export function Check() {
@@ -37,44 +37,52 @@ export function Check() {
 		<Section>
 			<div
 				ref={frame}
-				className="grid items-center gap-12 lg:grid-cols-[1fr_26rem] lg:gap-20"
+				className="grid items-center gap-12 lg:grid-cols-[1fr_24rem] lg:gap-20"
 			>
 				<div className="min-w-0">
 					<Heading>What your wallet tells you before you sign</Heading>
 					<Lede className="mt-6">
 						Codemark reads the transaction your wallet is about to sign, not
-						what the site shows you. It checks each contract the call touches
-						against the publishers you pinned.
+						what the site shows you. Then it checks every contract the
+						transaction touches against the teams you've pinned.
 					</Lede>
-					<ul className="mt-8 flex flex-wrap gap-x-5 gap-y-1 font-display text-[clamp(1.5rem,2.4vw,2.125rem)]">
+					<p className="mt-8 text-sm font-medium text-sand-2">
+						Choose a result to see it in MetaMask
+					</p>
+					<div className="mt-2 grid max-w-xl grid-cols-2 gap-2 sm:grid-cols-3">
 						{verdictExamples.map((item, itemIndex) => (
-							<li key={item.name}>
-								<button
-									type="button"
-									aria-pressed={itemIndex === index}
-									onClick={() => {
-										setPicked(true);
-										setIndex(itemIndex);
-									}}
+							<button
+								key={item.name}
+								type="button"
+								aria-pressed={itemIndex === index}
+								onClick={() => {
+									setPicked(true);
+									setIndex(itemIndex);
+								}}
+								className={cn(
+									"cartouche flex h-11 cursor-pointer items-center gap-2.5 px-3.5 text-sm font-medium whitespace-nowrap outline-none transition-colors [--chamfer:0.375rem] focus-visible:outline-2",
+									itemIndex === index
+										? "bg-sand text-night"
+										: "bg-sand/10 text-sand hover:bg-sand/20",
+								)}
+							>
+								<span
 									className={cn(
-										"cursor-pointer outline-none transition-colors hover:text-sand focus-visible:underline",
-										itemIndex === index
-											? activeTone[item.severity]
-											: "text-sand-3",
+										"size-2.5 shrink-0 rounded-full",
+										dot[item.severity],
 									)}
-								>
-									{item.name}
-								</button>
-							</li>
+									aria-hidden
+								/>
+								{item.name}
+							</button>
 						))}
-					</ul>
-					<p className="mt-3 min-h-14 max-w-xl text-lg leading-7 text-sand">
+					</div>
+					<p className="mt-4 min-h-7 max-w-xl text-lg leading-7 text-sand">
 						{example.meaning}
 					</p>
 					<p className="mt-4 max-w-xl text-base leading-7 text-sand-2">
-						Account upgrades and delegatecalls get a stricter rule. Anything
-						short of a pinned, proven release at least 24 hours old is critical,
-						and MetaMask makes you confirm twice.
+						Account upgrades get a stricter check. Anything except a pinned,
+						proven release at least 24 hours old gets the strongest warning.
 					</p>
 				</div>
 				<WalletPrompt example={example} />

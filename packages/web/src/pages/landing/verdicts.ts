@@ -81,28 +81,28 @@ export const revokedLine = decide(
 export const verdictExamples: VerdictExample[] = [
 	example(
 		"Verified",
-		"Published by a team you pinned, and the CI key can't change the record.",
+		"A team you pinned released this, and the record can't be changed.",
 		"call",
 		[pinned("VERIFIED")],
 	),
-	example("Key revoked", "The team cut the key that published this.", "call", [
-		pinned("KEY REVOKED", "CI key leaked"),
+	example(
+		"Key revoked",
+		"The team cut off the key that released this.",
+		"call",
+		[pinned("KEY REVOKED", "CI key leaked")],
+	),
+	example("Pulled", "The team withdrew this release and said why.", "call", [
+		pinned("PULLED", "reentrancy in router 3.0.2"),
 	]),
 	example(
-		"Pulled",
-		"The team withdrew this release and gave a reason.",
-		"call",
-		[pinned("PULLED", "reentrancy in router 3.0.2")],
-	),
-	example(
 		"Mismatch",
-		"The published record doesn't match the code at this address.",
+		"The code at this address doesn't match what the team released.",
 		"call",
 		[pinned("MISMATCH", "code hash differs")],
 	),
 	example(
 		"Vouched for",
-		"A publisher you haven't pinned claims it, which never counts as safe.",
+		"A team you haven't pinned claims this. That doesn't make it safe.",
 		"delegation",
 		[
 			{
@@ -113,5 +113,5 @@ export const verdictExamples: VerdictExample[] = [
 			},
 		],
 	),
-	example("Unknown", "No publisher claims this address.", "call", []),
+	example("Unknown", "No team has released this contract.", "call", []),
 ];

@@ -3,7 +3,6 @@ import {
 	roleLabel,
 	type Step,
 	type StepState,
-	severityLabel,
 	trustPath,
 } from "@codemark/shared/check/explain";
 import { defaultThresholds } from "@codemark/shared/check/severity";
@@ -11,72 +10,100 @@ import type { Severity } from "@codemark/shared/verdict";
 import { motion, useReducedMotion } from "motion/react";
 import { cn } from "../../../utils/cn";
 import type { VerdictExample } from "../verdicts";
+import { MetaMaskFox } from "./MetaMaskFox";
 
-const bannerTone: Record<Severity, string> = {
-	info: "bg-[#cdeee2] text-[#0b4f3d]",
-	amber: "bg-[#fde3c4] text-[#7a3a04]",
-	warning: "bg-[#fde3c4] text-[#7a3a04]",
-	critical: "bg-[#ffd8cf] text-[#8f1c09]",
-};
+const bannerTone: Record<Severity, { box: string; bar: string; text: string }> =
+	{
+		info: {
+			box: "bg-[#457a391a]",
+			bar: "bg-[#457a39]",
+			text: "text-[#2f5a26]",
+		},
+		amber: {
+			box: "bg-[#9a63001a]",
+			bar: "bg-[#9a6300]",
+			text: "text-[#6f4700]",
+		},
+		warning: {
+			box: "bg-[#9a63001a]",
+			bar: "bg-[#9a6300]",
+			text: "text-[#6f4700]",
+		},
+		critical: {
+			box: "bg-[#ca35421a]",
+			bar: "bg-[#ca3542]",
+			text: "text-[#a11f2c]",
+		},
+	};
 
 const stepTone: Record<StepState, string> = {
-	ok: "bg-[#0f7a5f] text-sand",
-	caution: "bg-[#b86305] text-sand",
-	fail: "bg-[#c72f16] text-sand",
-	open: "bg-night/15 text-night/60",
+	ok: "text-[#457a39]",
+	caution: "text-[#9a6300]",
+	fail: "text-[#ca3542]",
+	open: "text-[#686e7d]",
 };
 
 const stepPath: Record<StepState, string> = {
-	ok: "M3 6.5 5.2 8.7 9 3.8",
-	caution: "M3 6h6",
-	fail: "M3.5 3.5l5 5m0-5l-5 5",
+	ok: "M3 8.5 6.4 12 13 4.5",
+	caution: "M3.5 8h9",
+	fail: "M4 4l8 8m0-8l-8 8",
 	open: "",
 };
-
-function StepMark({ state }: { state: StepState }) {
-	return (
-		<span
-			className={cn(
-				"grid size-5 shrink-0 place-items-center rounded-full",
-				stepTone[state],
-			)}
-		>
-			<svg viewBox="0 0 12 12" aria-hidden className="size-3">
-				<path
-					d={stepPath[state]}
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="1.8"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				/>
-			</svg>
-		</span>
-	);
-}
 
 function StepRow({ step, index }: { step: Step; index: number }) {
 	const reduced = useReducedMotion();
 	return (
 		<motion.li
-			initial={reduced ? false : { opacity: 0, x: -8 }}
-			animate={{ opacity: 1, x: 0 }}
-			transition={{ delay: 0.18 + index * 0.16, duration: 0.2 }}
-			className="flex items-start gap-2.5 py-1.5"
+			initial={reduced ? false : { opacity: 0, y: 4 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ delay: 0.15 + index * 0.13, duration: 0.18 }}
+			className="flex h-6 items-center gap-2 text-[0.8125rem]"
 		>
-			<StepMark state={step.state} />
-			<p
+			<svg
+				viewBox="0 0 16 16"
+				aria-hidden
+				className={cn("size-4 shrink-0", stepTone[step.state])}
+			>
+				{step.state === "open" ? (
+					<circle cx="8" cy="8" r="3.5" fill="currentColor" />
+				) : (
+					<path
+						d={stepPath[step.state]}
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					/>
+				)}
+			</svg>
+			<span
 				className={cn(
-					"min-w-0 text-sm leading-5 font-medium break-words",
-					step.state === "open" && "text-night/60",
+					"font-medium whitespace-nowrap",
+					step.state === "open" && "text-[#686e7d]",
 				)}
 			>
 				{step.label}
-				{step.value ? (
-					<span className="font-normal text-night/75"> {step.value}</span>
-				) : null}
-			</p>
+			</span>
+			{step.value ? (
+				<span className="min-w-0 truncate text-[#686e7d]">{step.value}</span>
+			) : null}
 		</motion.li>
+	);
+}
+
+function InfoRow({
+	label,
+	children,
+}: {
+	label: string;
+	children: React.ReactNode;
+}) {
+	return (
+		<div className="flex items-center justify-between gap-4 px-3 py-2 text-[0.8125rem]">
+			<span className="text-[#686e7d]">{label}</span>
+			<span className="min-w-0 truncate font-medium">{children}</span>
+		</div>
 	);
 }
 
@@ -88,46 +115,90 @@ export function WalletPrompt({ example }: { example: VerdictExample }) {
 	const steps = claim
 		? trustPath(claim, result.target.role, defaultThresholds)
 		: [];
+	const critical = severity === "critical";
+	const tone = bannerTone[severity];
 
 	return (
-		<div className="cartouche flex w-full max-w-[26rem] flex-col bg-sand p-5 text-night [--chamfer:1rem]">
-			<div className="flex items-center justify-between gap-4">
-				<p className="text-base font-semibold">Confirm transaction</p>
-				<p className="text-sm text-night/70">Sepolia</p>
+		<div
+			role="img"
+			aria-label={`MetaMask transaction request. Insights from Codemark: ${title}`}
+			className="w-full max-w-[24rem] overflow-hidden rounded-2xl bg-white font-[system-ui,sans-serif] text-[#121314] shadow-[0_1.5rem_4rem_rgb(0_0_0_/_0.45)]"
+		>
+			<div className="flex items-center justify-between gap-3 border-b border-[#b4b4b566] px-4 py-2.5">
+				<span className="flex items-center gap-2 text-[0.8125rem] font-semibold">
+					<MetaMaskFox className="size-5" />
+					MetaMask
+				</span>
+				<span className="rounded-full bg-[#f3f5f9] px-2.5 py-1 text-xs font-medium">
+					Sepolia
+				</span>
 			</div>
-			<dl className="mt-3 flex items-center justify-between gap-4 border-y border-night/15 py-2 text-sm">
-				<dt>{roleLabel[result.target.role]}</dt>
-				<dd className="font-label text-xs">0x8Df6…fF93</dd>
-			</dl>
-			<p className="mt-3 text-xs font-medium text-night/70">
-				Insight from Codemark
-			</p>
-			<motion.div
-				key={example.name}
-				initial={reduced ? false : { opacity: 0, y: 6 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.18 }}
-				className={cn(
-					"cartouche mt-1.5 p-3 [--chamfer:0.5rem]",
-					bannerTone[severity],
-				)}
-			>
-				<p className="text-xs font-semibold">{severityLabel[severity]}</p>
-				<p className="mt-0.5 text-base leading-5 font-semibold">{title}</p>
-				{body ? <p className="mt-1 text-sm leading-5">{body}</p> : null}
-			</motion.div>
-			<ul key={`${example.name}-steps`} className="mt-2 min-h-[11.75rem]">
-				{steps.map((step, index) => (
-					<StepRow key={step.id} step={step} index={index} />
-				))}
-			</ul>
-			<div className="mt-2 grid grid-cols-2 gap-2" aria-hidden>
-				<span className="cartouche grid h-10 place-items-center bg-night/10 text-sm font-medium [--chamfer:0.375rem]">
-					Reject
-				</span>
-				<span className="cartouche grid h-10 place-items-center bg-night text-sm font-medium text-sand [--chamfer:0.375rem]">
-					{severity === "critical" ? "Confirm twice" : "Confirm"}
-				</span>
+			<div className="px-4 pt-3 pb-4">
+				<p className="text-center text-lg font-bold">Transaction request</p>
+				<div className="mt-3 divide-y divide-white rounded-lg bg-[#f3f5f9]">
+					<InfoRow label="Request from">app.acmeswap.eth</InfoRow>
+					<InfoRow label={roleLabel[result.target.role]}>0x8Df6…fF93</InfoRow>
+				</div>
+				<div className="mt-2 rounded-lg bg-[#f3f5f9] p-3">
+					<p className="text-[0.8125rem] font-semibold">
+						Insights from Codemark
+					</p>
+					<motion.div
+						key={example.name}
+						initial={reduced ? false : { opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ duration: 0.2 }}
+						className={cn(
+							"relative mt-2 h-[5.25rem] overflow-hidden rounded-md py-2 pr-2.5 pl-3.5",
+							tone.box,
+						)}
+					>
+						<span
+							className={cn("absolute inset-y-0 left-0 w-1", tone.bar)}
+							aria-hidden
+						/>
+						<p
+							className={cn(
+								"text-[0.8125rem] leading-[1.1rem] font-bold",
+								tone.text,
+							)}
+						>
+							{title}
+						</p>
+						{body ? (
+							<p className="mt-0.5 line-clamp-3 text-xs leading-4">{body}</p>
+						) : null}
+					</motion.div>
+					<ul key={`${example.name}-steps`} className="mt-2 h-[7.5rem]">
+						{steps.map((step, index) => (
+							<StepRow key={step.id} step={step} index={index} />
+						))}
+					</ul>
+				</div>
+				<div className="mt-3 flex h-9 items-start gap-2 text-xs leading-4">
+					{critical ? (
+						<>
+							<span
+								className="mt-0.5 size-3.5 shrink-0 rounded-[0.2rem] border border-[#ca3542]"
+								aria-hidden
+							/>
+							I have acknowledged the risk and still want to proceed
+						</>
+					) : null}
+				</div>
+				<div className="mt-1 grid grid-cols-2 gap-2" aria-hidden>
+					<span className="grid h-10 place-items-center rounded-xl border border-[#121314] text-sm font-medium">
+						Cancel
+					</span>
+					<span
+						className={cn(
+							"grid h-10 place-items-center rounded-xl text-sm font-medium text-white transition-colors",
+							critical ? "bg-[#ca3542]" : "bg-[#4459ff]",
+						)}
+					>
+						Confirm
+					</span>
+				</div>
 			</div>
 		</div>
 	);
