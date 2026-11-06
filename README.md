@@ -8,7 +8,7 @@
 
 Codemark checks that the contract or account upgrade you are about to approve was released by the team you think, under their ENS name, and that the team still stands behind it.
 
-**Try it at [codemark.hetairoi.xyz](https://codemark.hetairoi.xyz).** Paste a Sepolia contract address or pick one of the demo contracts. You don't need a wallet.
+**Try it at [codemark.hetairoi.xyz](https://codemark.hetairoi.xyz).** Paste a Sepolia contract address, or open [the demo](https://codemark.hetairoi.xyz/demo) to see each result with a sample team. You don't need a wallet.
 
 ## Why it matters
 
@@ -165,7 +165,7 @@ One query you can run, which lists who claims the demo router, is in [arkiv/how-
 | `packages/cli` | publisher tool; the only place that signs ENS or Arkiv transactions |
 | `packages/snap` | MetaMask Snap (`onTransaction`, `onSignature`) |
 | `packages/mcp` | MCP server for agents: read-only, holds no keys, returns proceed, ask_user or refuse |
-| `packages/web` | landing page at `/`, lookup site and demo 7702 wallet page under `/app` (Vite, React) |
+| `packages/web` | landing page at `/`, lookup site under `/app`, demo with sample contracts and a 7702 wallet under `/demo` (Vite, React) |
 | `packages/demo` | Anvil fork, seed and attack scripts, live-run script. Nothing here ships |
 | `arkiv/` | Arkiv prize documentation |
 | `.github/actions/codemark-publish` | composite GitHub Action wrapping `publish` |
@@ -210,13 +210,13 @@ bun web:dev            # http://localhost:3020
 bun web:build
 ```
 
-The site is static: it reads Sepolia and Arkiv straight from the browser, so any static host works. Serve `index.html` for every path under `/app` so the client-side routes load. The account-upgrade demo page checks live Sepolia and signs with a throwaway key made in the browser. It never sends the upgrade, so it needs no gas or server. Set `VITE_DEMO_DELEGATE` and `VITE_DEMO_SWEEPER` at build time to show its two preset contracts.
+The site is static: it reads Sepolia and Arkiv straight from the browser, so any static host works. Serve `index.html` for every path under `/app` and `/demo` so the client-side routes load. The demo reads live Sepolia, trusts its sample team only inside the demo, and leaves your pins alone. Its account-upgrade page signs with a throwaway key made in the browser and never sends the upgrade, so it needs no gas or server. That page accepts a release after 1 hour so the whole flow can be shown, and says so; real checks wait 1 day.
 
 The site keeps working when an RPC rate limits or goes down. It tries `VITE_SEPOLIA_RPC_URL` first if you set one, then several public Sepolia RPCs in a random order per visitor, and it reruns a check that couldn't finish. With `VITE_ARKIV_ACCESS_KEY` set, it falls back to Arkiv's public endpoint if the key stops working. Both values are public in the built site, so restrict them to your domain where the provider allows it.
 
 ### Snap in MetaMask Flask
 
-The Snap needs [MetaMask Flask](https://metamask.io/flask/), the developer build, because network access for Snaps is only allowed for allowlisted Snaps in stable MetaMask. The deployed site installs the published `npm:@marsian/codemark-snap`; the local site (`bun web:dev`) installs `local:http://localhost:8080`, and `VITE_SNAP_ID` overrides either.
+The Snap needs [MetaMask Flask](https://metamask.io/flask/), the developer build, because network access for Snaps is only allowed for allowlisted Snaps in stable MetaMask. The site installs the published `npm:@marsian/codemark-snap`. To develop against a local Snap, set `VITE_SNAP_ID=local:http://localhost:8080`.
 
 1. `bun snap:build`. Only https://codemark.hetairoi.xyz and http://localhost:3020 may pin publishers in the Snap; set `CODEMARK_SITE_ORIGIN` to allow one more origin.
 2. `bun snap:serve` serves the Snap on http://localhost:8080.
@@ -280,9 +280,9 @@ Outputs are `name` and `forward-name`. The CI key only has `ROLE_REGISTRAR` on o
 | EIP-7702 delegate 1.0.0, published by root | [delegate-1-0-0.delegates.pwnmeswap.eth](https://explorer.ens.domains/delegate-1-0-0.delegates.pwnmeswap.eth) | [`0x5213f6c6…`](https://sepolia.etherscan.io/tx/0x5213f6c61d071f60dcb0f4d30094f37e456aa84b32078e526f39e7061ee984aa) [`0x911e9e58…`](https://sepolia.etherscan.io/tx/0x911e9e5814f348602df662f76f5a7a780cddfacff337b9f2da6e5a4fffe9e5fa) |
 | Withdrawn demo release, published then pulled by root | withdrawn-1-0-0.ci-1.pwnmeswap.eth | [`0xb1febb21…`](https://sepolia.etherscan.io/tx/0xb1febb21e80e035fbb902fbc77b12735ac48e829acd4c457128b947cfd848a5f) [`0x5f43c019…`](https://sepolia.etherscan.io/tx/0x5f43c019f4eb4d383a62f4cc79e89b011e096d41426c68217d17b2f8b1a07c2d) |
 
-The withdrawn release shows what a pull looks like: check [`0x65aF…DAE5`](https://codemark.hetairoi.xyz/app?a=0x65aF9C81B6351c61F3657D47Ef29AEA319B7DAE5&role=call) and the site says Don't sign, with the reason read from its Arkiv incident row. The router and portal, under the same key, still verify. No `cut` has run live, because it would withdraw those too; cuts are tested on an Anvil fork.
+The withdrawn release shows what a pull looks like: open [`0x65aF…DAE5` in the demo](https://codemark.hetairoi.xyz/demo?c=withdrawn) and it says Don't sign, with the reason read from its Arkiv incident row. The router and portal, under the same key, still verify. No `cut` has run live, because it would withdraw those too; cuts are tested on an Anvil fork.
 
-The router, portal and withdrawn release are indexed on Arkiv's Rabdi testnet; the delegate has none, because delegates are only trusted when pinned. Check any of the three targets with `codemark verify <address> --pin pwnmeswap.eth`, or on the lookup page.
+The router, portal and withdrawn release are indexed on Arkiv's Rabdi testnet; the delegate has none, because delegates are only trusted when pinned. Check any of the three targets with `bunx @marsian/codemark-cli verify <address> --pin pwnmeswap.eth`, in [the demo](https://codemark.hetairoi.xyz/demo), or on the lookup page after you pin `pwnmeswap.eth`.
 
 To see the records without any Codemark code, ask the canonical Universal Resolver through plain viem (save it as a `.ts` file in `packages/lib/shared`, where viem is installed, and run it with `bun`). The address sits under the Sepolia coin type (ENSIP-11), and the `codemark` text record holds the code hash:
 

@@ -36,7 +36,7 @@ The row's block numbers also matter. `resolverBlock` and `regBlock` tell the che
 Read from Rabdi on 7 November 2026:
 
 - **Release rows: 5.** These are the router and portal under `pwnmeswap.eth` and under our earlier test publisher `acmeswap.eth`, plus `withdrawn-1-0-0.ci-1.pwnmeswap.eth`. The lookup and publisher pages read them today.
-- **Incident rows: 1.** We published `withdrawn-1-0-0` and pulled it on live Sepolia to show a withdrawal end to end ([pull transaction](https://sepolia.etherscan.io/tx/0x5f43c019f4eb4d383a62f4cc79e89b011e096d41426c68217d17b2f8b1a07c2d)). Check `0x65aF9C81B6351c61F3657D47Ef29AEA319B7DAE5` on the [lookup page](https://codemark.hetairoi.xyz/app?a=0x65aF9C81B6351c61F3657D47Ef29AEA319B7DAE5&role=call): it says Don't sign, with the reason read from that row. The router and portal, under the same key, still verify.
+- **Incident rows: 1.** We published `withdrawn-1-0-0` and pulled it on live Sepolia to show a withdrawal end to end ([pull transaction](https://sepolia.etherscan.io/tx/0x5f43c019f4eb4d383a62f4cc79e89b011e096d41426c68217d17b2f8b1a07c2d)). Open `0x65aF9C81B6351c61F3657D47Ef29AEA319B7DAE5` in the [demo](https://codemark.hetairoi.xyz/demo?c=withdrawn): it says Don't sign, with the reason read from that row. The router and portal, under the same key, still verify.
 
 We haven't run a `cut` on live Sepolia, because it would withdraw the demo releases too. The checker's handling of cuts is covered by tests on an Anvil fork.
 

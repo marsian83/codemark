@@ -16,7 +16,7 @@ Release signing for contracts, frontends and account upgrades, built on ENSv2 (S
 - `packages/cli` (`@codemark/cli`): the publisher's tool, run with Bun. `init`, `add-key`, `publish`, `cut`, `pull`, `verify`. The only place that signs ENS or Arkiv transactions.
 - `packages/snap` (`@codemark/snap`): the MetaMask Snap. Built and served with `mm-snap`, not Vite. UI is `@metamask/snaps-sdk/jsx`, never React.
 - `packages/mcp` (`@codemark/mcp`): the MCP server for agents, run with Bun. A read-only layer over the checker; it holds no keys and signs nothing.
-- `packages/web` (`@codemark/web`): the landing page at `/` (`src/pages/landing`) and the app under `/app/*`: the lookup site and the account-upgrade demo page. Vite, React 19, Tailwind 4, react-router, react-query, Motion. Reads chain and Arkiv directly from the browser; there is no API server.
+- `packages/web` (`@codemark/web`): the landing page at `/` (`src/pages/landing`), the app under `/app/*` (lookup, publisher pages, docs) and the demo under `/demo/*` (`src/pages/demo`), which trusts its sample team only inside the demo. The landing and the app share the header geometry and the brand orange and nothing else: the app is a black, one-font tool. Vite, React 19, Tailwind 4, react-router, react-query, Motion. Reads chain and Arkiv directly from the browser; there is no API server.
 - `packages/demo` (`@codemark/demo`): Anvil fork, seed and attack scripts, fixtures. Nothing here ships.
 - `arkiv/`: the files the Arkiv prize asks for, kept at the repository root.
 
