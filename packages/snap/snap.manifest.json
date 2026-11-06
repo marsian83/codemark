@@ -4,15 +4,16 @@
   "proposedName": "Codemark",
   "repository": {
     "type": "git",
-    "url": "https://github.com/marsian83/codemark.git"
+    "url": "git+https://github.com/marsian83/codemark.git",
+    "directory": "packages/snap"
   },
   "source": {
-    "shasum": "KWLPmwadDLMBQQzsCjRlunuel7F+wFdTYprpOFxsP9w=",
+    "shasum": "3sa201OeY5+ZBqCzT02MD0bAHtrwQNNiIJQVrOV0mvc=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
         "iconPath": "images/icon.svg",
-        "packageName": "@codemark/snap",
+        "packageName": "@marsian83/codemark-snap",
         "registry": "https://registry.npmjs.org/"
       }
     }

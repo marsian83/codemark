@@ -1,11 +1,20 @@
 {
-	"name": "@codemark/snap",
+	"name": "@marsian83/codemark-snap",
 	"version": "0.1.0",
-	"private": true,
+	"description": "MetaMask Snap that shows whether the contract, frontend or account upgrade you are about to use was released by the team whose ENS name you trust.",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/marsian83/codemark.git"
+		"url": "git+https://github.com/marsian83/codemark.git",
+		"directory": "packages/snap"
 	},
+	"homepage": "https://codemark.hetairoi.xyz",
+	"keywords": [
+		"metamask",
+		"snap",
+		"ens",
+		"ensv2",
+		"transaction-insight"
+	],
 	"type": "module",
 	"main": "./dist/bundle.js",
 	"files": [
@@ -20,12 +29,10 @@
 		"manifest": "mm-snap manifest --fix",
 		"tests": "bun test"
 	},
-	"dependencies": {
+	"devDependencies": {
 		"@codemark/shared": "workspace:*",
 		"@metamask/snaps-sdk": "^12.1.0",
-		"viem": "catalog:"
-	},
-	"devDependencies": {
+		"viem": "catalog:",
 		"@metamask/snaps-cli": "^8.4.1",
 		"@metamask/snaps-jest": "^10.2.2"
 	}
