@@ -4,8 +4,7 @@ import { type ArkivWriter, createArkivWriter } from "../arkiv/writer";
 export function createArkivWriters(
 	accessKey: string,
 	keys: { ci?: string; sec?: string },
-): { release?: ArkivWriter; incident?: ArkivWriter } | undefined {
-	if (!accessKey) return undefined;
+): { release?: ArkivWriter; incident?: ArkivWriter } {
 	return {
 		release: keys.ci ? createArkivWriter(keys.ci as Hex, accessKey) : undefined,
 		incident: keys.sec

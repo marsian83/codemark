@@ -37,6 +37,9 @@ export function memo<T>(ctx: Ctx, key: string, run: () => Promise<T>) {
 	if (hit) return hit as Promise<T>;
 	const fresh = run();
 	ctx.memo.set(key, fresh);
+	fresh.catch(() => {
+		if (ctx.memo.get(key) === fresh) ctx.memo.delete(key);
+	});
 	return fresh;
 }
 

@@ -63,8 +63,11 @@ export function recordProblem(
 		return `the record is for chain ${record.chainId}`;
 	if (record.kind === "web")
 		return "the name is a frontend build, not a contract";
-	if (target.role === "delegation" && record.kind !== "delegate")
-		return "the release is not published as an account delegate";
+	if (
+		(target.role === "delegation" || target.role === "delegatecall") &&
+		record.kind !== "delegate"
+	)
+		return `a ${target.role} target must be published as a delegate (root only)`;
 	if (!record.codehash) return "the record has no code hash";
 	return undefined;
 }

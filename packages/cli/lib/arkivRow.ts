@@ -19,11 +19,12 @@ export async function writeRow(
 		pending.kind === "release" ? ctx.arkiv?.release : ctx.arkiv?.incident;
 	if (!writer)
 		return {
-			status: "skipped",
+			status: "failed",
 			reason:
 				pending.kind === "release"
-					? "ARKIV_ACCESS_KEY or CODEMARK_CI_KEY not set"
-					: "ARKIV_ACCESS_KEY or CODEMARK_SEC_KEY not set",
+					? "CODEMARK_CI_KEY not set"
+					: "CODEMARK_SEC_KEY not set",
+			...pending,
 		};
 	try {
 		const written =

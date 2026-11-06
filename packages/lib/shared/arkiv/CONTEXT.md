@@ -6,4 +6,4 @@ Rows are authenticated by who created them: a release row counts only if its `$c
 
 Rows are keyed by `labelhash`, not token id, because a label's token id changes when it is re-registered after a pull.
 
-The SDK needs an access key (hub.arkiv.network/access-keys) for the Rabdi RPC, and writes cost tGLM from the faucet. Release rows get `min(release expiry, now + 182 d)`; the SDK's maximum lifetime is about 182 days, so a monitor must extend them.
+Without an access key (hub.arkiv.network/access-keys) the SDK uses Rabdi's public endpoint, which is heavily rate limited; a key only lifts that limit. Writes cost tGLM from the faucet. Release rows get `min(release expiry, now + 182 d)`; the SDK's maximum lifetime is about 182 days, so a monitor must extend them.

@@ -21,6 +21,9 @@ export type * from "./types";
 const DEFAULT_CHUNK = 49_000n;
 const DEFAULT_DEPTH = 1_500_000n;
 const DEFAULT_LAG = 2n;
+const DEFAULT_MAX_UNPINNED = 8;
+const DEFAULT_MAX_TARGETS = 32;
+const DEFAULT_TIMEOUT_MS = 20_000;
 
 async function readIndex(
 	ctx: Ctx,
@@ -67,14 +70,15 @@ async function checkTarget(
 		};
 	}
 	const index = await readIndex(ctx, artifact);
-	const names = [
-		...new Set([
-			...pins.map((p) => p.name),
-			...index.releases.map((r) => r.row.publisher),
-		]),
-	];
+	const pinnedNames = pins.map((p) => p.name);
+	const unpinnedNames = [
+		...new Set(index.releases.map((r) => r.row.publisher)),
+	].filter((n) => !pinnedNames.includes(n));
+	const maxUnpinned = ctx.deps.maxUnpinnedPublishers ?? DEFAULT_MAX_UNPINNED;
+	const names = [...pinnedNames, ...unpinnedNames.slice(0, maxUnpinned)];
 	const verdicts: PublisherVerdict[] = [];
-	const skipped: string[] = [];
+	const skipped: string[] = unpinnedNames.slice(maxUnpinned);
+	if (skipped.length > 0) index.incomplete = true;
 	let incidentsIncomplete = false;
 	for (const name of names) {
 		const pin = pins.find((p) => p.name === name);
@@ -166,22 +170,51 @@ export async function checkTargets(
 		depth: deps.scanDepthBlocks ?? DEFAULT_DEPTH,
 		memo: new Map(),
 	};
+	const deadline = Date.now() + (deps.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+	const maxTargets = deps.maxTargets ?? DEFAULT_MAX_TARGETS;
+	const order = request.targets
+		.map((_, i) => i)
+		.sort(
+			(a, b) =>
+				Number(isStrict(request.targets[b] as Target)) -
+				Number(isStrict(request.targets[a] as Target)),
+		);
 	const results: TargetResult[] = [];
-	for (const target of request.targets) {
-		try {
-			results.push(await checkTarget(ctx, target, request.pins));
-		} catch (err) {
-			const strict =
-				target.role === "delegation" || target.role === "delegatecall";
-			results.push({
+	let checked = 0;
+	for (const i of order) {
+		const target = request.targets[i] as Target;
+		const left = deadline - Date.now();
+		if (checked >= maxTargets) {
+			results[i] = notChecked(
 				target,
-				artifact: contractArtifact(target.chainId, target.address),
-				verdicts: [],
-				severity: strict ? "critical" : "warning",
-				headline: "Could not complete the check",
 				block,
-				error: errorText(err),
-			});
+				"Not checked",
+				`more than ${maxTargets} targets in one request`,
+			);
+			continue;
+		}
+		if (left <= 0) {
+			results[i] = notChecked(
+				target,
+				block,
+				"Not checked",
+				"the check ran out of time",
+			);
+			continue;
+		}
+		checked++;
+		try {
+			results[i] = await withTimeout(
+				checkTarget(ctx, target, request.pins),
+				left,
+			);
+		} catch (err) {
+			results[i] = notChecked(
+				target,
+				block,
+				"Could not complete the check",
+				errorText(err),
+			);
 		}
 	}
 	return {
@@ -189,4 +222,36 @@ export async function checkTargets(
 		results,
 		severity: maxSeverity(results.map((r) => r.severity)),
 	};
+}
+
+function isStrict(target: Target) {
+	return target.role === "delegation" || target.role === "delegatecall";
+}
+
+function notChecked(
+	target: Target,
+	block: bigint,
+	headline: string,
+	error: string,
+): TargetResult {
+	return {
+		target,
+		artifact: contractArtifact(target.chainId, target.address),
+		verdicts: [],
+		severity: isStrict(target) ? "critical" : "warning",
+		headline,
+		block,
+		error,
+	};
+}
+
+function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const expired = new Promise<never>((_, reject) => {
+		timer = setTimeout(
+			() => reject(new Error("the check ran out of time")),
+			ms,
+		);
+	});
+	return Promise.race([work, expired]).finally(() => clearTimeout(timer));
 }

@@ -17,10 +17,14 @@ import {
 	targetsFromTypedData,
 } from "../decode";
 import {
+	handoverAbi,
 	multiSendAbi,
 	permit2Abi,
 	permit2Address,
 	safeAbi,
+	safeModuleExecAbi,
+	safeProxyFactoryAbi,
+	safeSetupAbi,
 } from "../decode/abis";
 import { multiSend } from "../decode/safeMultiSend";
 
@@ -490,5 +494,75 @@ describe("review regressions", () => {
 				(x) => x.address === B,
 			)?.via,
 		).toBe("Safe module being enabled");
+	});
+});
+
+describe("control handover", () => {
+	test("proxy upgrades and module installs make the new code a delegatecall target", () => {
+		const cases = [
+			encodeFunctionData({
+				abi: handoverAbi,
+				functionName: "upgradeTo",
+				args: [B],
+			}),
+			encodeFunctionData({
+				abi: handoverAbi,
+				functionName: "upgradeToAndCall",
+				args: [B, "0x"],
+			}),
+			encodeFunctionData({
+				abi: handoverAbi,
+				functionName: "installModule",
+				args: [2n, B, "0x"],
+			}),
+		];
+		for (const data of cases) {
+			const t = targetsFromTransaction({ to: A, data, chainId, from: A });
+			expect(t.find((x) => x.address === B)?.role).toBe("delegatecall");
+		}
+	});
+
+	test("Safe module execution is walked like execTransaction", () => {
+		const data = encodeFunctionData({
+			abi: safeModuleExecAbi,
+			functionName: "execTransactionFromModule",
+			args: [B, 0n, "0x", 1],
+		});
+		const t = targetsFromTransaction({ to: SAFE, data, chainId });
+		expect(t.find((x) => x.address === B)?.role).toBe("delegatecall");
+	});
+
+	test("Safe creation checks the singleton, setup delegatecall and fallback handler", () => {
+		const initializer = encodeFunctionData({
+			abi: safeSetupAbi,
+			functionName: "setup",
+			args: [[A], 1n, B, "0x1234", C, zeroAddress, 0n, zeroAddress],
+		});
+		const data = encodeFunctionData({
+			abi: safeProxyFactoryAbi,
+			functionName: "createProxyWithNonce",
+			args: [SAFE, initializer, 0n],
+		});
+		const t = targetsFromTransaction({ to: A, data, chainId });
+		for (const address of [SAFE, B, C])
+			expect(t.find((x) => x.address === address)?.role).toBe("delegatecall");
+	});
+
+	test("a SafeTx without an operation is treated as delegatecall", () => {
+		const t = targetsFromTypedData(
+			{
+				domain: { chainId, verifyingContract: SAFE },
+				types: {
+					SafeTx: [
+						{ name: "to", type: "address" },
+						{ name: "data", type: "bytes" },
+					],
+				},
+				primaryType: "SafeTx",
+				message: { to: B, data: "0x" },
+			},
+			chainId,
+		);
+		expect(t[0]).toMatchObject({ address: B, role: "delegatecall" });
 	});
 });

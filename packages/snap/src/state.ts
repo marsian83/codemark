@@ -9,6 +9,7 @@ export type SnapState = {
 };
 
 const maxCacheEntries = 200;
+const keptPrefix = "cuts:";
 
 function replacer(_k: string, v: unknown) {
 	return typeof v === "bigint" ? { $big: v.toString() } : v;
@@ -68,7 +69,9 @@ export function createCache(state: SnapState): CheckCache {
 			await serialized(async () => {
 				const fresh = await loadState();
 				fresh.cache[key] = entry;
-				const keys = Object.keys(fresh.cache);
+				const keys = Object.keys(fresh.cache).filter(
+					(k) => !k.startsWith(keptPrefix),
+				);
 				if (keys.length > maxCacheEntries) {
 					const oldest = keys.sort(
 						(a, b) => (fresh.cache[a]?.at ?? 0) - (fresh.cache[b]?.at ?? 0),

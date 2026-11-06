@@ -24,7 +24,7 @@ inputs:
     description: Private key holding ROLE_REGISTRAR on the key registry (pass a secret)
     required: true
   arkiv-access-key:
-    description: Arkiv access key; the index row is skipped when empty
+    description: Arkiv access key; optional, without it writes use the rate-limited public endpoint
     required: false
     default: ""
   rpc-url:

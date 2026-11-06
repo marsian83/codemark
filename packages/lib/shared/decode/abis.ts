@@ -41,6 +41,33 @@ export const safeAdminVia: Record<string, string> = {
 	swapOwner: "Safe owner being swapped in",
 };
 
+export const handoverAbi = parseAbi([
+	"function upgradeTo(address newImplementation)",
+	"function upgradeToAndCall(address newImplementation, bytes data)",
+	"function installModule(uint256 moduleTypeId, address module, bytes initData)",
+]);
+
+export const handoverVia: Record<string, string> = {
+	upgradeTo: "implementation being upgraded to",
+	upgradeToAndCall: "implementation being upgraded to",
+	installModule: "account module being installed",
+};
+
+export const safeModuleExecAbi = parseAbi([
+	"function execTransactionFromModule(address to, uint256 value, bytes data, uint8 operation)",
+	"function execTransactionFromModuleReturnData(address to, uint256 value, bytes data, uint8 operation)",
+]);
+
+export const safeProxyFactoryAbi = parseAbi([
+	"function createProxyWithNonce(address singleton, bytes initializer, uint256 saltNonce)",
+	"function createChainSpecificProxyWithNonce(address singleton, bytes initializer, uint256 saltNonce)",
+	"function createProxyWithCallback(address singleton, bytes initializer, uint256 saltNonce, address callback)",
+]);
+
+export const safeSetupAbi = parseAbi([
+	"function setup(address[] owners, uint256 threshold, address to, bytes data, address fallbackHandler, address paymentToken, uint256 payment, address paymentReceiver)",
+]);
+
 export const executeAbi = parseAbi([
 	"function execute(bytes32 mode, bytes executionCalldata)",
 	"function executeFromExecutor(bytes32 mode, bytes executionCalldata)",

@@ -323,7 +323,7 @@ export async function publish(
 	return { ...base, arkiv: await writeReleaseRow(ctx, base) };
 }
 
-async function writeReleaseRow(
+export async function writeReleaseRow(
 	ctx: CliContext,
 	release: Omit<PublishResult, "arkiv">,
 ): Promise<ArkivOutcome> {

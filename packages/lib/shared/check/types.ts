@@ -37,6 +37,9 @@ export type CheckDeps = {
 	logChunkBlocks?: bigint;
 	scanDepthBlocks?: bigint;
 	maxIndexPages?: number;
+	maxUnpinnedPublishers?: number;
+	maxTargets?: number;
+	timeoutMs?: number;
 };
 
 export type ReleaseInfo = {

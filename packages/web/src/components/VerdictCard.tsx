@@ -180,8 +180,8 @@ export function VerdictCard({
 			) : null}
 			{result.indexFlooded ? (
 				<p className="border-t border-zinc-200 pt-3 text-sm dark:border-zinc-800">
-					The Arkiv index returned too many candidates for this address; only
-					pinned publishers are shown.
+					The Arkiv index returned too many candidates for this address;
+					anything not pinned cannot raise this result above a warning.
 				</p>
 			) : null}
 			<footer className="border-t border-zinc-200 pt-2 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">

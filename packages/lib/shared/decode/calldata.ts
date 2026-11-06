@@ -14,12 +14,17 @@ import {
 	erc20ApprovalAbi,
 	executeAbi,
 	executionListParams,
+	handoverAbi,
+	handoverVia,
 	multiSendAbi,
 	permit2Abi,
 	permit2Address,
 	safeAbi,
 	safeAdminAbi,
 	safeAdminVia,
+	safeModuleExecAbi,
+	safeProxyFactoryAbi,
+	safeSetupAbi,
 } from "./abis";
 import { multiSend, multiSendCallOnly } from "./safeMultiSend";
 
@@ -56,7 +61,7 @@ export function unpackMultiSend(packed: Hex): InnerCall[] {
 }
 
 function roleFor(operation: number): TargetRole {
-	return operation === 1 ? "delegatecall" : "call";
+	return operation === 0 ? "call" : "delegatecall";
 }
 
 function selectorOf(data: Hex | undefined) {
@@ -87,8 +92,13 @@ export function add(
 	via: string,
 ) {
 	const normal = getAddress(address);
+	if (isZero(normal)) return;
 	if (c.out.some((t) => t.address === normal && t.role === role)) return;
 	c.out.push({ address: normal, chainId: c.chainId, role, via });
+}
+
+function isZero(address: Address) {
+	return /^0x0{40}$/.test(address);
 }
 
 function spenderOf(args: readonly unknown[]) {
@@ -160,6 +170,72 @@ function walkSafeAdmin(c: Collector, data: Hex) {
 	);
 }
 
+function walkHandover(c: Collector, to: Address, data: Hex, depth: number) {
+	const handover = tryDecode(handoverAbi, data);
+	if (handover) {
+		const module =
+			handover.functionName === "installModule"
+				? (handover.args[1] as Address)
+				: (handover.args[0] as Address);
+		add(
+			c,
+			module,
+			"delegatecall",
+			handoverVia[handover.functionName] ?? "control handover",
+		);
+		return true;
+	}
+	const moduleExec = tryDecode(safeModuleExecAbi, data);
+	if (moduleExec) {
+		const [innerTo, , innerData, innerOp] = moduleExec.args as [
+			Address,
+			bigint,
+			Hex,
+			number,
+		];
+		walkCall(
+			c,
+			innerTo,
+			innerData,
+			Number(innerOp),
+			"Safe module execution",
+			depth + 1,
+		);
+		return true;
+	}
+	const factory = tryDecode(safeProxyFactoryAbi, data);
+	if (factory) {
+		const [singleton, initializer] = factory.args as [Address, Hex];
+		add(c, singleton, "delegatecall", "Safe singleton for a new Safe");
+		walkSafeSetup(c, to, initializer, depth);
+		return true;
+	}
+	return false;
+}
+
+function walkSafeSetup(
+	c: Collector,
+	factory: Address,
+	initializer: Hex,
+	depth: number,
+) {
+	if (!selectorOf(initializer)) return;
+	const setup = tryDecode(safeSetupAbi, initializer);
+	if (!setup) {
+		add(c, factory, undecodable, "undecodable Safe initializer");
+		return;
+	}
+	const [, , to, data, fallbackHandler] = setup.args as [
+		Address[],
+		bigint,
+		Address,
+		Hex,
+		Address,
+	];
+	walkCall(c, to, data, 1, "Safe setup delegatecall", depth + 1);
+	add(c, fallbackHandler, "delegatecall", "Safe fallback handler being set");
+}
+
 function walkCall(
 	c: Collector,
 	to: Address,
@@ -205,6 +281,7 @@ function walkCall(
 	const batch = tryDecode(executeAbi, data);
 	if (!(isSelf && batch)) add(c, to, roleFor(operation), label);
 	walkSafeAdmin(c, data);
+	if (walkHandover(c, to, data, depth)) return;
 	const safe = tryDecode(safeAbi, data);
 	if (safe) {
 		const [innerTo, , innerData, innerOp] = safe.args as [

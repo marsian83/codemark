@@ -25,7 +25,7 @@ acmeswap.eth                    owned by the team Safe ("root"); text record cod
        └─ delegate-1-0-0        address = an EIP-7702 delegate
 ```
 
-A Safe is a multisig smart-contract wallet. Here it is the root and needs no custom contract. An EIP-7702 delegation lets an ordinary account point at contract code and run it, so a signature that sets a delegate can hand the account to whoever wrote that code. The `delegates` key exists so that code of that kind can only be published by root.
+A Safe is a multisig smart-contract wallet. Here it is the root and needs no custom contract. An EIP-7702 delegation lets an ordinary account point at contract code and run it, so a signature that sets a delegate can hand the account to whoever wrote that code. The `delegates` key exists so that code of that kind can only be published by root. The same goes for anything that runs with the signer's authority: a Safe module, guard or fallback handler, a delegatecall target, a proxy upgrade or an ERC-7579 module only passes if it was published as a delegate.
 
 Everything on chain is stock ENSv2: registries are `UserRegistry` proxies and release resolvers are `PermissionedResolver` proxies. Both are deployed through `VerifiableFactory`, a CREATE2 factory (CREATE2 gives a contract an address derived from its deployer, salt and code) that can later confirm a given address is one of its proxies and which implementation it runs. ABIs come from contracts-v2 commit `07e55a05`, the source behind the Sepolia deployment. There is no Codemark Solidity.
 
@@ -106,7 +106,7 @@ bun run --cwd demo warp   # optional: move fork time forward (default 24 h) for 
 bun run --cwd demo abi:check   # check the ABIs against live Sepolia
 ```
 
-`demo:seed` writes `packages/demo/state/seed.json`. See `packages/demo/CONTEXT.md` for its env variables. Arkiv rows are only written if `SEED_ARKIV=1` and `ARKIV_ACCESS_KEY` are set.
+`demo:seed` writes `packages/demo/state/seed.json`. See `packages/demo/CONTEXT.md` for its env variables. Arkiv rows are only written if `SEED_ARKIV=1` is set.
 
 ### Tests
 
@@ -140,7 +140,7 @@ Secrets come from the environment (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `COD
 ```sh
 bun cli init acmeswap --sec 0x... --years 1                       # register the name, deploy the Safe and PubRegistry
 bun cli add-key acmeswap.eth ci-1 --ci 0x... --ttl-days 90        # mount a key (--root-only for a key with no CI grant, such as delegates)
-bun cli publish acmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>   # --kind delegate for 7702 delegates
+bun cli publish acmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>   # --kind delegate for 7702 delegates, Safe modules and other delegatecall targets
 bun cli pull acmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"
 bun cli cut acmeswap.eth ci-1 --reason "CI key leaked"
 bun cli migrate acmeswap.eth ci-1 ci-2 --ci 0x...                 # mount ci-2, republish live releases of ci-1
@@ -162,14 +162,25 @@ bun cli verify 0x... --pin acmeswap.eth --role delegation         # --role call|
     version: ${{ steps.deployed.outputs.version }}
     target: ${{ steps.deployed.outputs.address }}
     ci-key: ${{ secrets.CODEMARK_CI_KEY }}
-    arkiv-access-key: ${{ secrets.ARKIV_ACCESS_KEY }}   # row is skipped when empty
+    arkiv-access-key: ${{ secrets.ARKIV_ACCESS_KEY }}   # optional; lifts the public endpoint's rate limit
 ```
 
 Outputs are `name` and `forward-name`. The CI key only has `ROLE_REGISTRAR` on one key registry.
 
 ## Live on Sepolia
 
-Transaction hashes are added after the live run.
+`acmeswap.eth` is registered on the canonical ENSv2 Sepolia deployment, owned by a 1-of-1 Safe ([`0x5A0b…A9b0`](https://sepolia.etherscan.io/address/0x5A0bb1DC428466707EfA52E6A5f55bE33652A9b0)). Browse it on [explorer.ens.domains](https://explorer.ens.domains/acmeswap.eth).
+
+| Step | Name | Transactions |
+|---|---|---|
+| Publisher registry, `.eth` commit and register | [acmeswap.eth](https://explorer.ens.domains/acmeswap.eth) | [`0xf114f757…`](https://sepolia.etherscan.io/tx/0xf114f757788dea44c4206e05e5ff0d990a5ab2dcccea202152354a8d47ae1da7) [`0x139449e8…`](https://sepolia.etherscan.io/tx/0x139449e8a0322c492811848b2b2b680211169904dd4f0bca1599c8124acc522c) [`0xdd2447d0…`](https://sepolia.etherscan.io/tx/0xdd2447d0d7553bb37f65a3566388f712ec5deff2d5fcc173c84ab6118eb003b3) |
+| CI key (`ROLE_REGISTRAR` for the CI address) | [ci-1.acmeswap.eth](https://explorer.ens.domains/ci-1.acmeswap.eth) | [`0x57d618ec…`](https://sepolia.etherscan.io/tx/0x57d618ecd5e2c9bb6773f3a4695fe7578707015a06948759a4417fd56d7b9b36) [`0x94cdf677…`](https://sepolia.etherscan.io/tx/0x94cdf677a7fbc48cca75a7a8b7b6cd3022569aff9e7e90585edb4a89bceb612f) |
+| Root-only delegates key | [delegates.acmeswap.eth](https://explorer.ens.domains/delegates.acmeswap.eth) | [`0x462dfad5…`](https://sepolia.etherscan.io/tx/0x462dfad5aeae8277850d1e3869c9a56f18c77e06f845701ae9b336fb9fa3bbec) [`0x378e3fa1…`](https://sepolia.etherscan.io/tx/0x378e3fa12e4934506722a2204c9f51d3aaa4a0f1e22aca40b67dc4091d5b9dba) |
+| Router 3.1.0, published by CI | [router-3-1-0.ci-1.acmeswap.eth](https://explorer.ens.domains/router-3-1-0.ci-1.acmeswap.eth) | [`0x3c0f8e2d…`](https://sepolia.etherscan.io/tx/0x3c0f8e2df56e5d152dda74ea7b5e11131f9facf8501efecf40569fd819e76ea3) [`0x70d1d6a5…`](https://sepolia.etherscan.io/tx/0x70d1d6a5a4977e99700ab98ecf3ff3b5c31aa0904cbc711935adaab6fd769870) |
+| Portal 2.0.0 (proxy, implementation pinned) | [portal-2-0-0.ci-1.acmeswap.eth](https://explorer.ens.domains/portal-2-0-0.ci-1.acmeswap.eth) | [`0x3a0f3510…`](https://sepolia.etherscan.io/tx/0x3a0f351056312324fce08aa4907430922cd4a29052c46163b05307f65328b65b) [`0x238670b5…`](https://sepolia.etherscan.io/tx/0x238670b5e6d624ac6d06622b78eeeedad8c7c8c09511cec3cf91903212d6377c) |
+| EIP-7702 delegate 1.0.0, published by root | [delegate-1-0-0.delegates.acmeswap.eth](https://explorer.ens.domains/delegate-1-0-0.delegates.acmeswap.eth) | [`0xefb3fba3…`](https://sepolia.etherscan.io/tx/0xefb3fba32c871d580fa497c86e81e1197c6c1aea925978123ea35ab5c277cb08) [`0x4e0af269…`](https://sepolia.etherscan.io/tx/0x4e0af26972c780b4804575b5d89908eed6010ba36420e593c05d71276072a713) |
+
+The router and portal rows are indexed on Arkiv's Rabdi testnet; the delegate has none, because delegates are only trusted when pinned. Check any of the three targets with `bun cli verify <address> --pin acmeswap.eth`, or on the lookup page.
 
 ## Security model and known limits
 
@@ -180,7 +191,7 @@ Transaction hashes are added after the live run.
 | Stolen CI key | Can publish non-delegate releases until cut. Cannot alter passing releases, publish delegates or revive pulled labels. Can grief by reserving labels, which root clears |
 | Stolen sec key | Can pull, cut or clear reservations: a visible denial of service. Cannot publish |
 | Stolen root | Total. Use a multisig |
-| Arkiv down | Pinned lookups still work; open discovery returns UNKNOWN; never a false green |
+| Arkiv down | Pinned lookups still resolve on-chain, but without the indexed proof blocks a release is VERIFIED-unproven: a warning, critical for delegations. Open discovery returns UNKNOWN; never a false green |
 
 Limits:
 
