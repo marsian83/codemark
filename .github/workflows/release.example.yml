@@ -1,0 +1,30 @@
+name: release (example)
+
+on:
+  push:
+    tags: ["router-v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Read the deployed address
+        id: deployed
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#router-v}"
+          [[ "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || { echo "tag $TAG is not router-v<semver>" >&2; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "address=$(jq -r .address deployments/sepolia/router.json)" >> "$GITHUB_OUTPUT"
+      - uses: ./.github/actions/codemark-publish
+        with:
+          publisher: acmeswap.eth
+          key: ci-1
+          component: router
+          version: ${{ steps.deployed.outputs.version }}
+          target: ${{ steps.deployed.outputs.address }}
+          ci-key: ${{ secrets.CODEMARK_CI_KEY }}
+          arkiv-access-key: ${{ secrets.ARKIV_ACCESS_KEY }}
