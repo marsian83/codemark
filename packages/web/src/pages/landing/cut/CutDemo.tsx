@@ -184,7 +184,7 @@ function Typed({ text, reduced }: { text: string; reduced: boolean }) {
 		return () => clearInterval(timer);
 	}, [text, reduced]);
 	return (
-		<p className="min-h-5 overflow-x-auto text-xs leading-5 whitespace-pre sm:text-sm">
+		<p className="h-5 overflow-x-auto text-xs leading-5 whitespace-pre sm:text-sm">
 			<Code text={text.slice(0, shown)} />
 			{shown < text.length ? <span className="text-fox">▌</span> : null}
 		</p>
@@ -276,23 +276,26 @@ export function CutDemo() {
 					/>
 				</ul>
 			</div>
-			<div className="flex flex-wrap items-center justify-between gap-4 border-t border-hairline px-5 py-4 sm:px-7">
-				<div className="min-w-0 flex-1 basis-64" aria-live="polite">
+			<div className="border-t border-hairline px-5 py-4 sm:px-7">
+				<div className="flex items-center justify-between gap-4">
 					<p className="text-sm font-medium text-sand-2">Your wallet shows</p>
-					<p className="mt-0.5 text-xs leading-5 sm:text-sm">
-						<Code text={stage.wallet} />
-					</p>
+					<button
+						type="button"
+						className={actionVariants({ size: "sm" })}
+						onClick={() => {
+							setTaken(true);
+							setIndex((index + 1) % stages.length);
+						}}
+					>
+						{stage.action}
+					</button>
 				</div>
-				<button
-					type="button"
-					className={actionVariants()}
-					onClick={() => {
-						setTaken(true);
-						setIndex((index + 1) % stages.length);
-					}}
+				<p
+					className="mt-2 overflow-x-auto text-xs leading-5 whitespace-nowrap sm:text-sm"
+					aria-live="polite"
 				>
-					{stage.action}
-				</button>
+					<Code text={stage.wallet} />
+				</p>
 			</div>
 		</div>
 	);
