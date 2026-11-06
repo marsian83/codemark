@@ -1,16 +1,17 @@
 import { clamp01 } from "../art/noise";
 
-export const stepCount = 5;
+export const stepCount = 4;
 
 export const stops = {
 	signers: 0.1,
 	check: 0.34,
-	wallet: 0.6,
+	wallet: 0.62,
 	attacker: 0.9,
 };
 
 export type LaneState = {
 	attacker: number;
+	setup: number;
 	signalAt: number;
 	signalVisible: boolean;
 	scatter: number;
@@ -29,27 +30,30 @@ function mix(from: number, to: number, amount: number): number {
 }
 
 export function laneState(guarded: boolean, t: number): LaneState {
-	const attacker = between(0, 0.1, t);
+	const attacker = between(0, 0.08, t);
+	const setup = t < 0.25 ? between(0.02, 0.08, t) : 0;
 	if (guarded) {
 		return {
 			attacker,
-			signalAt: mix(stops.signers, stops.check, between(0.4, 0.54, t)),
-			signalVisible: t >= 0.4 && t < 0.72,
-			scatter: between(0.56, 0.72, t),
-			flagged: between(0.54, 0.58, t),
+			setup,
+			signalAt: mix(stops.signers, stops.check, between(0.25, 0.38, t)),
+			signalVisible: t >= 0.25 && t < 0.6,
+			scatter: between(0.42, 0.6, t),
+			flagged: between(0.38, 0.42, t),
 			compromised: 0,
 			drained: 0,
-			kept: between(0.8, 0.88, t),
+			kept: between(0.75, 0.83, t),
 		};
 	}
 	return {
 		attacker,
-		signalAt: mix(stops.signers, stops.wallet, between(0.4, 0.6, t)),
-		signalVisible: t >= 0.4 && t < 0.62,
+		setup,
+		signalAt: mix(stops.signers, stops.wallet, between(0.25, 0.48, t)),
+		signalVisible: t >= 0.25 && t < 0.5,
 		scatter: 0,
 		flagged: 0,
-		compromised: between(0.6, 0.78, t),
-		drained: between(0.8, 0.98, t) ** 1.3,
+		compromised: between(0.5, 0.72, t),
+		drained: between(0.75, 0.97, t) ** 1.3,
 		kept: 0,
 	};
 }

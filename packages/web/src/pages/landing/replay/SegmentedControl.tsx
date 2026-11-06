@@ -32,7 +32,7 @@ export function SegmentedControl<Value extends string>({
 				<ToggleGroup.Item
 					key={option.value}
 					value={option.value}
-					className="cartouche h-10 px-4 text-sm font-medium whitespace-nowrap text-sand-2 outline-none transition-colors [--chamfer:0.375rem] hover:text-sand focus-visible:bg-sand/10 data-[state=on]:bg-sand/15 data-[state=on]:text-sand"
+					className="cartouche h-10 cursor-pointer px-4 text-sm font-medium whitespace-nowrap text-sand-2 outline-none transition-colors [--chamfer:0.375rem] hover:bg-sand/10 hover:text-sand focus-visible:bg-sand/10 data-[state=on]:bg-sand/15 data-[state=on]:text-sand"
 				>
 					{option.label}
 				</ToggleGroup.Item>

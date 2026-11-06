@@ -38,7 +38,7 @@ export function ReplayLane({
 					guarded ? "text-signal" : "text-flare",
 				)}
 			>
-				{guarded ? "With Codemark in the signing path" : "What happened"}
+				{guarded ? "With Codemark" : "What happened"}
 			</h3>
 			<div className="relative mt-1 h-52 min-h-0 sm:h-64 lg:h-auto lg:flex-1">
 				<canvas
@@ -51,7 +51,7 @@ export function ReplayLane({
 				<p className="text-lg leading-6 font-semibold text-sand">
 					{guarded ? step.checkTitle : step.title}
 				</p>
-				<p className="mt-1 text-base leading-6 text-sand-2">
+				<p className="mt-1 text-base leading-6 text-balance text-sand-2">
 					{guarded ? step.withCheck : step.happened}
 				</p>
 			</div>

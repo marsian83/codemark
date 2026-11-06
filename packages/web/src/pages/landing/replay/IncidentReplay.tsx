@@ -16,7 +16,7 @@ import { ReplayLane } from "./ReplayLane";
 import { SegmentedControl } from "./SegmentedControl";
 import { endOfStep, stepAt, stepCount } from "./timeline";
 
-const fullRunSeconds = 13;
+const fullRunSeconds = 7;
 const replayPauseMs = 3200;
 
 function StepBar({
@@ -144,7 +144,7 @@ export function IncidentReplay() {
 				</div>
 			</div>
 
-			<ol className="mt-4 grid grid-cols-5 gap-3">
+			<ol className="mt-4 grid grid-cols-4 gap-3">
 				{incident.steps.map((item, index) => (
 					<li key={item.title}>
 						<button
@@ -153,7 +153,7 @@ export function IncidentReplay() {
 							aria-current={index === step ? "step" : undefined}
 							aria-label={`${item.at}: ${item.title}`}
 							className={cn(
-								"block w-full text-left text-sm outline-none transition-colors hover:text-sand focus-visible:text-sand",
+								"block w-full cursor-pointer text-left text-sm outline-none transition-colors hover:text-sand focus-visible:text-sand",
 								index === step ? "text-sand" : "text-sand-3",
 							)}
 						>
@@ -189,7 +189,22 @@ export function IncidentReplay() {
 					progress={progress}
 				/>
 			</div>
-			<p className="mt-3 text-sm leading-5 text-sand-2">{incident.checkSits}</p>
+			<p className="mt-3 text-sm leading-5 text-sand-2">
+				{incident.checkSits} Sources:{" "}
+				{incident.sources.map((source, index) => (
+					<span key={source.url}>
+						{index > 0 ? ", " : null}
+						<a
+							href={source.url}
+							target="_blank"
+							rel="noreferrer"
+							className="whitespace-nowrap underline underline-offset-2 hover:text-sand"
+						>
+							{source.label}
+						</a>
+					</span>
+				))}
+			</p>
 		</div>
 	);
 }

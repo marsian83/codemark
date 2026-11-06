@@ -77,8 +77,17 @@ describe("vault cells", () => {
 });
 
 describe("replay script", () => {
+	test("every incident links its sources", () => {
+		for (const incident of incidents) {
+			expect(incident.sources.length).toBeGreaterThan(0);
+			for (const source of incident.sources) {
+				expect(source.url.startsWith("https://")).toBe(true);
+			}
+		}
+	});
+
 	test("the guarded lane flags the payload before the takeover step", () => {
-		expect(laneState(true, 0.6).flagged).toBe(1);
+		expect(laneState(true, 0.5).flagged).toBe(1);
 	});
 
 	test("the guarded lane ends with the wallet marked safe", () => {
@@ -88,7 +97,7 @@ describe("replay script", () => {
 	test("every incident has one caption per step and a short payload tag", () => {
 		for (const incident of incidents) {
 			expect(incident.steps).toHaveLength(stepCount);
-			expect(incident.payload.length).toBeLessThan(30);
+			expect(incident.payload.length).toBeLessThan(36);
 		}
 	});
 });

@@ -18,11 +18,13 @@ export type Incident = {
 	signers: number;
 	signerLabel: string;
 	walletLabel: string;
+	setupTag: string;
 	payload: string;
 	role: TargetRole;
 	asset: { amount: number; unit: string };
 	loss: string;
 	checkSits: string;
+	sources: { label: string; url: string }[];
 	steps: IncidentStep[];
 };
 
@@ -33,61 +35,60 @@ export const incidents: Incident[] = [
 		date: "February 2025",
 		signers: 3,
 		signerLabel: "3 signers",
-		walletLabel: "Bybit cold wallet",
-		payload: "delegatecall 0x9622…7242",
+		walletLabel: "Cold wallet",
+		setupTag: "On screen: routine transfer",
+		payload: "Really: delegatecall 0x9622…7242",
 		role: "delegatecall",
 		asset: { amount: 401_000, unit: "ETH" },
 		loss: "About $1.5B lost",
 		checkSits:
-			"The check reads the payload in the signer's wallet, so a replaced frontend can't hide it.",
-		steps: [
+			"Codemark reads the transaction in the signer's wallet, so a tampered page can't hide it.",
+		sources: [
 			{
-				label: "Frontend",
-				at: "Feb 19",
-				title: "The frontend is replaced",
-				happened:
-					"Malicious JavaScript goes into Safe{Wallet}, dormant for everyone except Bybit's cold wallet.",
-				checkTitle: "No signature yet",
-				withCheck: "Nothing to check yet. Codemark doesn't watch frontends.",
+				label: "NCC Group",
+				url: "https://www.nccgroup.com/research/in-depth-technical-analysis-of-the-bybit-hack/",
 			},
 			{
-				label: "Screen",
+				label: "Sygnia",
+				url: "https://www.sygnia.co/blog/sygnia-investigation-bybit-hack/",
+			},
+		],
+		steps: [
+			{
+				label: "Fake screen",
 				at: "Feb 21",
-				title: "The screen shows a routine transfer",
+				title: "Signers see a routine transfer",
 				happened:
-					"Signers start a planned move from cold to hot wallet, and that's what they see.",
-				checkTitle: "The screen is still wrong",
-				withCheck: "The check doesn't rely on what the screen says.",
+					"A tampered Safe{Wallet} page shows a planned move from cold to hot wallet.",
+				checkTitle: "Codemark ignores the page",
+				withCheck: "It reads the transaction, not what the page shows.",
 			},
 			{
 				label: "Signatures",
 				at: "Feb 21",
-				title: "Three signers approve a different payload",
+				title: "Three signers approve it",
 				happened:
-					"It's a delegatecall to 0x9622…7242, a contract the attacker deployed three days earlier.",
-				checkTitle: "The payload is checked",
-				withCheck:
-					"Codemark decodes it and finds a delegatecall to an address no publisher claims.",
+					"It's really a delegatecall to 0x9622…7242, a contract the attacker deployed.",
+				checkTitle: "Codemark checks the target",
+				withCheck: "No team published 0x9622…7242, so the wallet warns them.",
 			},
 			{
 				label: "Takeover",
 				at: "Feb 21",
-				title: "The wallet's logic is swapped",
+				title: "The attacker takes over the wallet",
 				happened:
-					"That contract overwrites slot 0 and points the wallet at 0xbDd0…9516. The multisig no longer applies.",
-				checkTitle: "A critical warning",
+					"The call replaces the wallet's logic. The multisig no longer applies.",
+				checkTitle: "Signers see a critical warning",
 				withCheck:
-					"MetaMask makes the signer confirm twice. It's a warning, not a block.",
+					"They have to acknowledge it to continue. It's a warning, not a block.",
 			},
 			{
 				label: "Drain",
 				at: "Feb 21",
-				title: "About 401,000 ETH leaves",
-				happened:
-					"The attacker calls the new contract's sweep functions and empties the wallet.",
-				checkTitle: "The wallet stays as it was",
-				withCheck:
-					"If the signers stop at the warning, the wallet and its multisig don't change.",
+				title: "About 401,000 ETH is gone",
+				happened: "The attacker empties the wallet.",
+				checkTitle: "The funds stay put",
+				withCheck: "If the signers stop at the warning, nothing changes.",
 			},
 		],
 	},
@@ -96,62 +97,61 @@ export const incidents: Incident[] = [
 		logo: createElement(BinanceLogo),
 		date: "October 2026",
 		signers: 1,
-		signerLabel: "Signing service",
-		walletLabel: "Binance 14 hot wallet",
-		payload: "7702 delegation to sweeper",
+		signerLabel: "Withdrawal service",
+		walletLabel: "Hot wallet",
+		setupTag: "Attacker deploys a sweeper",
+		payload: "EIP-7702 delegation to sweeper",
 		role: "delegation",
 		asset: { amount: 167_464, unit: "ETH" },
-		loss: "About $2.5B in the first sweep",
+		loss: "About $6.3B drained in total",
 		checkSits:
-			"Reports say the attacker controlled Binance's signing service, so the check has to run somewhere that service can't skip it.",
-		steps: [
+			"Binance's first findings point to a compromised service, not a leaked key. The check has to run where that service can't skip it.",
+		sources: [
 			{
-				label: "Prep",
-				at: "Oct 28",
-				title: "The attacker prepares",
-				happened:
-					"Small Tornado Cash withdrawals fund a fresh operator wallet.",
-				checkTitle: "No signature yet",
-				withCheck: "Nothing to check yet.",
+				label: "Hypernative",
+				url: "https://www.hypernative.io/insights/blog/inside-the-largest-crypto-theft-of-all-time-the-6-3b-binance-hot-wallet-drain",
 			},
+			{
+				label: "DRK",
+				url: "https://drk.vc/news/binance-14-eip-7702-drain",
+			},
+		],
+		steps: [
 			{
 				label: "Sweeper",
 				at: "Oct 29",
-				title: "The sweeper is deployed",
+				title: "The attacker deploys a sweeper",
 				happened:
-					"After rehearsing on its own wallets, the attacker deploys the final sweeper contract.",
-				checkTitle: "No signature yet",
-				withCheck: "The sweeper has no publisher, and it never will.",
+					"It's a contract built to empty a wallet, rehearsed first on the attacker's own wallets.",
+				checkTitle: "Nothing to check yet",
+				withCheck: "No team will ever publish the sweeper, so it can't pass.",
 			},
 			{
 				label: "Signatures",
 				at: "Oct 29",
-				title: "50 delegations are signed",
+				title: "50 delegations get signed",
 				happened:
-					"Each one hands the wallet to the sweeper. Early reports point to a compromised signing service.",
-				checkTitle: "The delegate is checked",
-				withCheck:
-					"Checked at signing, it comes back critical because no publisher claims it.",
+					"Each one hands the hot wallet to the sweeper, through what Binance says was a compromised laptop.",
+				checkTitle: "Codemark checks the delegate",
+				withCheck: "No team published it, so the result is critical.",
 			},
 			{
 				label: "Delegation",
 				at: "20:20 UTC",
-				title: "One nonce matches",
+				title: "One signature goes live",
 				happened:
-					"One authorization matches the live nonce, and the hot wallet now runs the sweeper's code.",
-				checkTitle: "Nothing to land",
-				withCheck:
-					"An authorization that was never signed can't land, so the wallet keeps its own code.",
+					"It matches the wallet's nonce, so the hot wallet now runs the sweeper's code.",
+				checkTitle: "Nothing goes live",
+				withCheck: "Without a signature, the wallet keeps its own code.",
 			},
 			{
 				label: "Drain",
 				at: "20:24 UTC",
 				title: "One call empties the wallet",
 				happened:
-					"167,464 ETH and 63 tokens leave in one call. Four more sweeps follow before the delegation is revoked.",
+					"167,464 ETH and 63 tokens leave at once. Four more sweeps follow.",
 				checkTitle: "The funds stay put",
-				withCheck:
-					"If signing stops at the check, none of these transfers can be sent this way.",
+				withCheck: "If signing stops at the check, this transfer can't happen.",
 			},
 		],
 	},
