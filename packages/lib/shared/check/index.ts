@@ -24,7 +24,7 @@ const DEFAULT_DEPTH = 1_500_000n;
 const DEFAULT_LAG = 2n;
 const DEFAULT_MAX_UNPINNED = 8;
 const DEFAULT_MAX_TARGETS = 32;
-const DEFAULT_TIMEOUT_MS = 20_000;
+const DEFAULT_TIMEOUT_MS = 45_000;
 
 async function readIndex(
 	ctx: Ctx,
@@ -56,6 +56,10 @@ async function readIndex(
 	}
 }
 
+function decidesAlone(verdict: PublisherVerdict) {
+	return verdict.pinned && verdict.verdict !== "UNKNOWN";
+}
+
 async function checkTarget(
 	ctx: Ctx,
 	target: Target,
@@ -78,12 +82,10 @@ async function checkTarget(
 		...new Set(index.releases.map((r) => r.row.publisher)),
 	].filter((n) => !pinnedNames.includes(n));
 	const maxUnpinned = ctx.deps.maxUnpinnedPublishers ?? DEFAULT_MAX_UNPINNED;
-	const names = [...pinnedNames, ...unpinnedNames.slice(0, maxUnpinned)];
 	const verdicts: PublisherVerdict[] = [];
-	const skipped: string[] = unpinnedNames.slice(maxUnpinned);
-	if (skipped.length > 0) index.incomplete = true;
+	const skipped: string[] = [];
 	let incidentsIncomplete = false;
-	for (const name of names) {
+	const evaluate = async (name: string) => {
 		const pin = pins.find((p) => p.name === name);
 		try {
 			const j = await evaluatePublisher(ctx, {
@@ -99,7 +101,7 @@ async function checkTarget(
 		} catch (err) {
 			if (!pin) {
 				skipped.push(name);
-				continue;
+				return;
 			}
 			verdicts.push({
 				publisher: name,
@@ -110,6 +112,14 @@ async function checkTarget(
 				reason: `the check of this pinned publisher failed: ${errorText(err)}`,
 			});
 		}
+	};
+	for (const name of pinnedNames) await evaluate(name);
+	if (!verdicts.some(decidesAlone)) {
+		const overCap = unpinnedNames.slice(maxUnpinned);
+		skipped.push(...overCap);
+		if (overCap.length > 0) index.incomplete = true;
+		for (const name of unpinnedNames.slice(0, maxUnpinned))
+			await evaluate(name);
 	}
 	index.incomplete ||= incidentsIncomplete;
 	const flags = {

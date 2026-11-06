@@ -415,3 +415,68 @@ test("forward labels are a- plus 12 hex of keccak(artifact)", () => {
 		`a-${keccak256(toHex(artifact)).slice(2, 14)}`,
 	);
 });
+
+describe("unpinned publishers can be skipped once a pinned one has answered", () => {
+	const t = { delegateMinAgeSeconds: 86_400, freshCallAgeSeconds: 3_600 };
+	const verified = (
+		o: Partial<PublisherVerdict> = {},
+		age = 100_000,
+		proven = true,
+	): PublisherVerdict => ({
+		publisher: "pwnmeswap.eth",
+		pinned: true,
+		key: "ci-1",
+		verdict: proven ? "VERIFIED" : "VERIFIED-unproven",
+		source: "pinned",
+		release: {
+			name: "router-3-1-0.ci-1.pwnmeswap.eth",
+			label: "router-3-1-0",
+			kind: "contract",
+			component: "router",
+			version: "3.1.0",
+			resolver: other,
+			codeHash: h,
+			proven,
+			ageSeconds: proven ? age : undefined,
+		},
+		...o,
+	});
+	const roles = [
+		"call",
+		"delegatecall",
+		"delegation",
+		"approval-spender",
+		"permit-spender",
+	] as const;
+	const answers = [
+		"VERIFIED",
+		"VERIFIED-unproven",
+		"KEY REVOKED",
+		"PULLED",
+		"MISMATCH",
+	] as const;
+	const unpinned = (verdict: PublisherVerdict["verdict"]) =>
+		verified({
+			publisher: "other.eth",
+			pinned: false,
+			source: "index",
+			verdict,
+			reason: "text from a stranger",
+		});
+
+	for (const role of roles)
+		for (const answer of answers)
+			test(`${role}, pinned ${answer}`, () => {
+				const pinned = verified({ verdict: answer });
+				const alone = decide(role, [pinned], t);
+				for (const other of [...answers, "UNKNOWN"] as const)
+					expect(decide(role, [pinned, unpinned(other)], t)).toEqual(alone);
+			});
+
+	test("a pinned UNKNOWN does not decide alone", () => {
+		const pinned = verified({ verdict: "UNKNOWN" });
+		expect(decide("call", [pinned, unpinned("VERIFIED")], t)).not.toEqual(
+			decide("call", [pinned], t),
+		);
+	});
+});

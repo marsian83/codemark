@@ -95,50 +95,70 @@ function resolverRead<T>(
 
 export const registry = {
 	subregistry: (ctx: Ctx, reg: Address, label: string) =>
-		memo(ctx, `sub:${reg}:${label}`, () =>
+		memo(ctx, `sub:${reg.toLowerCase()}:${label}`, () =>
 			registryRead<Address>(ctx, reg, "getSubregistry", [label]),
 		),
 	resolver: (ctx: Ctx, reg: Address, label: string) =>
-		memo(ctx, `res:${reg}:${label}`, () =>
+		memo(ctx, `res:${reg.toLowerCase()}:${label}`, () =>
 			registryRead<Address>(ctx, reg, "getResolver", [label]),
 		),
 	owner: (ctx: Ctx, reg: Address, id: bigint) =>
-		registryRead<Address>(ctx, reg, "getOwner", [id]),
+		memo(ctx, `owner:${reg.toLowerCase()}:${id}`, () =>
+			registryRead<Address>(ctx, reg, "getOwner", [id]),
+		),
 	tokenId: (ctx: Ctx, reg: Address, id: bigint) =>
-		registryRead<bigint>(ctx, reg, "getTokenId", [id]),
+		memo(ctx, `token:${reg.toLowerCase()}:${id}`, () =>
+			registryRead<bigint>(ctx, reg, "getTokenId", [id]),
+		),
 	roleCount: (ctx: Ctx, reg: Address, id: bigint) =>
-		registryRead<bigint>(ctx, reg, "roleCount", [id]),
+		memo(ctx, `regcount:${reg.toLowerCase()}:${id}`, () =>
+			registryRead<bigint>(ctx, reg, "roleCount", [id]),
+		),
 	roles: (ctx: Ctx, reg: Address, id: bigint, account: Address) =>
-		registryRead<bigint>(ctx, reg, "roles", [id, account]),
+		memo(
+			ctx,
+			`regroles:${reg.toLowerCase()}:${id}:${account.toLowerCase()}`,
+			() => registryRead<bigint>(ctx, reg, "roles", [id, account]),
+		),
 	hasRootRoles: (ctx: Ctx, reg: Address, bitmap: bigint, account: Address) =>
-		memo(ctx, `hrr:${reg}:${bitmap}:${account.toLowerCase()}`, () =>
-			registryRead<boolean>(ctx, reg, "hasRootRoles", [bitmap, account]),
+		memo(
+			ctx,
+			`hrr:${reg.toLowerCase()}:${bitmap}:${account.toLowerCase()}`,
+			() => registryRead<boolean>(ctx, reg, "hasRootRoles", [bitmap, account]),
 		),
 };
 
 export const resolver = {
 	roleCount: (ctx: Ctx, res: Address, resource: bigint) =>
-		resolverRead<bigint>(ctx, res, "roleCount", [resource]),
+		memo(ctx, `rescount:${res.toLowerCase()}:${resource}`, () =>
+			resolverRead<bigint>(ctx, res, "roleCount", [resource]),
+		),
 	roles: (ctx: Ctx, res: Address, resource: bigint, account: Address) =>
-		resolverRead<bigint>(ctx, res, "roles", [resource, account]),
+		memo(
+			ctx,
+			`resroles:${res.toLowerCase()}:${resource}:${account.toLowerCase()}`,
+			() => resolverRead<bigint>(ctx, res, "roles", [resource, account]),
+		),
 };
 
-export async function factoryImplementation(
+export function factoryImplementation(
 	ctx: Ctx,
 	proxy: Address,
 ): Promise<Address | undefined> {
-	try {
-		return await ctx.ens.publicClient.readContract({
-			address: ctx.ens.deployment.verifiableFactory,
-			abi: verifiableFactoryAbi,
-			functionName: "verifyContract",
-			args: [proxy],
-			blockNumber: ctx.block,
-		});
-	} catch (err) {
-		if (isRevert(err)) return undefined;
-		throw err;
-	}
+	return memo(ctx, `impl:${proxy.toLowerCase()}`, async () => {
+		try {
+			return await ctx.ens.publicClient.readContract({
+				address: ctx.ens.deployment.verifiableFactory,
+				abi: verifiableFactoryAbi,
+				functionName: "verifyContract",
+				args: [proxy],
+				blockNumber: ctx.block,
+			});
+		} catch (err) {
+			if (isRevert(err)) return undefined;
+			throw err;
+		}
+	});
 }
 
 export function lookupResolver(ctx: Ctx, name: string) {
@@ -199,32 +219,38 @@ export async function directAddr(
 
 export type CodeInfo = { hash: Hex; empty: boolean; delegated: boolean };
 
-export async function codeInfo(ctx: Ctx, address: Address): Promise<CodeInfo> {
-	const code =
-		(await ctx.ens.publicClient.getCode({ address, blockNumber: ctx.block })) ??
-		"0x";
-	return {
-		hash: keccak256(code),
-		empty: code === "0x",
-		delegated: code.toLowerCase().startsWith("0xef0100"),
-	};
+export function codeInfo(ctx: Ctx, address: Address): Promise<CodeInfo> {
+	return memo(ctx, `code:${address.toLowerCase()}`, async () => {
+		const code =
+			(await ctx.ens.publicClient.getCode({
+				address,
+				blockNumber: ctx.block,
+			})) ?? "0x";
+		return {
+			hash: keccak256(code),
+			empty: code === "0x",
+			delegated: code.toLowerCase().startsWith("0xef0100"),
+		};
+	});
 }
 
 export const erc1967BeaconSlot =
 	"0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50" as const;
 
-export async function slotAddress(
+export function slotAddress(
 	ctx: Ctx,
 	address: Address,
 	slot: Hex,
 ): Promise<Address | undefined> {
-	const word = await ctx.ens.publicClient.getStorageAt({
-		address,
-		slot,
-		blockNumber: ctx.block,
+	return memo(ctx, `slot:${address.toLowerCase()}:${slot}`, async () => {
+		const word = await ctx.ens.publicClient.getStorageAt({
+			address,
+			slot,
+			blockNumber: ctx.block,
+		});
+		if (!word || BigInt(word) === 0n) return undefined;
+		return `0x${word.slice(-40)}` as Address;
 	});
-	if (!word || BigInt(word) === 0n) return undefined;
-	return `0x${word.slice(-40)}` as Address;
 }
 
 export function implementationSlot(ctx: Ctx, address: Address) {
