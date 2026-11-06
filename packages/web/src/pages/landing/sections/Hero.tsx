@@ -1,7 +1,7 @@
 import { useReducedMotion } from "motion/react";
 import type { MouseEvent } from "react";
 import { Link } from "react-router-dom";
-import { actionVariants } from "../Action";
+import { actionVariants } from "../../../ui/action";
 import { Code } from "../code/Code";
 import { stopsFor } from "../sectionStops";
 import { verifiedLine } from "../verdicts";

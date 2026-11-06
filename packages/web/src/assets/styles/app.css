@@ -1,82 +1,41 @@
 @theme {
-	--font-sans: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-	--font-mono: "JetBrains Mono", ui-monospace, monospace;
+	--font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
-	--color-primary: var(--color-cobalt);
-	--color-primary-hover: #1631a8;
+	--color-primary: var(--color-fox);
+	--color-primary-hover: #ff9a3d;
 
-	--color-success: #157a3c;
-	--color-caution: #9a6206;
-	--color-warning: #c2410c;
-	--color-error: var(--color-seal);
+	--color-success: #4cc38a;
+	--color-caution: #52a8ff;
+	--color-warning: #f5b740;
+	--color-error: #ff6166;
 
-	--color-typography-primary: var(--color-ink);
-	--color-typography-secondary: var(--color-ink-2);
-	--color-typography-tertiary: #5b6170;
-	--color-typography-invert: #ffffff;
+	--color-typography-primary: #ededed;
+	--color-typography-secondary: #a8a8a8;
+	--color-typography-tertiary: #8f8f8f;
+	--color-typography-invert: #000000;
 
-	--color-border-primary: rgb(16 19 28 / 0.16);
-	--color-border-secondary: var(--color-rule);
+	--color-border-primary: #333333;
+	--color-border-secondary: #222222;
 
-	--color-background-layout: var(--color-paper);
-	--color-background-container: #ffffff;
-	--color-background-raised: #f2f2ee;
+	--color-background-layout: #000000;
+	--color-background-container: #0a0a0a;
+	--color-background-raised: #1a1a1a;
 
 	--text-2xs: 0.6875rem;
 	--text-2xs--line-height: 1rem;
 
-	--shadow-card: 0 0.0625rem 0.125rem rgb(16 19 28 / 0.04);
-	--shadow-overlay: 0 0.5rem 1.5rem rgb(16 19 28 / 0.08);
-
 	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
-	--animate-rise: rise 360ms var(--ease-out) both;
+	--animate-rise: rise 240ms var(--ease-out) both;
 
 	@keyframes rise {
 		from {
 			opacity: 0;
-			transform: translateY(0.5rem);
-		}
-	}
-}
-
-@custom-variant dark {
-	&:where([data-theme="dark"], [data-theme="dark"] *) {
-		@slot;
-	}
-
-	@media (prefers-color-scheme: dark) {
-		&:not(:where([data-theme="light"], [data-theme="light"] *)) {
-			@slot;
+			transform: translateY(0.25rem);
 		}
 	}
 }
 
 :root {
-	@variant dark {
-		color-scheme: dark;
-
-		--color-primary: #8ea2ff;
-		--color-primary-hover: #a9b8ff;
-
-		--color-success: #4cc38a;
-		--color-caution: #e2b13c;
-		--color-warning: #f08a4b;
-		--color-error: #f26b55;
-
-		--color-typography-primary: #ececea;
-		--color-typography-secondary: #a7a9af;
-		--color-typography-tertiary: #9a9ca3;
-		--color-typography-invert: #0e1016;
-
-		--color-border-primary: rgb(236 236 234 / 0.16);
-		--color-border-secondary: rgb(236 236 234 / 0.08);
-
-		--color-background-layout: #0e1016;
-		--color-background-container: #15171e;
-		--color-background-raised: #1f222a;
-
-		--shadow-card: 0 0 0 0 transparent;
-		--shadow-overlay: 0 0.5rem 1.5rem rgb(0 0 0 / 0.4);
-	}
+	color-scheme: dark;
 }

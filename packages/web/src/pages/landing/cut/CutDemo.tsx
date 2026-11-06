@@ -1,7 +1,7 @@
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { actionVariants } from "../../../ui/action";
 import { cn } from "../../../utils/cn";
-import { actionVariants } from "../Action";
 import { Code } from "../code/Code";
 import { cliLine, type StageId, stages } from "./stages";
 

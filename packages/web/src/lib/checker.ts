@@ -5,6 +5,7 @@ import {
 	type Pin,
 	type Target,
 } from "@codemark/shared/check";
+import type { Thresholds } from "@codemark/shared/check/severity";
 import { config } from "./config";
 import { arkivReader, ens } from "./rpc";
 
@@ -37,15 +38,12 @@ export async function retryUntilFinished<T>(
 export async function runCheck(
 	targets: Target[],
 	pins: Pin[],
+	thresholds: Thresholds = config.thresholds,
 ): Promise<{ result: CheckResult; now: number }> {
 	const now = Math.floor(Date.now() / 1000);
 	const arkiv = createArkivSource(arkivReader);
 	const result = await retryUntilFinished(
-		() =>
-			checkTargets(
-				{ targets, pins },
-				{ ens, arkiv, now, ...config.thresholds },
-			),
+		() => checkTargets({ targets, pins }, { ens, arkiv, now, ...thresholds }),
 		isUnfinished,
 	);
 	return { result, now };

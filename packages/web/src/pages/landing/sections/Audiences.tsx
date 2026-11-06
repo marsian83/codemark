@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { config } from "../../../lib/config";
 import { shortAddress } from "../../../lib/format";
-import { actionVariants } from "../Action";
+import { actionVariants } from "../../../ui/action";
 import { MetaMaskFox } from "../check/MetaMaskFox";
 import { InfoRow, InsightBanner } from "../check/WalletPrompt";
 import { Code } from "../code/Code";

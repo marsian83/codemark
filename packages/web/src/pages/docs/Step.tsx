@@ -16,15 +16,17 @@ export function Step({
 }) {
 	return (
 		<li className="flex gap-3">
-			<span className="flex-center tabular mt-0.5 size-6 shrink-0 rounded-full border border-border-primary font-mono text-xs text-typography-tertiary">
+			<span className="flex-center tabular mt-0.5 size-6 shrink-0 rounded-full border border-border-primary tabular text-xs text-typography-tertiary">
 				{n}
 			</span>
 			<div className="flex min-w-0 flex-1 flex-col gap-2">
-				<h3 className="font-medium">{title}</h3>
-				<p className="text-sm text-typography-secondary">{children}</p>
+				<h3 className="pt-0.5 font-medium">{title}</h3>
+				<p className="text-[0.9375rem] leading-7 text-typography-secondary">
+					{children}
+				</p>
 				{code ? <CodeBlock code={code} /> : null}
 				{needs ? (
-					<p className="text-sm text-typography-tertiary">
+					<p className="text-[0.9375rem] leading-7 text-typography-tertiary">
 						<span className="text-typography-secondary">Needs: </span>
 						{needs}
 					</p>

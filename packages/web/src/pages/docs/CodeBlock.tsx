@@ -2,8 +2,8 @@ import { CopyButton } from "../../components/Links";
 
 export function CodeBlock({ code, label }: { code: string; label?: string }) {
 	return (
-		<div className="relative rounded-lg border border-border-secondary bg-background-raised">
-			<pre className="overflow-x-auto py-3 pr-12 pl-4 font-mono text-sm text-typography-primary">
+		<div className="relative rounded-lg border border-border-secondary bg-background-container">
+			<pre className="overflow-x-auto py-3 pr-12 pl-4 font-label text-[0.8125rem] leading-6 text-typography-primary">
 				<code>{code}</code>
 			</pre>
 			<div className="absolute top-2 right-2">
@@ -15,7 +15,7 @@ export function CodeBlock({ code, label }: { code: string; label?: string }) {
 
 export function Mono({ children }: { children: React.ReactNode }) {
 	return (
-		<code className="rounded-md bg-background-raised px-1 py-0.5 font-mono whitespace-nowrap text-sm text-typography-primary">
+		<code className="rounded bg-background-raised px-1.5 py-0.5 font-sans text-[0.9em] text-typography-primary sm:whitespace-nowrap">
 			{children}
 		</code>
 	);

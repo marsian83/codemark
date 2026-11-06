@@ -99,7 +99,7 @@ export default function SnapPanel() {
 					) : null}
 					<ul className="flex flex-col gap-0.5">
 						{pins.data?.map((p) => (
-							<li key={p.name} className="font-mono text-sm">
+							<li key={p.name} className="tabular text-sm">
 								{p.name}
 							</li>
 						))}

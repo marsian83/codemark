@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
 
 @import "tailwindcss";
 
@@ -19,7 +19,7 @@
 	}
 
 	::selection {
-		@apply bg-primary/20;
+		@apply bg-primary/30;
 	}
 
 	:focus-visible {

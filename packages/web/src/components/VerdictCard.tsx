@@ -6,6 +6,7 @@ import {
 	severityLabel,
 	verdictLabel,
 } from "@codemark/shared/check/explain";
+import type { Thresholds } from "@codemark/shared/check/severity";
 import type { Severity } from "@codemark/shared/verdict";
 import type { ReactNode } from "react";
 import { config } from "../lib/config";
@@ -20,44 +21,39 @@ import { Address, BlockLink, ExternalLink, PublisherLink } from "./Links";
 import { RepinPrompt } from "./RepinPrompt";
 import { TrustPath } from "./TrustPath";
 
-const look: Record<
-	Severity,
-	{ icon: IconName; edge: string; mark: string; text: string }
-> = {
-	info: {
-		icon: "check",
-		edge: "border-t-success",
-		mark: "bg-success",
-		text: "text-success",
-	},
-	amber: {
-		icon: "clock",
-		edge: "border-t-caution",
-		mark: "bg-caution",
-		text: "text-caution",
-	},
+const look: Record<Severity, { icon: IconName; mark: string; text: string }> = {
+	info: { icon: "check", mark: "bg-success/15", text: "text-success" },
+	amber: { icon: "clock", mark: "bg-caution/15", text: "text-caution" },
 	warning: {
 		icon: "alert-triangle",
-		edge: "border-t-warning",
-		mark: "bg-warning",
+		mark: "bg-warning/15",
 		text: "text-warning",
 	},
-	critical: {
-		icon: "close",
-		edge: "border-t-error",
-		mark: "bg-error",
-		text: "text-error",
-	},
+	critical: { icon: "close", mark: "bg-error/15", text: "text-error" },
 };
 
-function Publisher({
+function PublisherHeader({ verdict }: { verdict: PublisherVerdict }) {
+	return (
+		<span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+			<PublisherLink name={verdict.publisher} />
+			<Badge tone={verdictTone[verdict.verdict]}>
+				{verdictLabel[verdict.verdict]}
+			</Badge>
+			<span className="text-sm text-typography-tertiary">
+				{verdict.pinned ? "Pinned" : "Not pinned"}
+			</span>
+		</span>
+	);
+}
+
+function PublisherBody({
 	verdict,
 	result,
-	single,
+	thresholds,
 }: {
 	verdict: PublisherVerdict;
 	result: TargetResult;
-	single: boolean;
+	thresholds: Thresholds;
 }) {
 	const hasPath =
 		verdict.key || verdict.release || verdict.verdict !== "UNKNOWN";
@@ -67,25 +63,67 @@ function Publisher({
 		!verdict.key &&
 		!verdict.checkFailed;
 	return (
-		<section className="flex flex-col gap-4 border-t border-border-secondary px-5 py-5 sm:px-6">
-			{single ? null : (
-				<header className="flex flex-wrap items-center gap-2">
-					<PublisherLink name={verdict.publisher} />
-					<Badge tone={verdictTone[verdict.verdict]}>
-						{verdictLabel[verdict.verdict]}
-					</Badge>
-					<span className="text-sm text-typography-secondary">
-						{verdict.pinned ? "Pinned" : "Not pinned"}
-					</span>
-				</header>
-			)}
+		<>
 			{hasPath ? (
-				<TrustPath verdict={verdict} role={result.target.role} />
+				<TrustPath
+					verdict={verdict}
+					role={result.target.role}
+					thresholds={thresholds}
+				/>
 			) : verdict.reason ? (
-				<p className="text-sm text-typography-secondary">{verdict.reason}</p>
+				<p className="text-typography-secondary">{verdict.reason}</p>
 			) : null}
 			{repin ? <RepinPrompt name={verdict.publisher} /> : null}
-		</section>
+		</>
+	);
+}
+
+function Publishers({
+	result,
+	thresholds,
+}: {
+	result: TargetResult;
+	thresholds: Thresholds;
+}) {
+	const single = result.verdicts.length === 1;
+	const anyPinned = result.verdicts.some((v) => v.pinned);
+	const ordered = [...result.verdicts].sort(
+		(a, b) => Number(b.pinned) - Number(a.pinned),
+	);
+	return (
+		<>
+			{ordered.map((v, i) => {
+				const key = `${v.publisher}-${v.key ?? ""}`;
+				const body = (
+					<PublisherBody verdict={v} result={result} thresholds={thresholds} />
+				);
+				if (single)
+					return (
+						<section
+							key={key}
+							className="flex flex-col gap-4 border-t border-border-secondary p-5"
+						>
+							{body}
+						</section>
+					);
+				return (
+					<details
+						key={key}
+						open={anyPinned ? v.pinned : i === 0}
+						className="group/publisher border-t border-border-secondary"
+					>
+						<summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-4 transition-colors hover:bg-background-raised [&::-webkit-details-marker]:hidden">
+							<Icon
+								name="chevron-down"
+								className="-rotate-90 text-typography-tertiary transition-transform duration-150 group-open/publisher:rotate-0"
+							/>
+							<PublisherHeader verdict={v} />
+						</summary>
+						<div className="flex flex-col gap-4 px-5 pb-5">{body}</div>
+					</details>
+				);
+			})}
+		</>
 	);
 }
 
@@ -93,7 +131,7 @@ function Notices({ result }: { result: TargetResult }) {
 	const list = notices(result);
 	if (list.length === 0) return null;
 	return (
-		<div className="flex flex-col gap-2 border-t border-border-secondary px-5 py-4 sm:px-6">
+		<div className="flex flex-col gap-2 border-t border-border-secondary p-5">
 			{list.map((n) => (
 				<Callout key={n.text} tone={n.tone}>
 					{n.text}
@@ -115,12 +153,12 @@ function Detail({
 	return (
 		<div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:gap-4">
 			<dt
-				className="shrink-0 text-sm text-typography-secondary sm:w-36"
+				className="shrink-0 text-sm text-typography-tertiary sm:w-36"
 				title={hint}
 			>
 				{label}
 			</dt>
-			<dd className="min-w-0 break-all font-mono text-xs text-typography-secondary sm:pt-0.5">
+			<dd className="min-w-0 break-all tabular text-xs text-typography-secondary">
 				{children}
 			</dd>
 		</div>
@@ -135,15 +173,15 @@ function Details({
 	external: boolean;
 }) {
 	return (
-		<details className="group border-t border-border-secondary">
-			<summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-md px-5 py-3 text-sm text-typography-secondary transition-colors duration-150 hover:text-typography-primary sm:px-6 [&::-webkit-details-marker]:hidden">
+		<details className="group/details border-t border-border-secondary">
+			<summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-3.5 font-medium text-typography-secondary transition-colors hover:bg-background-raised hover:text-typography-primary [&::-webkit-details-marker]:hidden">
 				<Icon
 					name="chevron-down"
-					className="-rotate-90 transition-transform duration-200 group-open:rotate-0"
+					className="-rotate-90 text-typography-tertiary transition-transform duration-150 group-open/details:rotate-0"
 				/>
 				Show technical details
 			</summary>
-			<dl className="flex flex-col gap-2.5 px-5 pb-5 sm:px-6">
+			<dl className="flex flex-col gap-3 px-5 pb-5">
 				<Detail label="Summary">{result.headline}</Detail>
 				<Detail
 					label="Artifact"
@@ -158,7 +196,7 @@ function Details({
 					v.release ? (
 						<div
 							key={`${v.publisher}-${v.key ?? ""}`}
-							className="flex flex-col gap-2.5"
+							className="flex flex-col gap-3"
 						>
 							<Detail label="Release" hint="The ENS name of this release">
 								{external ? (
@@ -216,61 +254,47 @@ function Details({
 export function VerdictCard({
 	result,
 	external = true,
+	thresholds = config.thresholds,
 }: {
 	result: TargetResult;
 	external?: boolean;
+	thresholds?: Thresholds;
 }) {
-	const { title, body } = explain(result, config.thresholds);
+	const { title, body } = explain(result, thresholds);
 	const l = look[result.severity];
-	const single = result.verdicts.length === 1;
 	return (
-		<Card
-			className={cn(
-				"overflow-hidden border-t-4 motion-safe:animate-rise",
-				l.edge,
-			)}
-		>
-			<header className="flex flex-col gap-3 px-5 pt-5 pb-5 sm:px-6">
-				<div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-					<span
-						className={cn(
-							"flex-center size-8 shrink-0 rounded-full text-typography-invert",
-							l.mark,
-						)}
-					>
-						<Icon name={l.icon} className="size-4.5" />
-					</span>
-					<p className={cn("text-2xl font-semibold tracking-tight", l.text)}>
-						{severityLabel[result.severity]}
-					</p>
-					<Badge tone="neutral" className="text-sm">
-						{roleLabel[result.target.role]}
-					</Badge>
-				</div>
+		<Card className="motion-safe:animate-rise">
+			<header className="flex items-start gap-3 p-5">
+				<span
+					className={cn(
+						"flex-center size-9 shrink-0 rounded-lg",
+						l.mark,
+						l.text,
+					)}
+				>
+					<Icon name={l.icon} className="size-5" />
+				</span>
 				<div className="flex min-w-0 flex-col gap-1">
-					<h2 className="text-base font-medium leading-snug text-balance">
-						{title}
-					</h2>
+					<div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+						<p className={cn("text-lg leading-7 font-semibold", l.text)}>
+							{severityLabel[result.severity]}
+						</p>
+						<Badge>{roleLabel[result.target.role]}</Badge>
+					</div>
+					<h2 className="font-medium text-balance">{title}</h2>
 					{body ? (
-						<p className="text-sm text-typography-secondary text-pretty">
+						<p className="max-w-2xl text-pretty text-typography-secondary">
 							{body}
 						</p>
 					) : null}
+					<Address
+						value={result.target.address}
+						external={external}
+						className="mt-1 text-xs text-typography-secondary"
+					/>
 				</div>
-				<Address
-					value={result.target.address}
-					external={external}
-					className="text-xs text-typography-secondary"
-				/>
 			</header>
-			{result.verdicts.map((v) => (
-				<Publisher
-					key={`${v.publisher}-${v.key ?? ""}`}
-					verdict={v}
-					result={result}
-					single={single}
-				/>
-			))}
+			<Publishers result={result} thresholds={thresholds} />
 			<Notices result={result} />
 			<Details result={result} external={external} />
 		</Card>

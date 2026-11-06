@@ -66,7 +66,7 @@ export default function PinsEditor() {
 								title={`Registry ${pin.pubRegistry}`}
 							>
 								<PublisherLink name={pin.name} className="text-sm" />
-								<span className="font-mono text-xs text-typography-tertiary">
+								<span className="tabular text-xs text-typography-tertiary">
 									{shortAddress(pin.pubRegistry)}
 								</span>
 							</span>
@@ -92,12 +92,12 @@ export default function PinsEditor() {
 				</ul>
 			) : (
 				<p className="rounded-lg border border-dashed border-border-primary px-3 py-3 text-sm text-typography-secondary">
-					You haven't pinned a publisher. Enter a team's ENS name to trust it.
+					No publishers yet. Enter a team's ENS name to trust it.
 				</p>
 			)}
 			<form onSubmit={submit} className="flex gap-2">
 				<Input
-					className="h-9 font-mono"
+					className="h-9 tabular"
 					placeholder="name.eth"
 					aria-label="Publisher ENS name"
 					spellCheck={false}

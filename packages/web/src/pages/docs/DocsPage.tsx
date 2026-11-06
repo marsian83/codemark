@@ -6,7 +6,6 @@ import { config } from "../../lib/config";
 import { useTitle } from "../../lib/useTitle";
 import { Badge } from "../../ui/Badge";
 import { Callout } from "../../ui/Callout";
-import { Card } from "../../ui/Card";
 import { Icon } from "../../ui/Icon";
 import { CodeBlock, Mono } from "./CodeBlock";
 import { Step } from "./Step";
@@ -90,7 +89,7 @@ SEPOLIA_RPC_URL=https://...`;
 
 const action = `- uses: marsian83/codemark/.github/actions/codemark-publish@<commit>
   with:
-    publisher: pwnmeswap.eth
+    publisher: yourteam.eth
     key: ci-1
     component: router
     version: \${{ steps.deployed.outputs.version }}
@@ -98,7 +97,7 @@ const action = `- uses: marsian83/codemark/.github/actions/codemark-publish@<com
     ci-key: \${{ secrets.CODEMARK_CI_KEY }}
     arkiv-access-key: \${{ secrets.ARKIV_ACCESS_KEY }}`;
 
-const mcpPin = "bunx @marsian/codemark-mcp pin pwnmeswap.eth";
+const mcpPin = "bunx @marsian/codemark-mcp pin yourteam.eth";
 
 const mcpConfig = `{
   "mcpServers": {
@@ -106,7 +105,7 @@ const mcpConfig = `{
       "command": "bunx",
       "args": ["@marsian/codemark-mcp"],
       "env": {
-        "CODEMARK_PINS": "pwnmeswap.eth=0x..."
+        "CODEMARK_PINS": "yourteam.eth=0x..."
       }
     }
   }
@@ -139,12 +138,13 @@ function Section({
 	children: React.ReactNode;
 }) {
 	return (
-		<section id={id} className="flex scroll-mt-20 flex-col gap-6">
+		<section
+			id={id}
+			className="flex scroll-mt-28 flex-col gap-6 border-t border-border-secondary pt-10"
+		>
 			<div className="flex flex-col gap-2">
-				<h2 className="text-xl font-medium tracking-tight text-balance sm:text-2xl">
-					{title}
-				</h2>
-				<p className="max-w-xl text-typography-secondary text-pretty">
+				<h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+				<p className="text-[0.9375rem] leading-7 text-typography-secondary">
 					{intro}
 				</p>
 			</div>
@@ -162,7 +162,7 @@ function Sub({
 }) {
 	return (
 		<div className="flex flex-col gap-3">
-			<h3 className="font-medium">{title}</h3>
+			<h3 className="text-[0.9375rem] font-semibold">{title}</h3>
 			{children}
 		</div>
 	);
@@ -175,11 +175,11 @@ export default function DocsPage() {
 		if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
 	}, [hash]);
 	return (
-		<div className="grid gap-10 lg:grid-cols-[12rem_minmax(0,1fr)] lg:gap-12">
+		<div className="grid gap-10 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-16">
 			<aside className="max-lg:hidden">
 				<nav
 					aria-label="On this page"
-					className="sticky top-24 flex flex-col gap-1"
+					className="sticky top-28 flex flex-col gap-0.5"
 				>
 					<p className="px-2.5 pb-1 text-xs text-typography-tertiary">
 						On this page
@@ -188,19 +188,17 @@ export default function DocsPage() {
 						<a
 							key={s.id}
 							href={`#${s.id}`}
-							className="rounded-md px-2.5 py-1.5 text-sm text-typography-secondary transition-colors duration-150 hover:bg-background-raised hover:text-typography-primary"
+							className="rounded-md px-2.5 py-1.5 text-typography-secondary transition-colors duration-150 hover:bg-background-raised hover:text-typography-primary"
 						>
 							{s.label}
 						</a>
 					))}
 				</nav>
 			</aside>
-			<main className="flex min-w-0 max-w-3xl flex-col gap-14">
-				<header className="flex flex-col gap-2">
-					<h1 className="text-2xl font-medium tracking-tight text-balance sm:text-3xl">
-						Get started
-					</h1>
-					<p className="max-w-xl text-base text-typography-secondary text-pretty">
+			<main className="flex min-w-0 max-w-[46rem] flex-col gap-10">
+				<header className="flex flex-col gap-3">
+					<h1 className="text-2xl font-semibold tracking-tight">Get started</h1>
+					<p className="text-[0.9375rem] leading-7 text-typography-secondary">
 						Codemark checks, before you sign, that a contract or account upgrade
 						was released by a team under its ENS name, and that the team hasn't
 						withdrawn it.
@@ -213,66 +211,78 @@ export default function DocsPage() {
 					intro="Start here. The site runs the check in your browser, so you don't need a wallet or an account."
 				>
 					<Sub title="Run a check">
-						<ol className="flex list-decimal flex-col gap-1.5 pl-5 text-sm text-typography-secondary marker:text-typography-tertiary">
+						<ol className="flex list-decimal flex-col gap-1.5 pl-5 text-[0.9375rem] leading-7 text-typography-secondary marker:text-typography-tertiary">
 							<li>
 								Open{" "}
 								<Link
 									to="/app"
-									className="text-primary underline underline-offset-4"
+									className="text-primary underline underline-offset-4 transition-colors hover:text-primary-hover"
 								>
 									Check
 								</Link>
 								.
 							</li>
 							<li>
-								Paste a contract address from Sepolia, or pick one of the demo
-								contracts under the search box.
+								Paste a contract address from Sepolia. No address to hand? Pick
+								one in the{" "}
+								<Link
+									to="/demo"
+									className="text-primary underline underline-offset-4 transition-colors hover:text-primary-hover"
+								>
+									demo
+								</Link>
+								.
 							</li>
 							<li>Read the verdict, then the trust path under it.</li>
 						</ol>
 					</Sub>
 
 					<Sub title="What the four verdicts mean">
-						<div className="grid gap-3 sm:grid-cols-2">
+						<dl className="divide-y divide-border-secondary border-y border-border-secondary">
 							{verdicts.map((v) => (
-								<Card key={v.label} className="flex flex-col gap-2 p-4">
-									<Badge tone={v.tone} className="self-start">
-										{v.label}
-									</Badge>
-									<p className="text-sm text-typography-secondary">{v.text}</p>
-								</Card>
+								<div
+									key={v.label}
+									className="grid gap-x-6 gap-y-2 py-3 sm:grid-cols-[10rem_minmax(0,1fr)]"
+								>
+									<dt>
+										<Badge tone={v.tone}>{v.label}</Badge>
+									</dt>
+									<dd className="text-[0.9375rem] leading-7 text-typography-secondary">
+										{v.text}
+									</dd>
+								</div>
 							))}
-						</div>
+						</dl>
 					</Sub>
 
 					<Sub title="The trust path">
-						<p className="text-sm text-typography-secondary">
+						<p className="text-[0.9375rem] leading-7 text-typography-secondary">
 							Every result walks five steps through ENS. The first step that
 							fails is where it turns red, so you can see why.
 						</p>
-						<Card className="px-5 py-5">
-							<ol className="flex flex-col gap-4">
-								{path.map(([label, text], i) => (
-									<li key={label} className="flex gap-3">
-										<span className="flex-center tabular size-6 shrink-0 rounded-full border border-border-primary font-mono text-xs text-typography-tertiary">
-											{i + 1}
+						<ol className="flex flex-col gap-4">
+							{path.map(([label, text], i) => (
+								<li key={label} className="flex gap-4">
+									<span className="flex-center tabular size-6 shrink-0 rounded-full border border-border-primary text-xs text-typography-tertiary">
+										{i + 1}
+									</span>
+									<div className="flex min-w-0 flex-col gap-0.5 pt-0.5">
+										<span className="text-[0.9375rem] font-medium">
+											{label}
 										</span>
-										<div className="flex min-w-0 flex-col gap-0.5 pt-0.5">
-											<span className="text-sm font-medium">{label}</span>
-											<p className="text-sm text-typography-secondary">
-												{text}
-											</p>
-										</div>
-									</li>
-								))}
-							</ol>
-						</Card>
+										<p className="text-[0.9375rem] leading-7 text-typography-secondary">
+											{text}
+										</p>
+									</div>
+								</li>
+							))}
+						</ol>
 					</Sub>
 
 					<Sub title="Pin the publishers you trust">
-						<p className="text-sm text-typography-secondary">
+						<p className="text-[0.9375rem] leading-7 text-typography-secondary">
 							Pinning a publisher means you tell Codemark which ENS names to
-							believe, for example <Mono>pwnmeswap.eth</Mono>. Only a pinned
+							believe, for example <Mono>yourteam.eth</Mono>. Only a pinned
 							publisher can make a result Verified. Anyone can register a name
 							that looks like a team's, so a publisher you haven't pinned can
 							vouch for a contract but never earns the green result.
@@ -305,7 +315,7 @@ export default function DocsPage() {
 							In the Flask profile, open{" "}
 							<Link
 								to="/app"
-								className="text-primary underline underline-offset-4"
+								className="text-primary underline underline-offset-4 transition-colors hover:text-primary-hover"
 							>
 								Check
 							</Link>{" "}
@@ -314,11 +324,18 @@ export default function DocsPage() {
 							<Mono>npm:@marsian/codemark-snap</Mono>.
 						</Step>
 					</ol>
-					<Sub title="Try it with a demo contract">
-						<ol className="flex list-decimal flex-col gap-1.5 pl-5 text-sm text-typography-secondary marker:text-typography-tertiary">
+					<Sub title="Try it with the demo team">
+						<ol className="flex list-decimal flex-col gap-1.5 pl-5 text-[0.9375rem] leading-7 text-typography-secondary marker:text-typography-tertiary">
 							<li>
-								On Check, copy the address of a demo contract, such as the
-								router.
+								Open the{" "}
+								<Link
+									to="/demo"
+									className="text-primary underline underline-offset-4 transition-colors hover:text-primary-hover"
+								>
+									demo
+								</Link>{" "}
+								and copy the router's address. On Check, pin{" "}
+								<Mono>pwnmeswap.eth</Mono> so the Snap trusts it.
 							</li>
 							<li>In MetaMask, start a send of 0 ETH to that address.</li>
 							<li>
@@ -327,19 +344,6 @@ export default function DocsPage() {
 							</li>
 							<li>Reject the transaction. You only needed to read it.</li>
 						</ol>
-					</Sub>
-					<Sub title="Run the Snap from source">
-						<p className="text-sm text-typography-secondary">
-							From the <Mono>packages</Mono> folder of the repository, run{" "}
-							<Mono>bun snap:build</Mono>, then <Mono>bun snap:serve</Mono> to
-							serve it at <Mono>http://localhost:8080</Mono>, and{" "}
-							<Mono>bun web:dev</Mono>. The local site installs{" "}
-							<Mono>local:http://localhost:8080</Mono> instead of the published
-							Snap. Set <Mono>CODEMARK_SITE_ORIGIN</Mono> before building if you
-							serve the site from an address other than{" "}
-							<Mono>https://codemark.hetairoi.xyz</Mono> or{" "}
-							<Mono>http://localhost:3020</Mono>.
-						</p>
 					</Sub>
 				</Section>
 
@@ -360,17 +364,21 @@ export default function DocsPage() {
 						</Step>
 					</ol>
 					<Sub title="What your agent gets back">
-						<div className="flex flex-col gap-2">
+						<dl className="divide-y divide-border-secondary border-y border-border-secondary">
 							{agentActions.map(([action, text]) => (
-								<Card
+								<div
 									key={action}
-									className="flex flex-col items-start gap-1 p-4"
+									className="grid gap-x-6 gap-y-2 py-3 sm:grid-cols-[10rem_minmax(0,1fr)]"
 								>
-									<Mono>{action}</Mono>
-									<p className="text-sm text-typography-secondary">{text}</p>
-								</Card>
+									<dt>
+										<Mono>{action}</Mono>
+									</dt>
+									<dd className="text-[0.9375rem] leading-7 text-typography-secondary">
+										{text}
+									</dd>
+								</div>
 							))}
-						</div>
+						</dl>
 					</Sub>
 					<Callout tone="warning">
 						This helps an honest agent that was handed a bad address. A hijacked
@@ -385,7 +393,7 @@ export default function DocsPage() {
 					intro="Teams publish each release under their ENS name with the command line. It signs on Sepolia and needs a few keys first."
 				>
 					<Sub title="Before you start">
-						<ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-typography-secondary marker:text-typography-tertiary">
+						<ul className="flex list-disc flex-col gap-1.5 pl-5 text-[0.9375rem] leading-7 text-typography-secondary marker:text-typography-tertiary">
 							<li>
 								<ExternalLink href="https://bun.sh">Bun</ExternalLink> 1.4.2 or
 								newer. <Mono>bunx</Mono> fetches the CLI when you run it, so
@@ -430,23 +438,23 @@ export default function DocsPage() {
 					</Sub>
 
 					<Sub title="Environment variables">
-						<p className="text-sm text-typography-secondary">
+						<p className="text-[0.9375rem] leading-7 text-typography-secondary">
 							The CLI reads these from the environment or from a{" "}
 							<Mono>.env</Mono> file in the folder you run it from. A command
 							that needs a key it wasn't given stops before it sends anything.
 						</p>
 						<div className="overflow-x-auto rounded-lg border border-border-secondary">
-							<table className="w-full text-left text-sm">
+							<table className="w-full text-left text-[0.9375rem]">
 								<tbody>
 									{envVars.map(([name, text]) => (
 										<tr
 											key={name}
 											className="border-b border-border-secondary last:border-b-0"
 										>
-											<td className="px-3 py-2 align-top font-mono whitespace-nowrap">
+											<td className="px-3 py-2.5 align-top leading-7 whitespace-nowrap text-typography-primary">
 												{name}
 											</td>
-											<td className="px-3 py-2 text-typography-secondary">
+											<td className="px-3 py-2.5 leading-7 text-typography-secondary">
 												{text}
 											</td>
 										</tr>
@@ -455,7 +463,7 @@ export default function DocsPage() {
 							</table>
 						</div>
 						<CodeBlock code={envExample} label="env file" />
-						<p className="text-sm text-typography-tertiary">
+						<p className="text-[0.9375rem] leading-7 text-typography-tertiary">
 							Every command also takes <Mono>--rpc &lt;url&gt;</Mono> to
 							override <Mono>SEPOLIA_RPC_URL</Mono>.
 						</p>
@@ -465,7 +473,7 @@ export default function DocsPage() {
 						<Step
 							n={1}
 							title="Register your name"
-							code="bunx @marsian/codemark-cli init pwnmeswap --sec 0x... --years 1"
+							code="bunx @marsian/codemark-cli init yourteam --sec 0x... --years 1"
 							needs={
 								<>
 									The root key. <Mono>--sec</Mono> is the security key's address
@@ -474,14 +482,14 @@ export default function DocsPage() {
 								</>
 							}
 						>
-							Registers <Mono>pwnmeswap.eth</Mono> on Sepolia, deploys your Safe
+							Registers <Mono>yourteam.eth</Mono> on Sepolia, deploys your Safe
 							and sets up the publisher registry, and saves the Safe address as{" "}
 							<Mono>CODEMARK_SAFE</Mono>. It costs Sepolia gas only.
 						</Step>
 						<Step
 							n={2}
 							title="Add a release key"
-							code="bunx @marsian/codemark-cli add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90"
+							code="bunx @marsian/codemark-cli add-key yourteam.eth ci-1 --ci 0x... --ttl-days 90"
 							needs={
 								<>
 									The root key. <Mono>--ci</Mono> is the CI key's address.{" "}
@@ -489,7 +497,7 @@ export default function DocsPage() {
 								</>
 							}
 						>
-							Creates <Mono>ci-1.pwnmeswap.eth</Mono> and lets the CI key add
+							Creates <Mono>ci-1.yourteam.eth</Mono> and lets the CI key add
 							releases under it, and nothing else. Use <Mono>--root-only</Mono>{" "}
 							instead of <Mono>--ci</Mono> for a key only root publishes under,
 							such as <Mono>delegates</Mono> for account upgrades.
@@ -497,7 +505,7 @@ export default function DocsPage() {
 						<Step
 							n={3}
 							title="Publish a release"
-							code="bunx @marsian/codemark-cli publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>"
+							code="bunx @marsian/codemark-cli publish yourteam.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>"
 							needs={
 								<>
 									The CI key. <Mono>--component</Mono>, <Mono>--version</Mono>{" "}
@@ -507,7 +515,7 @@ export default function DocsPage() {
 							}
 						>
 							Records the deployed contract at <Mono>--target</Mono> as{" "}
-							<Mono>router-3-1-0.ci-1.pwnmeswap.eth</Mono> and adds an entry to
+							<Mono>router-3-1-0.ci-1.yourteam.eth</Mono> and adds an entry to
 							the search index. For an account upgrade, a Safe module or other
 							code that runs as your account, add <Mono>--kind delegate</Mono>
 							and publish under a root-only key with the root key.
@@ -515,7 +523,7 @@ export default function DocsPage() {
 						<Step
 							n={4}
 							title="Verify it"
-							code="bunx @marsian/codemark-cli verify 0x... --pin pwnmeswap.eth"
+							code="bunx @marsian/codemark-cli verify 0x... --pin yourteam.eth"
 							needs="No keys."
 						>
 							Runs the same check the site and the Snap run. Add{" "}
@@ -533,7 +541,7 @@ export default function DocsPage() {
 							<Step
 								n={1}
 								title="Pull one release"
-								code={`bunx @marsian/codemark-cli pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"`}
+								code={`bunx @marsian/codemark-cli pull yourteam.eth ci-1 router-3-1-0 --reason "wrong constructor args"`}
 								needs={
 									<>
 										The root key. <Mono>--reason</Mono> is required.
@@ -546,7 +554,7 @@ export default function DocsPage() {
 							<Step
 								n={2}
 								title="Cut a leaked key"
-								code={`bunx @marsian/codemark-cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"`}
+								code={`bunx @marsian/codemark-cli cut yourteam.eth ci-1 --reason "CI key leaked"`}
 								needs={
 									<>
 										The security key. <Mono>--reason</Mono> is required.
@@ -559,7 +567,7 @@ export default function DocsPage() {
 							<Step
 								n={3}
 								title="Move to a new key"
-								code="bunx @marsian/codemark-cli migrate pwnmeswap.eth ci-1 ci-2 --ci 0x..."
+								code="bunx @marsian/codemark-cli migrate yourteam.eth ci-1 ci-2 --ci 0x..."
 								needs={
 									<>
 										The root key. Pass <Mono>--ci</Mono> or{" "}
@@ -575,7 +583,7 @@ export default function DocsPage() {
 					</Sub>
 
 					<Sub title="Publish from GitHub Actions">
-						<p className="text-sm text-typography-secondary">
+						<p className="text-[0.9375rem] leading-7 text-typography-secondary">
 							The Action wraps <Mono>publish</Mono>. Store the CI key as a
 							secret, never in the repository. It outputs <Mono>name</Mono> and{" "}
 							<Mono>forward-name</Mono>, and <Mono>commit</Mono> defaults to the
@@ -608,9 +616,11 @@ export default function DocsPage() {
 							<li key={text} className="flex items-start gap-3">
 								<Icon
 									name={icon as "clock" | "wallet" | "shield-check"}
-									className="mt-0.5 shrink-0 text-typography-tertiary"
+									className="mt-1 shrink-0 text-typography-tertiary"
 								/>
-								<p className="text-sm text-typography-secondary">{text}</p>
+								<p className="text-[0.9375rem] leading-7 text-typography-secondary">
+									{text}
+								</p>
 							</li>
 						))}
 					</ul>

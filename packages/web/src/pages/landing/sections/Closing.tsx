@@ -2,11 +2,11 @@ import { type FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isAddress } from "viem";
 import { config } from "../../../lib/config";
-import { actionVariants } from "../Action";
+import { actionVariants } from "../../../ui/action";
 
 const productLinks = [
 	{ to: "/app", label: "Check a contract" },
-	{ to: "/app/demo-wallet", label: "Upgrade demo" },
+	{ to: "/demo", label: "Try the demo" },
 ];
 
 const sourceLinks = [

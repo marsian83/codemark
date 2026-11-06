@@ -6,20 +6,20 @@ import { NameSegments } from "./Links";
 const steps = [
 	{
 		label: "Publisher",
-		value: <span className="font-mono font-medium">pwnmeswap.eth</span>,
-		text: "The team's ENS name. Pin the publishers you trust. Only they can mark a contract as verified.",
+		value: <span className="tabular font-medium">yourteam.eth</span>,
+		text: "The team's ENS name. Only publishers you pin can mark a contract as verified.",
 	},
 	{
 		label: "Release key",
-		value: <span className="font-mono">ci-1</span>,
+		value: <span className="tabular">ci-1</span>,
 		text: "Each signing key is its own name under the publisher, so the team can revoke one in a single transaction.",
 	},
 	{
 		label: "Release",
 		value: (
 			<NameSegments
-				name="router-3-1-0.ci-1.pwnmeswap.eth"
-				publisher="pwnmeswap.eth"
+				name="router-3-1-0.ci-1.yourteam.eth"
+				publisher="yourteam.eth"
 			/>
 		),
 		text: "Every release is a name under its key that records the contract address and its code hash.",
@@ -53,7 +53,7 @@ export default function HowItWorks() {
 								className="absolute top-7 bottom-1 left-3 border-l border-border-primary"
 							/>
 						) : null}
-						<span className="flex-center tabular size-6 shrink-0 rounded-full border border-border-primary font-mono text-xs text-typography-tertiary">
+						<span className="flex-center tabular size-6 shrink-0 rounded-full border border-border-primary tabular text-xs text-typography-tertiary">
 							{i + 1}
 						</span>
 						<div className="flex min-w-0 flex-col gap-0.5 pt-0.5">

@@ -1,9 +1,8 @@
-import { useLayoutEffect } from "react";
 import { Link } from "react-router-dom";
-import { Logo } from "../../components/Logo";
+import { SiteHeaderRow } from "../../components/SiteHeader";
 import { config } from "../../lib/config";
 import { useTitle } from "../../lib/useTitle";
-import { actionVariants } from "./Action";
+import { actionVariants } from "../../ui/action";
 import { Audiences } from "./sections/Audiences";
 import { Check } from "./sections/Check";
 import { Closing } from "./sections/Closing";
@@ -16,20 +15,7 @@ import { Problem } from "./sections/Problem";
 import { useSectionKeys } from "./useSectionKeys";
 import { World } from "./world/World";
 
-function useDarkTheme() {
-	useLayoutEffect(() => {
-		const root = document.documentElement;
-		const previous = root.dataset.theme;
-		root.dataset.theme = "dark";
-		return () => {
-			if (previous) root.dataset.theme = previous;
-			else delete root.dataset.theme;
-		};
-	}, []);
-}
-
 export default function LandingPage() {
-	useDarkTheme();
 	useTitle("");
 	useSectionKeys();
 	return (
@@ -40,30 +26,22 @@ export default function LandingPage() {
 					className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-night via-night/90 to-transparent"
 					aria-hidden
 				/>
-				<div className="relative mx-auto flex h-20 max-w-[84rem] items-center justify-between gap-4 px-5 sm:px-10">
-					<Link to="/">
-						<Logo className="text-2xl" />
-					</Link>
-					<nav className="flex items-center gap-6 text-sm font-medium">
-						<Link to="/app/docs" className="hover:text-fox max-sm:hidden">
-							Docs
-						</Link>
-						<a
-							href={config.repoUrl}
-							target="_blank"
-							rel="noreferrer"
-							className="hover:text-fox max-sm:hidden"
-						>
-							GitHub
-						</a>
+				<SiteHeaderRow
+					tone="landing"
+					links={[
+						{ label: "Demo", to: "/demo", desktopOnly: true },
+						{ label: "Docs", to: "/app/docs", desktopOnly: true },
+						{ label: "GitHub", href: config.repoUrl, desktopOnly: true },
+					]}
+					action={
 						<Link
 							to="/app"
 							className={actionVariants({ tone: "sand", size: "sm" })}
 						>
 							Check a contract
 						</Link>
-					</nav>
-				</div>
+					}
+				/>
 			</header>
 			<main>
 				<Hero />

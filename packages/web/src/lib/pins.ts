@@ -5,7 +5,6 @@ import {
 } from "@codemark/shared/ens/publisher";
 import { useCallback, useSyncExternalStore } from "react";
 import { isAddress } from "viem";
-import { config } from "./config";
 import { ens } from "./rpc";
 
 const storageKey = "codemark.pins";
@@ -22,7 +21,7 @@ function stored(): string | null {
 }
 
 function parse(raw: string | null): Pin[] {
-	if (raw === null) return config.defaultPin ? [config.defaultPin] : [];
+	if (raw === null) return [];
 	try {
 		const parsed: unknown = JSON.parse(raw);
 		return Array.isArray(parsed)

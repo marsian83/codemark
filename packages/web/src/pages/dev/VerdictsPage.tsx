@@ -9,9 +9,7 @@ export default function VerdictsPage() {
 			</h1>
 			{sampleResults.map(({ title, result }) => (
 				<section key={title} className="flex flex-col gap-2">
-					<h2 className="font-mono text-xs text-typography-tertiary">
-						{title}
-					</h2>
+					<h2 className="tabular text-xs text-typography-tertiary">{title}</h2>
 					<VerdictCard result={result} external={false} />
 				</section>
 			))}

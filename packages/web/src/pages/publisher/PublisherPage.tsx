@@ -2,6 +2,7 @@ import { formatDuration } from "@codemark/shared/check/explain";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { Address, BlockLink, ExternalLink } from "../../components/Links";
+import { useBasePath } from "../../lib/basePath";
 import { ensExplorer } from "../../lib/ensExplorer";
 import { formatDay, formatTimestamp, rpcErrorMessage } from "../../lib/format";
 import {
@@ -31,6 +32,7 @@ const th =
 const td = "px-3 py-2.5 align-middle first:pl-5 last:pr-5";
 
 function Releases({ keyInfo, now }: { keyInfo: KeyInfo; now: number }) {
+	const base = useBasePath();
 	const releases = useQuery({
 		queryKey: ["releases", keyInfo.registry],
 		queryFn: () => loadReleases(ens, keyInfo.registry),
@@ -84,12 +86,12 @@ function Releases({ keyInfo, now }: { keyInfo: KeyInfo; now: number }) {
 												target="_blank"
 												rel="noreferrer"
 												title={r.name}
-												className="font-mono underline decoration-border-primary underline-offset-4 hover:decoration-typography-tertiary"
+												className="tabular underline decoration-border-primary underline-offset-4 hover:decoration-typography-tertiary"
 											>
 												{label}
 											</a>
 										</td>
-										<td className={cn(td, "font-mono tabular")}>{r.version}</td>
+										<td className={cn(td, "tabular tabular")}>{r.version}</td>
 										<td className={cn(td, "whitespace-nowrap")}>
 											{r.registeredAt ? (
 												<span title={formatTimestamp(r.registeredAt)}>
@@ -104,7 +106,7 @@ function Releases({ keyInfo, now }: { keyInfo: KeyInfo; now: number }) {
 										<td className={cn(td, "text-right")}>
 											{address ? (
 												<Link
-													to={`/app?a=${address}&role=call`}
+													to={`${base}?a=${address}&role=call`}
 													className={buttonVariants({
 														variant: "secondary",
 														size: "xs",
@@ -144,7 +146,7 @@ function KeyCard({ keyInfo, now }: { keyInfo: KeyInfo; now: number }) {
 					<Icon name="key" className="text-typography-tertiary" />
 					<span
 						className={cn(
-							"font-mono font-medium",
+							"tabular font-medium",
 							keyInfo.status === "cut" && "line-through",
 						)}
 					>
@@ -190,20 +192,21 @@ export default function PublisherPage() {
 	});
 	const data = view.data;
 	const live = data?.keys.filter((k) => k.status === "live").length ?? 0;
+	const base = useBasePath();
 
 	return (
 		<main className="flex flex-col gap-8">
 			<header className="flex flex-col gap-3">
 				<Link
-					to="/app"
+					to={base}
 					className="inline-flex w-fit items-center gap-1 text-sm text-typography-tertiary transition-colors duration-150 hover:text-typography-primary"
 				>
 					<Icon name="arrow-right" className="rotate-180" />
-					Check a contract
+					{base === "/demo" ? "Back to the demo" : "Check a contract"}
 				</Link>
 				<div className="flex flex-col gap-1">
 					<span className="text-xs text-typography-tertiary">Publisher</span>
-					<h1 className="break-all font-mono text-2xl font-medium tracking-tight sm:text-3xl">
+					<h1 className="break-all text-2xl font-semibold tracking-tight">
 						{publisher}
 					</h1>
 				</div>
@@ -251,7 +254,7 @@ export default function PublisherPage() {
 
 			{data && data.keys.length > 0 ? (
 				<section className="flex flex-col gap-4">
-					<h2 className="font-medium">Release keys</h2>
+					<h2 className="text-base font-semibold">Release keys</h2>
 					{data.keys.map((k) => (
 						<KeyCard key={k.label} keyInfo={k} now={data.now} />
 					))}
@@ -261,7 +264,7 @@ export default function PublisherPage() {
 			{data ? (
 				<p className="text-xs text-typography-tertiary">
 					Read at Sepolia block <BlockLink block={data.block} />,{" "}
-					{formatTimestamp(data.now)}. Releases come from the Arkiv index; check
+					{formatTimestamp(data.now)}. Releases come from the Arkiv index. Check
 					one to verify it against ENS.
 				</p>
 			) : null}

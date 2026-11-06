@@ -4,7 +4,9 @@ import { createRoot } from "react-dom/client";
 import "./assets/styles/globals.css";
 import Router from "./pages/router";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: { queries: { refetchOnWindowFocus: false } },
+});
 const root = document.getElementById("root");
 if (!root) throw new Error("missing #root");
 

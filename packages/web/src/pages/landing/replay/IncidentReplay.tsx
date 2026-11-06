@@ -9,8 +9,8 @@ import {
 	useTransform,
 } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { actionVariants } from "../../../ui/action";
 import { cn } from "../../../utils/cn";
-import { actionVariants } from "../Action";
 import { type Incident, incidents } from "./incidents";
 import { ReplayLane } from "./ReplayLane";
 import { SegmentedControl } from "./SegmentedControl";

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useBasePath } from "../lib/basePath";
 import { explorer, shortAddress } from "../lib/format";
 import { Icon } from "../ui/Icon";
 import { cn } from "../utils/cn";
@@ -75,7 +76,7 @@ export function Address({
 	return (
 		<span
 			className={cn(
-				"inline-flex min-w-0 items-center gap-0.5 font-mono",
+				"inline-flex min-w-0 items-center gap-0.5 tabular",
 				className,
 			)}
 		>
@@ -115,7 +116,7 @@ export function NameSegments({
 	return (
 		<span
 			className={cn(
-				"inline-flex min-w-0 flex-wrap items-baseline font-mono",
+				"inline-flex min-w-0 flex-wrap items-baseline tabular",
 				className,
 			)}
 		>
@@ -144,11 +145,12 @@ export function PublisherLink({
 	name: string;
 	className?: string;
 }) {
+	const base = useBasePath();
 	return (
 		<Link
-			to={`/app/p/${name}`}
+			to={`${base}/p/${name}`}
 			className={cn(
-				"font-mono font-medium underline decoration-border-primary underline-offset-4 transition-colors duration-150 hover:decoration-typography-tertiary",
+				"tabular font-medium underline decoration-border-primary underline-offset-4 transition-colors duration-150 hover:decoration-typography-tertiary",
 				className,
 			)}
 		>
@@ -170,11 +172,11 @@ export function BlockLink({
 			href={explorer.block(block)}
 			target="_blank"
 			rel="noreferrer"
-			className="tabular font-mono underline decoration-border-primary underline-offset-4 hover:decoration-typography-tertiary"
+			className="tabular tabular underline decoration-border-primary underline-offset-4 hover:decoration-typography-tertiary"
 		>
 			{text}
 		</a>
 	) : (
-		<span className="tabular font-mono">{text}</span>
+		<span className="tabular tabular">{text}</span>
 	);
 }

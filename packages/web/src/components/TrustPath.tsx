@@ -4,7 +4,7 @@ import {
 	type StepState,
 	trustPath,
 } from "@codemark/shared/check/explain";
-import { config } from "../lib/config";
+import type { Thresholds } from "@codemark/shared/check/severity";
 import { Icon, type IconName } from "../ui/Icon";
 import { cn } from "../utils/cn";
 import { NameSegments, PublisherLink } from "./Links";
@@ -42,7 +42,7 @@ function StepValue({ step, publisher }: { step: Step; publisher: string }) {
 		return <NameSegments name={step.value} publisher={publisher} />;
 	if (step.id === "key")
 		return (
-			<span className="font-mono text-typography-primary">{step.value}</span>
+			<span className="tabular text-typography-primary">{step.value}</span>
 		);
 	return <span className="text-typography-primary">{step.value}</span>;
 }
@@ -50,11 +50,13 @@ function StepValue({ step, publisher }: { step: Step; publisher: string }) {
 export function TrustPath({
 	verdict,
 	role,
+	thresholds,
 }: {
 	verdict: PublisherVerdict;
 	role: TargetRole;
+	thresholds: Thresholds;
 }) {
-	const steps = trustPath(verdict, role, config.thresholds);
+	const steps = trustPath(verdict, role, thresholds);
 	return (
 		<ol className="flex flex-col" aria-label="Trust path">
 			{steps.map((step, i) => {
@@ -76,12 +78,7 @@ export function TrustPath({
 						>
 							<Icon name={look.icon} className="size-4" />
 						</span>
-						<div
-							className={cn(
-								"flex min-w-0 flex-1 flex-col gap-0.5 rounded-lg px-3 py-1.5",
-								failed && "border border-error/25 bg-error/5 py-2.5",
-							)}
-						>
+						<div className={cn("flex min-w-0 flex-1 flex-col gap-0.5 pt-1.5")}>
 							<div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm">
 								<span
 									className={cn(
