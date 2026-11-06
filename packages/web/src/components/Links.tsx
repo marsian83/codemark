@@ -1,15 +1,22 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ensExplorer } from "../lib/ensExplorer";
-import { explorer } from "../lib/format";
+import { explorer, shortAddress } from "../lib/format";
+import { Icon } from "../ui/Icon";
+import { cn } from "../utils/cn";
 
-export function CopyButton({ value }: { value: string }) {
+export function CopyButton({
+	value,
+	label,
+}: {
+	value: string;
+	label?: string;
+}) {
 	const [copied, setCopied] = useState(false);
 	return (
 		<button
 			type="button"
-			aria-label={`Copy ${value}`}
-			className="ml-1.5 rounded border border-zinc-300 px-1 font-sans text-[11px] text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
+			aria-label={copied ? "Copied" : `Copy ${label ?? value}`}
+			className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-typography-tertiary transition-colors duration-150 hover:bg-background-raised hover:text-typography-primary"
 			onClick={async () => {
 				try {
 					await navigator.clipboard.writeText(value);
@@ -20,26 +27,35 @@ export function CopyButton({ value }: { value: string }) {
 				}
 			}}
 		>
-			{copied ? "copied" : "copy"}
+			<Icon
+				name={copied ? "check" : "copy"}
+				className={cn("size-3.5", copied && "text-success")}
+			/>
 		</button>
 	);
 }
 
-export function EnsLink({
+export function ExternalLink({
 	href,
-	label = "ens",
+	children,
+	className,
 }: {
 	href: string;
-	label?: string;
+	children: React.ReactNode;
+	className?: string;
 }) {
 	return (
 		<a
 			href={href}
 			target="_blank"
 			rel="noreferrer"
-			className="ml-1.5 font-sans text-[11px] text-zinc-500 underline underline-offset-2 dark:text-zinc-400"
+			className={cn(
+				"inline-flex items-center gap-0.5 text-typography-secondary underline decoration-border-primary underline-offset-4 transition-colors duration-150 hover:text-typography-primary hover:decoration-typography-tertiary",
+				className,
+			)}
 		>
-			{label}
+			{children}
+			<Icon name="arrow-up-right" className="size-3.5" />
 		</a>
 	);
 }
@@ -48,57 +64,96 @@ export function Address({
 	value,
 	short,
 	external = true,
-	ens,
+	className,
 }: {
 	value: string;
 	short?: boolean;
 	external?: boolean;
-	ens?: "registry" | "resolver";
+	className?: string;
 }) {
-	const text = short ? `${value.slice(0, 8)}…${value.slice(-6)}` : value;
+	const text = short ? shortAddress(value) : value;
 	return (
-		<span className="break-all font-mono">
+		<span
+			className={cn(
+				"inline-flex min-w-0 items-center gap-0.5 font-mono",
+				className,
+			)}
+		>
 			{external ? (
 				<a
 					href={explorer.address(value)}
 					target="_blank"
 					rel="noreferrer"
-					className="underline decoration-zinc-400 underline-offset-2"
+					title={value}
+					className="min-w-0 break-all underline decoration-border-primary underline-offset-4 transition-colors duration-150 hover:decoration-typography-tertiary"
 				>
 					{text}
 				</a>
 			) : (
-				text
+				<span className="min-w-0 break-all" title={value}>
+					{text}
+				</span>
 			)}
-			<CopyButton value={value} />
-			{ens && external ? <EnsLink href={ensExplorer[ens](value)} /> : null}
+			<CopyButton value={value} label="address" />
 		</span>
 	);
 }
 
-export function EnsName({
+export function NameSegments({
 	name,
-	roles,
-	external = true,
+	publisher,
+	className,
 }: {
 	name: string;
-	roles?: boolean;
-	external?: boolean;
+	publisher?: string;
+	className?: string;
 }) {
+	const tail = publisher && name.endsWith(publisher) ? publisher : undefined;
+	const own = tail ? name.slice(0, -tail.length).replace(/\.$/, "") : name;
+	const labels = own ? own.split(".") : [];
+	const dotAfter = (i: number) => i < labels.length - 1 || tail !== undefined;
 	return (
-		<span>
-			<Link
-				to={`/p/${name}`}
-				className="font-mono underline decoration-zinc-400 underline-offset-2"
-			>
-				{name}
-			</Link>
-			{external ? (
-				<EnsLink
-					href={roles ? ensExplorer.roles(name) : ensExplorer.name(name)}
-				/>
+		<span
+			className={cn(
+				"inline-flex min-w-0 flex-wrap items-baseline font-mono",
+				className,
+			)}
+		>
+			{labels.map((label, i) => (
+				<span
+					key={labels.slice(0, i + 1).join(".")}
+					className="text-typography-secondary"
+				>
+					{label}
+					{dotAfter(i) ? (
+						<span className="text-typography-tertiary/60">.</span>
+					) : null}
+				</span>
+			))}
+			{tail ? (
+				<span className="font-medium text-typography-primary">{tail}</span>
 			) : null}
 		</span>
+	);
+}
+
+export function PublisherLink({
+	name,
+	className,
+}: {
+	name: string;
+	className?: string;
+}) {
+	return (
+		<Link
+			to={`/app/p/${name}`}
+			className={cn(
+				"font-mono font-medium underline decoration-border-primary underline-offset-4 transition-colors duration-150 hover:decoration-typography-tertiary",
+				className,
+			)}
+		>
+			{name}
+		</Link>
 	);
 }
 
@@ -109,16 +164,17 @@ export function BlockLink({
 	block: bigint | number;
 	external?: boolean;
 }) {
+	const text = Number(block).toLocaleString("en-US");
 	return external ? (
 		<a
 			href={explorer.block(block)}
 			target="_blank"
 			rel="noreferrer"
-			className="underline decoration-zinc-400 underline-offset-2"
+			className="tabular font-mono underline decoration-border-primary underline-offset-4 hover:decoration-typography-tertiary"
 		>
-			{block.toString()}
+			{text}
 		</a>
 	) : (
-		<>{block.toString()}</>
+		<span className="tabular font-mono">{text}</span>
 	);
 }

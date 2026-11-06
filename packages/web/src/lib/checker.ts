@@ -34,8 +34,7 @@ export async function runCheck(
 			arkiv,
 			headLag: source === "fork" ? 0n : undefined,
 			now,
-			delegateMinAgeSeconds: config.delegateMinAgeSeconds,
-			freshCallAgeSeconds: config.freshCallAgeSeconds,
+			...config.thresholds,
 		},
 	);
 	return { result, now };

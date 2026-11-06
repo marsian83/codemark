@@ -1,153 +1,183 @@
+import { formatDuration } from "@codemark/shared/check/explain";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { Address, BlockLink, EnsLink } from "../../components/Links";
+import { Address, BlockLink, ExternalLink } from "../../components/Links";
 import { ensFor } from "../../lib/checker";
 import { ensExplorer } from "../../lib/ensExplorer";
+import { formatDay, formatTimestamp, rpcErrorMessage } from "../../lib/format";
 import {
-	formatDuration,
-	formatTimestamp,
-	rpcErrorMessage,
-} from "../../lib/format";
-import { type KeyInfo, loadPublisher, loadReleases } from "../../lib/publisher";
+	type KeyInfo,
+	type KeyStatus,
+	loadPublisher,
+	loadReleases,
+} from "../../lib/publisher";
 import { useTitle } from "../../lib/useTitle";
+import { Badge, type Tone } from "../../ui/Badge";
+import { buttonVariants } from "../../ui/Button";
+import { Callout } from "../../ui/Callout";
+import { Card } from "../../ui/Card";
+import { Icon } from "../../ui/Icon";
+import { Spinner } from "../../ui/Spinner";
+import { cn } from "../../utils/cn";
 
-const statusStyle = {
-	live: "text-emerald-700 dark:text-emerald-400",
-	cut: "text-red-700 dark:text-red-400",
-	lapsed: "text-orange-700 dark:text-orange-400",
+const status: Record<KeyStatus, { label: string; tone: Tone }> = {
+	live: { label: "Live", tone: "success" },
+	cut: { label: "Revoked", tone: "error" },
+	lapsed: { label: "Expired", tone: "caution" },
 };
 
-const statusText = {
-	live: "live",
-	cut: "cut",
-	lapsed: "lapsed",
-};
+const th =
+	"px-3 py-2 text-left text-xs font-normal text-typography-tertiary first:pl-5 last:pr-5";
+const td = "px-3 py-2.5 align-middle first:pl-5 last:pr-5";
 
-const th = "py-1 pr-3 text-left text-xs font-normal text-zinc-500";
-const td = "py-1.5 pr-3 align-top";
-
-function KeyTable({ keys }: { keys: KeyInfo[] }) {
-	return (
-		<div className="overflow-x-auto">
-			<table className="w-full text-sm">
-				<thead>
-					<tr>
-						<th className={th}>Key</th>
-						<th className={th}>Registry</th>
-						<th className={th}>Status</th>
-						<th className={th}>Key expiry</th>
-					</tr>
-				</thead>
-				<tbody>
-					{keys.map((k) => (
-						<tr
-							key={k.label}
-							className="border-t border-zinc-200 dark:border-zinc-800"
-						>
-							<td
-								className={`${td} font-mono ${k.status === "cut" ? "line-through" : ""}`}
-							>
-								{k.label}
-							</td>
-							<td className={`${td} text-xs`}>
-								{k.status === "cut" ? (
-									"unmounted"
-								) : (
-									<Address value={k.registry} short ens="registry" />
-								)}
-							</td>
-							<td className={`${td} font-semibold ${statusStyle[k.status]}`}>
-								{statusText[k.status]}
-							</td>
-							<td className={`${td} font-mono text-xs`}>
-								{k.expiry ? formatTimestamp(k.expiry) : "not read"}
-							</td>
-						</tr>
-					))}
-				</tbody>
-			</table>
-		</div>
-	);
-}
-
-function KeyReleases({ keyInfo, now }: { keyInfo: KeyInfo; now: number }) {
+function Releases({ keyInfo, now }: { keyInfo: KeyInfo; now: number }) {
 	const releases = useQuery({
 		queryKey: ["releases", keyInfo.registry],
 		queryFn: () => loadReleases(ensFor("sepolia"), keyInfo.registry),
 		retry: false,
 	});
-	if (releases.isPending) return <p className="text-sm">Reading Arkiv…</p>;
-	if (releases.isError) {
+	if (releases.isPending)
 		return (
-			<p className="text-sm text-zinc-600 dark:text-zinc-400">
-				Release list unavailable: {rpcErrorMessage(releases.error)}. Key status
-				above is read from ENS and is unaffected.
+			<p className="flex items-center gap-2 px-5 py-4 text-sm text-typography-tertiary">
+				<Spinner /> Reading releases from Arkiv…
 			</p>
 		);
-	}
+	if (releases.isError)
+		return (
+			<p className="px-5 py-4 text-sm text-typography-secondary">
+				Couldn't load the release list. {rpcErrorMessage(releases.error)} The
+				key's status above comes from ENS and is still accurate.
+			</p>
+		);
 	const { rows, rejected } = releases.data;
 	return (
-		<div className="space-y-1">
+		<>
 			{rows.length === 0 ? (
-				<p className="text-sm">No release rows in Arkiv for this key.</p>
+				<p className="px-5 py-4 text-sm text-typography-secondary">
+					The Arkiv index lists no releases under this key. A release can still
+					exist in ENS, so check its address to be sure.
+				</p>
 			) : (
 				<div className="overflow-x-auto">
 					<table className="w-full text-sm">
 						<thead>
-							<tr>
+							<tr className="border-b border-border-secondary">
 								<th className={th}>Release</th>
 								<th className={th}>Version</th>
-								<th className={th}>Kind</th>
-								<th className={th}>Age</th>
-								<th className={th}>Registered at block</th>
-								<th className={th} />
+								<th className={th}>Released</th>
+								<th className={th}>
+									<span className="sr-only">Actions</span>
+								</th>
 							</tr>
 						</thead>
-						<tbody>
-							{rows.map((r) => (
-								<tr
-									key={r.name}
-									className="border-t border-zinc-200 dark:border-zinc-800"
-								>
-									<td className={`${td} break-all font-mono text-xs`}>
-										{r.name}
-										<EnsLink href={ensExplorer.name(r.name)} />
-									</td>
-									<td className={`${td} font-mono`}>{r.version}</td>
-									<td className={td}>{r.kind}</td>
-									<td className={td}>
-										{r.registeredAt
-											? formatDuration(now - r.registeredAt)
-											: "not read"}
-									</td>
-									<td className={`${td} font-mono text-xs`}>
-										<BlockLink block={r.regBlock} />
-									</td>
-									<td className={td}>
-										{r.artifact.startsWith("eip155:") ? (
-											<Link
-												className="underline underline-offset-2"
-												to={`/?a=${r.artifact.split(":")[2]}&role=call`}
+						<tbody className="divide-y divide-border-secondary">
+							{rows.map((r) => {
+								const label = r.name.split(".")[0] ?? r.name;
+								const address = r.artifact.startsWith("eip155:")
+									? r.artifact.split(":")[2]
+									: undefined;
+								return (
+									<tr key={r.name}>
+										<td className={td}>
+											<a
+												href={ensExplorer.name(r.name)}
+												target="_blank"
+												rel="noreferrer"
+												title={r.name}
+												className="font-mono underline decoration-border-primary underline-offset-4 hover:decoration-typography-tertiary"
 											>
-												check
-											</Link>
-										) : (
-											<span className="text-xs text-zinc-500">web</span>
-										)}
-									</td>
-								</tr>
-							))}
+												{label}
+											</a>
+										</td>
+										<td className={cn(td, "font-mono tabular")}>{r.version}</td>
+										<td className={cn(td, "whitespace-nowrap")}>
+											{r.registeredAt ? (
+												<span title={formatTimestamp(r.registeredAt)}>
+													{formatDuration(now - r.registeredAt)} ago
+												</span>
+											) : (
+												<span className="text-typography-tertiary">
+													Block <BlockLink block={r.regBlock} />
+												</span>
+											)}
+										</td>
+										<td className={cn(td, "text-right")}>
+											{address ? (
+												<Link
+													to={`/app?a=${address}&role=call`}
+													className={buttonVariants({
+														variant: "secondary",
+														size: "xs",
+													})}
+												>
+													Check
+												</Link>
+											) : (
+												<span className="text-xs text-typography-tertiary">
+													Website
+												</span>
+											)}
+										</td>
+									</tr>
+								);
+							})}
 						</tbody>
 					</table>
 				</div>
 			)}
 			{rejected > 0 ? (
-				<p className="text-xs text-zinc-500 dark:text-zinc-400">
-					{rejected} Arkiv row{rejected === 1 ? "" : "s"} hidden: not created by
-					a key holding the registrar role, or malformed.
+				<p className="border-t border-border-secondary px-5 py-3 text-xs text-typography-tertiary">
+					{rejected} index {rejected === 1 ? "entry" : "entries"} hidden because
+					the key didn't sign {rejected === 1 ? "it" : "them"}.
 				</p>
 			) : null}
-		</div>
+		</>
+	);
+}
+
+function KeyCard({ keyInfo, now }: { keyInfo: KeyInfo; now: number }) {
+	const s = status[keyInfo.status];
+	return (
+		<Card className="overflow-hidden">
+			<header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-border-secondary px-5 py-4">
+				<div className="flex items-center gap-2.5">
+					<Icon name="key" className="text-typography-tertiary" />
+					<span
+						className={cn(
+							"font-mono font-medium",
+							keyInfo.status === "cut" && "line-through",
+						)}
+					>
+						{keyInfo.label}
+					</span>
+					<Badge tone={s.tone}>{s.label}</Badge>
+				</div>
+				<div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-typography-tertiary">
+					{keyInfo.status !== "cut" ? (
+						<span className="inline-flex items-center gap-1">
+							Registry
+							<Address value={keyInfo.registry} short />
+						</span>
+					) : null}
+					{keyInfo.expiry ? (
+						<span>
+							{keyInfo.expiry > now ? "Expires" : "Expired"}{" "}
+							{formatDay(keyInfo.expiry)}
+						</span>
+					) : null}
+				</div>
+			</header>
+			{keyInfo.status === "cut" ? (
+				<div className="px-5 py-4">
+					<Callout tone="error">
+						The publisher revoked this key. Every release under it now checks as
+						key revoked, and the check page shows the reason.
+					</Callout>
+				</div>
+			) : (
+				<Releases keyInfo={keyInfo} now={now} />
+			)}
+		</Card>
 	);
 }
 
@@ -158,86 +188,83 @@ export default function PublisherPage() {
 		queryKey: ["publisher", publisher],
 		queryFn: () => loadPublisher(ensFor("sepolia"), publisher),
 	});
+	const data = view.data;
+	const live = data?.keys.filter((k) => k.status === "live").length ?? 0;
 
 	return (
-		<main className="space-y-6 pt-6">
-			<header>
-				<h1 className="break-all font-mono text-lg font-semibold">
-					{publisher}
-				</h1>
-				<p className="mt-1 text-xs">
-					<EnsLink
-						href={ensExplorer.roles(publisher)}
-						label="roles on ENS explorer"
-					/>
-					<EnsLink
-						href={ensExplorer.name(publisher)}
-						label="name on ENS explorer"
-					/>
-				</p>
-				{view.data ? (
-					<p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-						Sepolia block <BlockLink block={view.data.block} /> at{" "}
-						{formatTimestamp(view.data.now)}
-						{view.data.pubRegistry ? (
-							<>
-								{" "}
-								· PubRegistry{" "}
-								<Address value={view.data.pubRegistry} short ens="registry" />
-							</>
-						) : null}
-					</p>
-				) : null}
-			</header>
-			{view.isPending ? <p className="text-sm">Reading Sepolia…</p> : null}
-			{view.isError ? (
-				<p role="alert" className="text-sm text-red-700 dark:text-red-400">
-					Could not read {publisher}. {rpcErrorMessage(view.error)}
-				</p>
-			) : null}
-			{view.data && !view.data.pubRegistry ? (
-				<p className="text-sm">
-					{publisher} has no registry on Sepolia, so it has not published
-					anything.
-				</p>
-			) : null}
-			{view.data?.pubRegistry && !view.data.keysRecordFound ? (
-				<p className="text-sm">
-					{publisher} has no codemark.keys record. Without it no key is listed
-					and every release resolves as KEY REVOKED.
-				</p>
-			) : null}
-			{view.data && view.data.keys.length > 0 ? (
-				<section className="space-y-2">
-					<h2 className="text-sm font-semibold">Keys</h2>
-					<KeyTable keys={view.data.keys} />
-				</section>
-			) : null}
-			{view.data?.keys.map((k) => (
-				<section key={k.label} className="space-y-2">
-					<h2 className="font-mono text-base font-semibold">
-						<span className={k.status === "cut" ? "line-through" : ""}>
-							{k.label}
-						</span>{" "}
-						<span className={`font-sans text-sm ${statusStyle[k.status]}`}>
-							{statusText[k.status]}
+		<main className="flex flex-col gap-8">
+			<header className="flex flex-col gap-3">
+				<Link
+					to="/app"
+					className="inline-flex w-fit items-center gap-1 text-sm text-typography-tertiary transition-colors duration-150 hover:text-typography-primary"
+				>
+					<Icon name="arrow-right" className="rotate-180" />
+					Check a contract
+				</Link>
+				<div className="flex flex-col gap-1">
+					<span className="text-xs text-typography-tertiary">Publisher</span>
+					<h1 className="break-all font-mono text-2xl font-medium tracking-tight sm:text-3xl">
+						{publisher}
+					</h1>
+				</div>
+				<div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-typography-secondary">
+					{data ? (
+						<span>
+							{data.keys.length} {data.keys.length === 1 ? "key" : "keys"},{" "}
+							{live} live
 						</span>
-					</h2>
-					{k.status === "cut" ? (
-						<p className="text-sm">
-							The registry is no longer mounted, so every release under this key
-							is KEY REVOKED. The reason is shown on the check page for a
-							release address.
-						</p>
-					) : (
-						<KeyReleases keyInfo={k} now={view.data.now} />
-					)}
+					) : null}
+					{data?.pubRegistry ? (
+						<span className="inline-flex items-center gap-1">
+							Registry
+							<Address value={data.pubRegistry} short />
+						</span>
+					) : null}
+					<ExternalLink href={ensExplorer.roles(publisher)}>
+						Roles on ENS explorer
+					</ExternalLink>
+				</div>
+			</header>
+
+			{view.isPending ? (
+				<p className="flex items-center gap-2 text-sm text-typography-tertiary">
+					<Spinner /> Reading {publisher} from Sepolia…
+				</p>
+			) : null}
+			{view.isError ? (
+				<Callout tone="error">
+					Couldn't read {publisher}. {rpcErrorMessage(view.error)}
+				</Callout>
+			) : null}
+			{data && !data.pubRegistry ? (
+				<Callout>
+					{publisher} has no ENSv2 registry on Sepolia, so it hasn't released
+					anything.
+				</Callout>
+			) : null}
+			{data?.pubRegistry && !data.keysRecordFound ? (
+				<Callout tone="warning">
+					{publisher} doesn't list any release keys, so every release under it
+					checks as key revoked.
+				</Callout>
+			) : null}
+
+			{data && data.keys.length > 0 ? (
+				<section className="flex flex-col gap-4">
+					<h2 className="font-medium">Release keys</h2>
+					{data.keys.map((k) => (
+						<KeyCard key={k.label} keyInfo={k} now={data.now} />
+					))}
 				</section>
-			))}
-			<p className="text-xs text-zinc-500 dark:text-zinc-400">
-				Release rows are unverified claims from the Arkiv index. Use check on a
-				row to verify it against ENS.
-			</p>
+			) : null}
+
+			{data ? (
+				<p className="text-xs text-typography-tertiary">
+					Read at Sepolia block <BlockLink block={data.block} />,{" "}
+					{formatTimestamp(data.now)}. Releases come from the Arkiv index; check
+					one to verify it against ENS.
+				</p>
+			) : null}
 		</main>
 	);
 }

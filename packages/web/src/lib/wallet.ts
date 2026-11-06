@@ -14,7 +14,7 @@ export const account = privateKeyToAccount(
 
 export const forkPublic = createPublicClient({
 	chain,
-	transport: http(config.anvilRpc),
+	transport: http(config.anvilRpc, { retryCount: 0, timeout: 4000 }),
 });
 
 export const forkWallet = createWalletClient({

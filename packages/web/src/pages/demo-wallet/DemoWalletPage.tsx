@@ -1,14 +1,14 @@
 import type { TargetResult } from "@codemark/shared/check";
+import { formatDuration } from "@codemark/shared/check/explain";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, type ReactNode, useState } from "react";
 import { isAddress } from "viem";
-import { Address } from "../../components/Links";
+import { Address, CopyButton } from "../../components/Links";
 import { VerdictCard } from "../../components/VerdictCard";
 import { runCheck } from "../../lib/checker";
 import { config } from "../../lib/config";
 import {
 	errorMessage,
-	formatDuration,
 	formatTimestamp,
 	rpcErrorMessage,
 	shortAddress,
@@ -16,52 +16,109 @@ import {
 import { usePins } from "../../lib/pins";
 import { useTitle } from "../../lib/useTitle";
 import { account, readForkState, upgradeAccount } from "../../lib/wallet";
+import { Button } from "../../ui/Button";
+import { Callout } from "../../ui/Callout";
+import { Card } from "../../ui/Card";
+import { Icon } from "../../ui/Icon";
+import { Input } from "../../ui/Input";
+import { Spinner } from "../../ui/Spinner";
+import { cn } from "../../utils/cn";
 
-const button =
-	"rounded border border-zinc-400 px-3 py-1.5 text-sm dark:border-zinc-600";
+const forkCommand = "bun run demo:fork";
 
-function ForkClock() {
+function Stat({ label, children }: { label: string; children: ReactNode }) {
+	return (
+		<div className="flex min-w-0 flex-col gap-0.5">
+			<dt className="text-xs text-typography-tertiary">{label}</dt>
+			<dd className="truncate text-sm">{children}</dd>
+		</div>
+	);
+}
+
+function ForkStatus() {
 	const state = useQuery({
 		queryKey: ["fork-state"],
 		queryFn: readForkState,
-		refetchInterval: 5000,
+		refetchInterval: (q) => (q.state.status === "error" ? 8000 : 5000),
 		retry: false,
 	});
-	if (state.isError) {
+	if (state.isError)
 		return (
-			<p role="alert" className="text-sm text-red-700 dark:text-red-400">
-				Fork unreachable at {config.anvilRpc}: {errorMessage(state.error)}.
-				Start it with the demo fork script, or set VITE_ANVIL_RPC_URL.
+			<Callout tone="warning">
+				<div className="flex flex-col gap-2">
+					<p>
+						<span className="font-medium text-typography-primary">
+							The demo fork isn't running.
+						</span>{" "}
+						Start it from the packages folder, then this page connects on its
+						own.
+					</p>
+					<div className="flex w-fit items-center gap-1 rounded-md border border-border-secondary bg-background-container py-1 pr-1 pl-2.5 font-mono text-xs text-typography-primary">
+						<Icon
+							name="terminal"
+							className="size-3.5 text-typography-tertiary"
+						/>
+						<span className="pl-1">{forkCommand}</span>
+						<CopyButton value={forkCommand} label="command" />
+					</div>
+					<p className="text-xs text-typography-tertiary">
+						Looking for it at {config.anvilRpc}. {errorMessage(state.error)}
+					</p>
+				</div>
+			</Callout>
+		);
+	if (!state.data)
+		return (
+			<p className="flex items-center gap-2 text-sm text-typography-tertiary">
+				<Spinner /> Connecting to the fork at {config.anvilRpc}…
 			</p>
 		);
-	}
-	if (!state.data) return <p className="text-sm">Connecting to the fork…</p>;
 	const offset = state.data.timestamp - Math.floor(Date.now() / 1000);
 	return (
-		<dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
-			<div>
-				<dt className="text-xs text-zinc-500">Network</dt>
-				<dd>Anvil fork of Sepolia (not live)</dd>
-			</div>
-			<div>
-				<dt className="text-xs text-zinc-500">Fork clock</dt>
-				<dd className="font-mono">{formatTimestamp(state.data.timestamp)}</dd>
-			</div>
-			<div>
-				<dt className="text-xs text-zinc-500">Versus real time</dt>
-				<dd>
-					{Math.abs(offset) < 120
-						? "not time-warped"
-						: `${offset > 0 ? "+" : "-"}${formatDuration(Math.abs(offset))}`}
-				</dd>
-			</div>
-			<div>
-				<dt className="text-xs text-zinc-500">Account delegates to</dt>
-				<dd className="font-mono">
-					{state.data.delegate ? shortAddress(state.data.delegate) : "nothing"}
-				</dd>
-			</div>
-		</dl>
+		<Card className="px-5 py-4">
+			<dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+				<Stat label="Network">Local fork of Sepolia</Stat>
+				<Stat label="Fork clock">{formatTimestamp(state.data.timestamp)}</Stat>
+				<Stat label="Ahead of real time">
+					{Math.abs(offset) < 120 ? "No" : formatDuration(Math.abs(offset))}
+				</Stat>
+				<Stat label="Account runs">
+					{state.data.delegate ? (
+						<span className="font-mono">
+							{shortAddress(state.data.delegate)}
+						</span>
+					) : (
+						"Its own code"
+					)}
+				</Stat>
+			</dl>
+		</Card>
+	);
+}
+
+function StepHeading({
+	n,
+	title,
+	done,
+}: {
+	n: number;
+	title: string;
+	done?: boolean;
+}) {
+	return (
+		<h2 className="flex items-center gap-2.5 font-medium">
+			<span
+				className={cn(
+					"flex-center tabular size-6 rounded-full border font-mono text-xs",
+					done
+						? "border-success/30 bg-success/10 text-success"
+						: "border-border-primary text-typography-tertiary",
+				)}
+			>
+				{done ? <Icon name="check" className="size-3.5" /> : n}
+			</span>
+			{title}
+		</h2>
 	);
 }
 
@@ -99,154 +156,186 @@ export default function DemoWalletPage() {
 	const result: TargetResult | undefined = check.data?.result.results[0];
 	const blocked = result?.severity === "critical";
 	const presets = [
-		{ label: "AcmeDelegate", value: config.demoDelegate },
-		{ label: "Sweeper", value: config.demoSweeper },
+		{
+			label: "AcmeDelegate",
+			detail: "Released by acmeswap.eth",
+			value: config.demoDelegate,
+		},
+		{
+			label: "Sweeper",
+			detail: "Not released by any publisher",
+			value: config.demoSweeper,
+		},
 	].filter((p) => isAddress(p.value));
 
-	function submit(event: FormEvent) {
-		event.preventDefault();
-		const value = draft.trim();
-		if (!isAddress(value)) {
-			setDraftError("Enter a 0x address for the delegate contract.");
+	function choose(value: string) {
+		const v = value.trim();
+		if (!isAddress(v)) {
+			setDraftError(
+				"Enter a contract address that starts with 0x and has 40 hex characters.",
+			);
 			return;
 		}
 		setDraftError("");
 		sign.reset();
-		setTarget(value);
+		setTarget(v);
 	}
 
-	const reasons = result
-		? result.verdicts.map(
-				(v) => `${v.publisher}: ${v.verdict}${v.reason ? `, ${v.reason}` : ""}`,
-			)
-		: [];
-	const buttonLabel = sign.isPending
+	function submit(event: FormEvent) {
+		event.preventDefault();
+		choose(draft);
+	}
+
+	const signLabel = sign.isPending
 		? "Signing…"
-		: !result
-			? "Sign authorization and upgrade"
-			: blocked
-				? "Blocked by Codemark"
-				: result.severity === "info"
-					? "Sign authorization and upgrade"
-					: "Sign anyway";
+		: blocked
+			? "Can't sign"
+			: result && result.severity !== "info"
+				? "Sign anyway"
+				: "Sign and upgrade";
 
 	return (
-		<main className="space-y-8 pt-6">
-			<section>
-				<h1 className="text-lg font-semibold">Upgrade account (EIP-7702)</h1>
-				<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-					An EIP-7702 authorization gives a contract control of your account.
-					This demo wallet checks the delegate with Codemark first. It runs on a
-					local Anvil fork with a public test key, never on live Sepolia.
+		<main className="flex max-w-3xl flex-col gap-8">
+			<header className="flex flex-col gap-2">
+				<span className="text-xs text-typography-tertiary">Demo wallet</span>
+				<h1 className="text-2xl font-medium tracking-tight sm:text-3xl">
+					Upgrade an account without handing it to a stranger
+				</h1>
+				<p className="max-w-2xl text-base text-typography-secondary text-pretty">
+					An EIP-7702 upgrade gives a contract full control of your account.
+					This wallet checks the contract with Codemark before it lets you sign.
+					It runs on a local fork with a public test key, never on live Sepolia.
+				</p>
+			</header>
+
+			<section className="flex flex-col gap-3">
+				<ForkStatus />
+				<p className="flex flex-wrap items-center gap-1 text-xs text-typography-tertiary">
+					Test account
+					<Address value={account.address} short external={false} />
 				</p>
 			</section>
-			<ForkClock />
-			<p className="text-xs text-zinc-500">
-				Account <Address value={account.address} external={false} /> (Anvil test
-				key)
-			</p>
 
-			<section className="space-y-2">
-				<h2 className="text-sm font-semibold">1. Choose the delegate</h2>
-				<form onSubmit={submit} className="space-y-2">
-					<input
-						id="delegate"
-						aria-label="Delegate contract"
-						className="w-full rounded border border-zinc-300 bg-transparent px-2 py-2 font-mono text-sm dark:border-zinc-700"
-						placeholder="0x… contract to delegate to"
-						value={draft}
-						onChange={(e) => setDraft(e.target.value)}
-					/>
-					<div className="flex flex-wrap gap-2">
-						{presets.map((p) => (
-							<button
-								key={p.label}
-								type="button"
-								className={button}
-								onClick={() => setDraft(p.value)}
-							>
-								Use {p.label}
-							</button>
-						))}
+			<section className="flex flex-col gap-4">
+				<StepHeading n={1} title="Choose the contract" done={!!target} />
+				{presets.length > 0 ? (
+					<div className="grid gap-2 sm:grid-cols-2">
+						{presets.map((p) => {
+							const active = target?.toLowerCase() === p.value.toLowerCase();
+							return (
+								<button
+									key={p.label}
+									type="button"
+									aria-pressed={active}
+									onClick={() => {
+										setDraft(p.value);
+										choose(p.value);
+									}}
+									className={cn(
+										"flex flex-col rounded-lg border px-3 py-2.5 text-left transition-colors duration-150",
+										active
+											? "border-primary/60 bg-primary/8 ring-1 ring-primary/30"
+											: "border-border-secondary bg-background-container hover:border-border-primary",
+									)}
+								>
+									<span className="text-sm font-medium">{p.label}</span>
+									<span className="text-xs text-typography-tertiary">
+										{p.detail}
+									</span>
+								</button>
+							);
+						})}
+					</div>
+				) : null}
+				<form onSubmit={submit} noValidate className="flex flex-col gap-2">
+					<div className="flex gap-2">
+						<Input
+							className="font-mono"
+							placeholder="0x… or paste any contract"
+							aria-label="Contract to upgrade to"
+							aria-invalid={draftError ? true : undefined}
+							spellCheck={false}
+							autoComplete="off"
+							value={draft}
+							onChange={(e) => setDraft(e.target.value)}
+						/>
+						<Button type="submit" variant="secondary">
+							Check it
+						</Button>
 					</div>
 					{draftError ? (
-						<p role="alert" className="text-sm text-red-700 dark:text-red-400">
+						<p role="alert" className="text-sm text-error">
 							{draftError}
 						</p>
 					) : null}
-					<h2 className="pt-4 text-sm font-semibold">2. Check it</h2>
-					<button
-						type="submit"
-						disabled={check.isFetching}
-						className="rounded bg-zinc-900 px-4 py-1.5 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900"
-					>
-						{check.isFetching ? "Checking…" : "Check delegate"}
-					</button>
 				</form>
+			</section>
+
+			<section className="flex flex-col gap-4">
+				<StepHeading n={2} title="Codemark checks it" done={!!result} />
+				{!target ? (
+					<p className="text-sm text-typography-tertiary">
+						Pick a contract above to check it.
+					</p>
+				) : null}
 				{check.isFetching ? (
-					<p className="text-sm">
-						Reading the fork at its own clock: resolving the release, verifying
-						the resolver, checking the key.
+					<p className="flex items-center gap-2 text-sm text-typography-tertiary">
+						<Spinner /> Checking against the demo fork…
 					</p>
 				) : null}
 				{check.isError ? (
-					<p role="alert" className="text-sm text-red-700 dark:text-red-400">
-						Check failed. {rpcErrorMessage(check.error)}
-					</p>
+					<Callout tone="error">
+						Couldn't check the contract. {rpcErrorMessage(check.error)}
+					</Callout>
 				) : null}
 				{result && !check.isFetching ? (
 					<VerdictCard result={result} external={false} />
 				) : null}
 			</section>
 
-			<section className="space-y-2">
-				<h2 className="text-sm font-semibold">3. Sign</h2>
-				{!result ? (
-					<p className="text-sm text-zinc-600 dark:text-zinc-400">
-						Signing is enabled after the delegate has been checked.
-					</p>
-				) : null}
+			<section className="flex flex-col gap-4">
+				<StepHeading n={3} title="Sign" done={!!sign.data} />
 				{blocked ? (
-					<div
-						role="status"
-						className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-200"
-					>
-						<p className="font-semibold">
-							Blocked: rated critical. {result?.headline}
-						</p>
-						{reasons.length > 0 ? (
-							<ul className="mt-1 list-disc pl-5">
-								{reasons.map((r) => (
-									<li key={r}>{r}</li>
-								))}
-							</ul>
-						) : (
-							<p className="mt-1">No publisher has released this address.</p>
-						)}
-					</div>
+					<Callout tone="error">
+						This wallet won't sign it. Handing your account to this contract
+						could let it take everything.
+					</Callout>
 				) : null}
 				{result && !blocked && result.severity !== "info" ? (
-					<p className="text-sm">
-						Rated {result.severity}, not verified. Signing is allowed but not
+					<Callout tone="warning">
+						Codemark couldn't verify it. You can still sign, but it isn't
 						recommended.
-					</p>
+					</Callout>
 				) : null}
-				<button
-					type="button"
-					className="rounded bg-zinc-900 px-4 py-1.5 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900"
-					disabled={!result || blocked || check.isFetching || sign.isPending}
-					onClick={() => target && sign.mutate(target)}
-				>
-					{buttonLabel}
-				</button>
+				<div className="flex flex-wrap items-center gap-3">
+					<Button
+						variant={blocked ? "secondary" : "primary"}
+						size="lg"
+						loading={sign.isPending}
+						disabled={!result || blocked || check.isFetching}
+						onClick={() => target && sign.mutate(target)}
+					>
+						{blocked ? <Icon name="lock" /> : null}
+						{signLabel}
+					</Button>
+					{!result ? (
+						<span className="text-sm text-typography-tertiary">
+							Check the contract first. Signing unlocks after that.
+						</span>
+					) : null}
+				</div>
 				{sign.isError ? (
-					<p role="alert" className="text-sm text-red-700 dark:text-red-400">
-						Transaction failed. {rpcErrorMessage(sign.error)}
-					</p>
+					<Callout tone="error">
+						The upgrade didn't go through. {rpcErrorMessage(sign.error)}
+					</Callout>
 				) : null}
 				{sign.data ? (
-					<p className="break-all font-mono text-xs">
-						Upgraded on the fork in transaction {sign.data}
+					<p className="flex flex-wrap items-center gap-1 text-sm text-success">
+						<Icon name="circle-check" />
+						Account upgraded on the fork.
+						<span className="font-mono text-xs text-typography-tertiary break-all">
+							{sign.data}
+						</span>
 					</p>
 				) : null}
 			</section>

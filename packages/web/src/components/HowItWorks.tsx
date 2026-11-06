@@ -1,41 +1,79 @@
+import { formatDuration } from "@codemark/shared/check/explain";
+import { config } from "../lib/config";
+import { Card } from "../ui/Card";
+import { NameSegments } from "./Links";
+
+const steps = [
+	{
+		label: "Publisher",
+		value: <span className="font-mono font-medium">acmeswap.eth</span>,
+		text: "The team's ENS name. Pin the publishers you trust. Only they can mark a contract as verified.",
+	},
+	{
+		label: "Release key",
+		value: <span className="font-mono">ci-1</span>,
+		text: "Each signing key is its own name under the publisher, so the team can revoke one in a single transaction.",
+	},
+	{
+		label: "Release",
+		value: (
+			<NameSegments
+				name="router-3-1-0.ci-1.acmeswap.eth"
+				publisher="acmeswap.eth"
+			/>
+		),
+		text: "Every release is a name under its key that records the contract address and its code hash.",
+	},
+	{
+		label: "Record",
+		text: "The record can't be edited after release, so a stolen release key can't rewrite it.",
+	},
+	{
+		label: "Age",
+		text: `Account upgrades need a release at least ${formatDuration(config.thresholds.delegateMinAgeSeconds)} old, which gives the team time to pull a bad one.`,
+	},
+];
+
 export default function HowItWorks() {
 	return (
-		<section className="space-y-2 text-sm leading-relaxed">
-			<h2 className="font-semibold">How this check works</h2>
-			<ol className="list-decimal space-y-1.5 pl-5">
-				<li>
-					A publisher such as acmeswap.eth owns an ENS name. Under it, each
-					signing key (ci-1, delegates) is its own registry that the security
-					key can unmount in one transaction.
-				</li>
-				<li>
-					Each release is a subname whose resolver holds the contract address
-					and code hash. The check looks up the name derived from the address,
-					at one fixed Sepolia block.
-				</li>
-				<li>
-					The resolver must be a factory-verified proxy with no record or role
-					changes since it was deployed. Then the record cannot be rewritten by
-					the CI key and the verdict is VERIFIED. Any later change to the
-					resolver is MISMATCH. VERIFIED-unproven means the block numbers needed
-					for the proof were not available.
-				</li>
-				<li>
-					The key must still be mounted and listed in the publisher's
-					codemark.keys record. If not, the verdict is KEY REVOKED. A released
-					name that was unregistered is PULLED, with the reason from Arkiv.
-				</li>
-				<li>
-					Arkiv only suggests which publisher to look under. Every row is
-					re-derived from ENS, so a forged row is ignored.
-				</li>
-				<li>
-					Pinned publishers win. Unpinned publishers are shown as "vouched for"
-					and never make a result safe. For account upgrades and delegatecall
-					targets, anything except a pinned, proven release older than the age
-					threshold is critical.
-				</li>
+		<Card className="flex flex-col gap-5 px-5 py-5 sm:px-6 sm:py-6">
+			<div className="flex flex-col gap-1">
+				<h2 className="font-medium">What a check proves</h2>
+				<p className="text-sm text-typography-secondary">
+					A result walks this path through ENS. The first step that fails is
+					where it turns red.
+				</p>
+			</div>
+			<ol className="flex flex-col">
+				{steps.map((step, i) => (
+					<li key={step.label} className="relative flex gap-3 pb-4 last:pb-0">
+						{i < steps.length - 1 ? (
+							<span
+								aria-hidden
+								className="absolute top-7 bottom-1 left-3 border-l border-border-primary"
+							/>
+						) : null}
+						<span className="flex-center tabular size-6 shrink-0 rounded-full border border-border-primary font-mono text-xs text-typography-tertiary">
+							{i + 1}
+						</span>
+						<div className="flex min-w-0 flex-col gap-0.5 pt-0.5">
+							<div className="flex flex-wrap items-baseline gap-x-2">
+								<span className="text-xs text-typography-tertiary">
+									{step.label}
+								</span>
+								{step.value ? (
+									<span className="text-sm">{step.value}</span>
+								) : null}
+							</div>
+							<p className="text-sm text-typography-secondary">{step.text}</p>
+						</div>
+					</li>
+				))}
 			</ol>
-		</section>
+			<p className="border-t border-border-secondary pt-4 text-xs text-typography-tertiary">
+				The search index only suggests where to look. Every answer is checked
+				again on ENS, so a fake index entry changes nothing.
+			</p>
+		</Card>
 	);
 }

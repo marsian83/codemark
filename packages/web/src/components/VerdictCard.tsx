@@ -1,125 +1,215 @@
 import type { PublisherVerdict, TargetResult } from "@codemark/shared/check";
-import type { Severity, Verdict } from "@codemark/shared/verdict";
+import {
+	explain,
+	notices,
+	roleLabel,
+	severityLabel,
+	verdictLabel,
+} from "@codemark/shared/check/explain";
+import type { Severity } from "@codemark/shared/verdict";
+import type { ReactNode } from "react";
+import { config } from "../lib/config";
 import { ensExplorer } from "../lib/ensExplorer";
-import { formatDuration } from "../lib/format";
-import { Address, BlockLink, EnsLink, EnsName } from "./Links";
+import { verdictTone } from "../lib/tones";
+import { Badge } from "../ui/Badge";
+import { Callout } from "../ui/Callout";
+import { Card } from "../ui/Card";
+import { Icon, type IconName } from "../ui/Icon";
+import { cn } from "../utils/cn";
+import { Address, BlockLink, ExternalLink, PublisherLink } from "./Links";
+import { RepinPrompt } from "./RepinPrompt";
+import { TrustPath } from "./TrustPath";
 
-const severityBar: Record<Severity, string> = {
-	info: "border-l-emerald-600",
-	amber: "border-l-amber-500",
-	warning: "border-l-orange-600",
-	critical: "border-l-red-600",
+const look: Record<
+	Severity,
+	{ icon: IconName; edge: string; mark: string; text: string }
+> = {
+	info: {
+		icon: "check",
+		edge: "border-t-success",
+		mark: "bg-success",
+		text: "text-success",
+	},
+	amber: {
+		icon: "clock",
+		edge: "border-t-caution",
+		mark: "bg-caution",
+		text: "text-caution",
+	},
+	warning: {
+		icon: "alert-triangle",
+		edge: "border-t-warning",
+		mark: "bg-warning",
+		text: "text-warning",
+	},
+	critical: {
+		icon: "close",
+		edge: "border-t-error",
+		mark: "bg-error",
+		text: "text-error",
+	},
 };
 
-const severityText: Record<Severity, string> = {
-	info: "text-emerald-700 dark:text-emerald-400",
-	amber: "text-amber-700 dark:text-amber-400",
-	warning: "text-orange-700 dark:text-orange-400",
-	critical: "text-red-700 dark:text-red-400",
-};
-
-const verdictStyle: Record<Verdict, string> = {
-	VERIFIED:
-		"bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-300",
-	"VERIFIED-unproven":
-		"bg-lime-100 text-lime-900 dark:bg-lime-950 dark:text-lime-300",
-	"KEY REVOKED": "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-300",
-	PULLED: "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-300",
-	MISMATCH: "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-300",
-	UNKNOWN: "bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300",
-};
-
-export function VerdictBadge({ verdict }: { verdict: Verdict }) {
+function Publisher({
+	verdict,
+	result,
+	single,
+}: {
+	verdict: PublisherVerdict;
+	result: TargetResult;
+	single: boolean;
+}) {
+	const hasPath =
+		verdict.key || verdict.release || verdict.verdict !== "UNKNOWN";
+	const repin =
+		verdict.pinned &&
+		verdict.verdict === "MISMATCH" &&
+		!verdict.key &&
+		!verdict.checkFailed;
 	return (
-		<span
-			className={`inline-block whitespace-nowrap rounded px-1.5 py-0.5 font-mono text-xs font-semibold ${verdictStyle[verdict]}`}
-		>
-			{verdict}
-		</span>
+		<section className="flex flex-col gap-4 border-t border-border-secondary px-5 py-5 sm:px-6">
+			{single ? null : (
+				<header className="flex flex-wrap items-center gap-2">
+					<PublisherLink name={verdict.publisher} />
+					<Badge tone={verdictTone[verdict.verdict]}>
+						{verdictLabel[verdict.verdict]}
+					</Badge>
+					<span className="text-sm text-typography-secondary">
+						{verdict.pinned ? "Pinned" : "Not pinned"}
+					</span>
+				</header>
+			)}
+			{hasPath ? (
+				<TrustPath verdict={verdict} role={result.target.role} />
+			) : verdict.reason ? (
+				<p className="text-sm text-typography-secondary">{verdict.reason}</p>
+			) : null}
+			{repin ? <RepinPrompt name={verdict.publisher} /> : null}
+		</section>
 	);
 }
 
-function Field({
-	label,
-	children,
-}: {
-	label: string;
-	children: React.ReactNode;
-}) {
+function Notices({ result }: { result: TargetResult }) {
+	const list = notices(result);
+	if (list.length === 0) return null;
 	return (
-		<div className="min-w-0">
-			<dt className="text-xs text-zinc-500 dark:text-zinc-400">{label}</dt>
-			<dd className="break-words font-mono text-sm">{children}</dd>
+		<div className="flex flex-col gap-2 border-t border-border-secondary px-5 py-4 sm:px-6">
+			{list.map((n) => (
+				<Callout key={n.text} tone={n.tone}>
+					{n.text}
+				</Callout>
+			))}
 		</div>
 	);
 }
 
-function PublisherRow({
-	v,
+function Detail({
+	label,
+	hint,
+	children,
+}: {
+	label: string;
+	hint?: string;
+	children: ReactNode;
+}) {
+	return (
+		<div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:gap-4">
+			<dt
+				className="shrink-0 text-sm text-typography-secondary sm:w-36"
+				title={hint}
+			>
+				{label}
+			</dt>
+			<dd className="min-w-0 break-all font-mono text-xs text-typography-secondary sm:pt-0.5">
+				{children}
+			</dd>
+		</div>
+	);
+}
+
+function Details({
+	result,
 	external,
 }: {
-	v: PublisherVerdict;
+	result: TargetResult;
 	external: boolean;
 }) {
-	const proven =
-		v.verdict === "VERIFIED"
-			? "proven"
-			: v.verdict === "VERIFIED-unproven"
-				? "unproven"
-				: undefined;
 	return (
-		<li className="border-t border-zinc-200 py-3 dark:border-zinc-800">
-			<div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-				<VerdictBadge verdict={v.verdict} />
-				<span className="text-sm font-semibold">
-					<EnsName name={v.publisher} roles external={external} />
-				</span>
-				<span className="text-xs text-zinc-500 dark:text-zinc-400">
-					{v.pinned ? "pinned by you" : "not pinned"}
-					{v.source === "index" ? " · found via Arkiv index" : ""}
-				</span>
-			</div>
-			{v.reason ? <p className="mt-1.5 text-sm">{v.reason}</p> : null}
-			{v.release || v.key ? (
-				<dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
-					{v.release ? (
-						<Field label="Release">
-							{v.release.name}
-							{external ? (
-								<EnsLink href={ensExplorer.name(v.release.name)} />
-							) : null}
+		<details className="group border-t border-border-secondary">
+			<summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-md px-5 py-3 text-sm text-typography-secondary transition-colors duration-150 hover:text-typography-primary sm:px-6 [&::-webkit-details-marker]:hidden">
+				<Icon
+					name="chevron-down"
+					className="-rotate-90 transition-transform duration-200 group-open:rotate-0"
+				/>
+				Show technical details
+			</summary>
+			<dl className="flex flex-col gap-2.5 px-5 pb-5 sm:px-6">
+				<Detail label="Summary">{result.headline}</Detail>
+				<Detail
+					label="Artifact"
+					hint="The chain and address this check is about"
+				>
+					{result.artifact}
+				</Detail>
+				<Detail label="Read at block">
+					<BlockLink block={result.block} external={external} />
+				</Detail>
+				{result.verdicts.map((v) =>
+					v.release ? (
+						<div
+							key={`${v.publisher}-${v.key ?? ""}`}
+							className="flex flex-col gap-2.5"
+						>
+							<Detail label="Release" hint="The ENS name of this release">
+								{external ? (
+									<ExternalLink href={ensExplorer.name(v.release.name)}>
+										{v.release.name}
+									</ExternalLink>
+								) : (
+									v.release.name
+								)}
+							</Detail>
 							{v.release.forwardName ? (
-								<span className="block text-xs text-zinc-500 dark:text-zinc-400">
+								<Detail
+									label="Lookup name"
+									hint="The name derived from the address, used to find the release"
+								>
 									{v.release.forwardName}
-								</span>
+								</Detail>
 							) : null}
-						</Field>
-					) : null}
-					{v.key ? <Field label="Key">{v.key}</Field> : null}
-					{v.release ? (
-						<>
-							<Field label="Version">
-								{v.release.component} {v.release.version} ({v.release.kind})
-							</Field>
-							<Field label="Age">
-								{v.release.ageSeconds !== undefined
-									? formatDuration(v.release.ageSeconds)
-									: "not known"}
-							</Field>
-							<Field label="Immutability">{proven ?? "not applicable"}</Field>
-							<Field label="Resolver">
-								<Address
-									value={v.release.resolver}
-									short
-									external={external}
-									ens="resolver"
-								/>
-							</Field>
-						</>
-					) : null}
-				</dl>
-			) : null}
-		</li>
+							<Detail
+								label="Resolver"
+								hint="The contract that stores this release's record"
+							>
+								<Address value={v.release.resolver} external={external} />
+							</Detail>
+							<Detail
+								label="Code hash"
+								hint="A fingerprint of the released code"
+							>
+								{v.release.codeHash}
+							</Detail>
+							{v.release.implementation ? (
+								<Detail
+									label="Implementation"
+									hint="The code behind this proxy"
+								>
+									<Address
+										value={v.release.implementation}
+										external={external}
+									/>
+								</Detail>
+							) : null}
+							{v.release.regBlock !== undefined ? (
+								<Detail label="Released at block">
+									<BlockLink block={v.release.regBlock} external={external} />
+								</Detail>
+							) : null}
+						</div>
+					) : null,
+				)}
+			</dl>
+		</details>
 	);
 }
 
@@ -130,64 +220,59 @@ export function VerdictCard({
 	result: TargetResult;
 	external?: boolean;
 }) {
-	const { target } = result;
+	const { title, body } = explain(result, config.thresholds);
+	const l = look[result.severity];
+	const single = result.verdicts.length === 1;
 	return (
-		<article
-			className={`rounded border border-zinc-200 border-l-4 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900 ${severityBar[result.severity]}`}
-		>
-			<header>
-				<p
-					className={`text-xs font-semibold uppercase tracking-wide ${severityText[result.severity]}`}
-				>
-					{result.severity}
-				</p>
-				<h3 className="mt-0.5 text-base font-semibold">{result.headline}</h3>
-				<p className="mt-1 break-all font-mono text-xs text-zinc-600 dark:text-zinc-400">
-					<Address value={target.address} external={external} /> · {target.role}{" "}
-					· {target.via} · chain {target.chainId}
-				</p>
-			</header>
-			{result.verdicts.length > 0 ? (
-				<ul className="mt-3">
-					{result.verdicts.map((v) => (
-						<PublisherRow
-							key={`${v.publisher}-${v.key ?? ""}`}
-							v={v}
-							external={external}
-						/>
-					))}
-				</ul>
-			) : (
-				<p className="mt-3 border-t border-zinc-200 pt-3 text-sm dark:border-zinc-800">
-					No publisher has released this address.
-				</p>
+		<Card
+			className={cn(
+				"overflow-hidden border-t-4 motion-safe:animate-rise",
+				l.edge,
 			)}
-			{result.error ? (
-				<p className="border-t border-zinc-200 pt-3 text-sm text-red-700 dark:border-zinc-800 dark:text-red-400">
-					This target could not be checked: {result.error}
-				</p>
-			) : null}
-			{result.indexUnavailable ? (
-				<p className="border-t border-zinc-200 pt-3 text-sm dark:border-zinc-800">
-					The Arkiv index could not be reached; only pinned publishers were
-					checked.
-				</p>
-			) : null}
-			{result.indexIncomplete ? (
-				<p className="border-t border-zinc-200 pt-3 text-sm dark:border-zinc-800">
-					The Arkiv index answered only in part; other publishers may exist.
-				</p>
-			) : null}
-			{result.indexFlooded ? (
-				<p className="border-t border-zinc-200 pt-3 text-sm dark:border-zinc-800">
-					The Arkiv index returned too many candidates for this address;
-					anything not pinned cannot raise this result above a warning.
-				</p>
-			) : null}
-			<footer className="border-t border-zinc-200 pt-2 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-				Read at block <BlockLink block={result.block} external={external} /> ·
-				artifact <span className="break-all font-mono">{result.artifact}</span>
-			</footer>
-		</article>
+		>
+			<header className="flex flex-col gap-3 px-5 pt-5 pb-5 sm:px-6">
+				<div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+					<span
+						className={cn(
+							"flex-center size-8 shrink-0 rounded-full text-typography-invert",
+							l.mark,
+						)}
+					>
+						<Icon name={l.icon} className="size-4.5" />
+					</span>
+					<p className={cn("text-2xl font-semibold tracking-tight", l.text)}>
+						{severityLabel[result.severity]}
+					</p>
+					<Badge tone="neutral" className="text-sm">
+						{roleLabel[result.target.role]}
+					</Badge>
+				</div>
+				<div className="flex min-w-0 flex-col gap-1">
+					<h2 className="text-base font-medium leading-snug text-balance">
+						{title}
+					</h2>
+					{body ? (
+						<p className="text-sm text-typography-secondary text-pretty">
+							{body}
+						</p>
+					) : null}
+				</div>
+				<Address
+					value={result.target.address}
+					external={external}
+					className="text-xs text-typography-secondary"
+				/>
+			</header>
+			{result.verdicts.map((v) => (
+				<Publisher
+					key={`${v.publisher}-${v.key ?? ""}`}
+					verdict={v}
+					result={result}
+					single={single}
+				/>
+			))}
+			<Notices result={result} />
+			<Details result={result} external={external} />
+		</Card>
 	);
 }

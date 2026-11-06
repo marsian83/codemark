@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { rpcErrorMessage } from "../lib/format";
+import { errorMessage } from "../lib/format";
 import { installSnap, snapPins, snapStatus } from "../lib/snap";
+import { Badge } from "../ui/Badge";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
+import { Icon } from "../ui/Icon";
+import { ExternalLink } from "./Links";
 
 export function useSnapStatus() {
 	return useQuery({
@@ -9,6 +14,10 @@ export function useSnapStatus() {
 		retry: false,
 	});
 }
+
+const flask = (
+	<ExternalLink href="https://metamask.io/flask/">MetaMask Flask</ExternalLink>
+);
 
 export default function SnapPanel() {
 	const client = useQueryClient();
@@ -26,80 +35,77 @@ export default function SnapPanel() {
 	});
 
 	return (
-		<section>
-			<h2 className="text-sm font-semibold">MetaMask Snap</h2>
-			<div className="mt-1 space-y-2 text-sm">
-				{status.isPending ? <p>Looking for MetaMask…</p> : null}
-				{status.isError ? (
-					<p>No wallet detected: {rpcErrorMessage(status.error)}</p>
-				) : null}
-				{status.data === "no-wallet" ? (
-					<p>
-						No browser wallet found. The Snap requires{" "}
-						<a
-							className="underline underline-offset-2"
-							href="https://metamask.io/flask/"
-							target="_blank"
-							rel="noreferrer"
-						>
-							MetaMask Flask
-						</a>
-						.
-					</p>
-				) : null}
-				{status.data === "not-flask" ? (
-					<p>
-						Requires{" "}
-						<a
-							className="underline underline-offset-2"
-							href="https://metamask.io/flask/"
-							target="_blank"
-							rel="noreferrer"
-						>
-							MetaMask Flask
-						</a>
-						. The connected wallet is not Flask.
-					</p>
-				) : null}
-				{status.data === "not-installed" ? (
-					<>
-						<p>
-							The Snap checks transactions in MetaMask before you sign them.
-						</p>
-						<button
-							type="button"
-							className="rounded bg-zinc-900 px-4 py-1.5 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900"
-							disabled={install.isPending}
-							onClick={() => install.mutate()}
-						>
-							{install.isPending ? "Waiting for MetaMask…" : "Install Snap"}
-						</button>
-						{install.isError ? (
-							<p role="alert" className="text-red-700 dark:text-red-400">
-								Install failed. {rpcErrorMessage(install.error)}
-							</p>
-						) : null}
-					</>
-				) : null}
-				{installed ? (
-					<>
-						<p>Installed. Pins held by the Snap:</p>
-						{pins.isError ? (
-							<p role="alert" className="text-red-700 dark:text-red-400">
-								Could not read Snap pins. {rpcErrorMessage(pins.error)}
-							</p>
-						) : null}
-						{pins.data && pins.data.length === 0 ? <p>None.</p> : null}
-						<ul className="font-mono text-xs">
-							{pins.data?.map((p) => (
-								<li key={p.name} className="break-all">
-									{p.name} {p.pubRegistry}
-								</li>
-							))}
-						</ul>
-					</>
-				) : null}
+		<Card className="flex flex-col gap-3 p-5">
+			<div className="flex items-center justify-between gap-2">
+				<h2 className="flex items-center gap-2 font-medium">
+					<Icon name="puzzle" className="text-typography-tertiary" />
+					MetaMask Snap
+				</h2>
+				{installed ? <Badge tone="success">Installed</Badge> : null}
 			</div>
-		</section>
+			<p className="text-sm text-typography-secondary">
+				Runs this same check inside MetaMask on every transaction, before you
+				sign.
+			</p>
+			{status.isPending ? (
+				<p className="text-sm text-typography-tertiary">
+					Looking for MetaMask…
+				</p>
+			) : null}
+			{status.isError ? (
+				<p className="text-sm text-typography-secondary">
+					Couldn't reach your wallet. Unlock MetaMask and reload the page.
+				</p>
+			) : null}
+			{status.data === "no-wallet" || status.data === "not-flask" ? (
+				<p className="text-sm text-typography-secondary">
+					{status.data === "no-wallet"
+						? "No browser wallet found. "
+						: "Your MetaMask isn't the Flask build. "}
+					Install {flask} to run this check in your wallet.
+				</p>
+			) : null}
+			{status.data === "not-installed" ? (
+				<>
+					<Button
+						variant="accent"
+						loading={install.isPending}
+						onClick={() => install.mutate()}
+					>
+						{install.isPending ? "Confirm in MetaMask" : "Install the Snap"}
+					</Button>
+					{install.isError ? (
+						<p role="alert" className="text-sm text-error">
+							Couldn't install the Snap. Open MetaMask, then select Install the
+							Snap again.
+						</p>
+					) : null}
+				</>
+			) : null}
+			{installed ? (
+				<div className="flex flex-col gap-1.5">
+					<span className="text-xs text-typography-tertiary">
+						Publishers pinned in the Snap
+					</span>
+					{pins.isError ? (
+						<p role="alert" className="text-sm text-error">
+							Couldn't read the Snap's pins. {errorMessage(pins.error)}
+						</p>
+					) : null}
+					{pins.data?.length === 0 ? (
+						<p className="text-sm text-typography-secondary">
+							None yet. Pins you add here are copied to the Snap.
+						</p>
+					) : null}
+					<ul className="flex flex-col gap-0.5">
+						{pins.data?.map((p) => (
+							<li key={p.name} className="font-mono text-sm">
+								{p.name}
+							</li>
+						))}
+					</ul>
+				</div>
+			) : null}
+		</Card>
 	);
 }

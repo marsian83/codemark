@@ -1,6 +1,11 @@
 import type { Pin } from "@codemark/shared/check";
+import {
+	parsePublisherName,
+	resolvePubRegistry,
+} from "@codemark/shared/ens/publisher";
 import { useCallback, useSyncExternalStore } from "react";
 import { isAddress } from "viem";
+import { ensFor } from "./checker";
 import { config } from "./config";
 
 const storageKey = "codemark.pins";
@@ -8,41 +13,44 @@ const listeners = new Set<() => void>();
 let cachedRaw: string | null | undefined;
 let cachedPins: Pin[] = [];
 
-function read(): Pin[] {
-	let raw: string | null = null;
+function stored(): string | null {
 	try {
-		raw = localStorage.getItem(storageKey);
+		return localStorage.getItem(storageKey);
 	} catch {
-		raw = null;
+		return cachedRaw ?? null;
 	}
-	if (raw === cachedRaw) return cachedPins;
-	cachedRaw = raw;
-	let pins: Pin[] = [];
-	if (raw === null) {
-		const { name, pubRegistry } = config.defaultPin;
-		if (name && isAddress(pubRegistry)) pins = [{ name, pubRegistry }];
-	} else {
-		try {
-			const parsed: unknown = JSON.parse(raw);
-			if (Array.isArray(parsed)) {
-				pins = parsed.filter(
+}
+
+function parse(raw: string | null): Pin[] {
+	if (raw === null) return config.defaultPin ? [config.defaultPin] : [];
+	try {
+		const parsed: unknown = JSON.parse(raw);
+		return Array.isArray(parsed)
+			? parsed.filter(
 					(p): p is Pin =>
 						typeof p?.name === "string" && isAddress(p?.pubRegistry),
-				);
-			}
-		} catch {
-			pins = [];
-		}
+				)
+			: [];
+	} catch {
+		return [];
 	}
-	cachedPins = pins;
-	return pins;
+}
+
+function read(): Pin[] {
+	const raw = stored();
+	if (raw !== cachedRaw) {
+		cachedRaw = raw;
+		cachedPins = parse(raw);
+	}
+	return cachedPins;
 }
 
 function write(pins: Pin[]) {
+	const raw = JSON.stringify(pins);
 	try {
-		localStorage.setItem(storageKey, JSON.stringify(pins));
+		localStorage.setItem(storageKey, raw);
 	} catch {
-		cachedRaw = JSON.stringify(pins);
+		cachedRaw = raw;
 		cachedPins = pins;
 	}
 	for (const l of listeners) l();
@@ -57,11 +65,18 @@ function subscribe(listener: () => void) {
 	};
 }
 
+export async function resolvePin(name: string): Promise<Pin> {
+	const parsed = parsePublisherName(name);
+	return {
+		name: parsed,
+		pubRegistry: await resolvePubRegistry(ensFor("sepolia"), parsed),
+	};
+}
+
 export function usePins() {
 	const pins = useSyncExternalStore(subscribe, read);
 	const add = useCallback((pin: Pin) => {
-		const rest = read().filter((p) => p.name !== pin.name);
-		write([...rest, pin]);
+		write([...read().filter((p) => p.name !== pin.name), pin]);
 	}, []);
 	const remove = useCallback((name: string) => {
 		write(read().filter((p) => p.name !== name));
