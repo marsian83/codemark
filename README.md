@@ -1,10 +1,36 @@
-<img src="packages/web/public/logo.svg" width="72" alt="" />
+<p align="center">
+  <a href="https://codemark.hetairoi.xyz"><img src="docs/images/banner.jpg" width="100%" alt="The word codemark in large letters over a dusk landscape, with a fox running past" /></a>
+</p>
 
-# Codemark
+<h1 align="center">Codemark</h1>
 
-[![CI](https://github.com/marsian83/codemark/actions/workflows/ci.yml/badge.svg)](https://github.com/marsian83/codemark/actions/workflows/ci.yml)
+<p align="center"><strong>Know who published a contract before you sign it.</strong></p>
 
-**Know who published a contract before you sign it.**
+<p align="center">
+  <a href="https://github.com/marsian83/codemark/actions/workflows/ci.yml"><img src="https://github.com/marsian83/codemark/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/marsian83/codemark?color=F97316" alt="MIT license" /></a>
+  <a href="https://www.npmjs.com/package/@marsian/codemark-cli"><img src="https://img.shields.io/npm/v/@marsian/codemark-cli?label=cli&color=F97316" alt="CLI version on npm" /></a>
+  <a href="https://www.npmjs.com/package/@marsian/codemark-mcp"><img src="https://img.shields.io/npm/v/@marsian/codemark-mcp?label=mcp&color=F97316" alt="MCP server version on npm" /></a>
+  <a href="https://www.npmjs.com/package/@marsian/codemark-snap"><img src="https://img.shields.io/npm/v/@marsian/codemark-snap?label=snap&color=F97316" alt="Snap version on npm" /></a>
+  <br />
+  <a href="#where-ensv2-is-load-bearing"><img src="https://img.shields.io/badge/ENSv2-Sepolia-5298FF" alt="Built on ENSv2 on Sepolia" /></a>
+  <a href="#arkivs-role"><img src="https://img.shields.io/badge/Arkiv-Rabdi_testnet-0E7490" alt="Indexed on the Arkiv Rabdi testnet" /></a>
+  <a href="#the-name-tree"><img src="https://img.shields.io/badge/custom_Solidity-none-2F9E77" alt="No custom Solidity" /></a>
+  <a href="https://bun.sh"><img src="https://img.shields.io/badge/Bun-%E2%89%A51.4.2-black?logo=bun" alt="Needs Bun 1.4.2 or newer" /></a>
+  <a href="packages"><img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="Written in TypeScript" /></a>
+</p>
+
+<p align="center">
+  <a href="https://codemark.hetairoi.xyz"><strong>Try it</strong></a>
+  &nbsp;·&nbsp;
+  <a href="https://codemark.hetairoi.xyz/demo">Demo</a>
+  &nbsp;·&nbsp;
+  <a href="https://codemark.hetairoi.xyz/app/docs">Docs</a>
+  &nbsp;·&nbsp;
+  <a href="#how-it-works">How it works</a>
+  &nbsp;·&nbsp;
+  <a href="#live-on-sepolia">Live on Sepolia</a>
+</p>
 
 Codemark checks that the contract or account upgrade you are about to approve was released by the team you think, under their ENS name, and that the team still stands behind it.
 
@@ -24,6 +50,8 @@ Account upgrades (EIP-7702) raise the stakes: one signature lets a contract cont
 
 Codemark tells you who published something and whether they still stand behind it. It does not assess what the code does.
 
+<img src="docs/images/verdicts.jpg" width="100%" alt="Three results from the lookup site: Verified with its trust path, Don't sign for an account upgrade, and Not verified for a contract call" />
+
 ## Four ways to use it
 
 | You are | Use | What you need |
@@ -32,6 +60,17 @@ Codemark tells you who published something and whether they still stand behind i
 | A MetaMask user | The Codemark Snap, which checks every transaction before MetaMask asks you to confirm | [MetaMask Flask](https://metamask.io/flask/) for now |
 | Running an AI agent that spends | The Codemark MCP server, which tells your agent to proceed, ask you or refuse before it signs | Bun and an MCP-capable agent. It holds no keys |
 | A team shipping contracts | The CLI and the GitHub Action, which publish each release under your ENS name | Sepolia ETH. `init` registers the name and sets up the team Safe for you |
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/wallet-prompt.jpg" width="100%" alt="A preview of a MetaMask transaction request with Codemark's result: released by pwnmeswap.eth" /></td>
+    <td width="50%"><img src="docs/images/agent.jpg" width="100%" alt="The MCP server's proceed, ask_user and refuse responses, each with its reason and instruction" /></td>
+  </tr>
+  <tr>
+    <td><sub>In your wallet. This is the landing page's preview of what the Snap adds to MetaMask.</sub></td>
+    <td><sub>For your agent. Real MCP server responses from Sepolia.</sub></td>
+  </tr>
+</table>
 
 ## Get started
 
@@ -75,11 +114,13 @@ There is nothing to install: `bunx` fetches the CLI when you run it.
 
 If something goes wrong, `pull` withdraws one release and `cut` withdraws everything a key released, in one transaction each. The [CLI](#cli) section below lists every flag.
 
-Built at ETHGlobal Mumbai on ENSv2 (Sepolia) and Arkiv (Rabdi testnet). Everything on chain is stock ENSv2; there is no custom Solidity.
+Built on ENSv2 (Sepolia) and Arkiv (Rabdi testnet). Everything on chain is stock ENSv2; there is no custom Solidity.
 
 ## How it works
 
 The rest of this page is for people who want the details: how releases are laid out in ENS, what each key can do, and exactly what a check proves.
+
+<img src="docs/images/how-it-works.jpg" width="100%" alt="Summary diagram: a team's name tree with a CI key, a delegates key and a security key, next to the steps every check runs" />
 
 ### The name tree
 
@@ -128,6 +169,10 @@ Roles come from ENSv2's access-control scheme (EAC): "may add" and "may remove" 
 - **Pull** withdraws one release. In one Safe batch, root unregisters both names of the release and reserves both labels again, so the CI key cannot simply re-register them. A reserved label can only be promoted by root, and a promoted label is marked and fails the check.
 - **Cut** withdraws a key. The sec key unregisters the key's label in `PubRegistry` in one Sepolia transaction. Every release under that key stops resolving, because ENSv2 resolution walks registries from the root. An incident row on Arkiv records the reason. Root then runs `migrate` to mount a new key and republish the good releases.
 
+<img src="docs/images/cut-a-key.jpg" width="100%" alt="The landing page's walkthrough of cutting ci-1: its releases show key revoked and the wallet shows the reason" />
+
+<sub>A cut, as the landing page walks through it. A live pull has run on Sepolia; a live cut hasn't, because it would withdraw the demo releases too.</sub>
+
 ### What the checker proves
 
 The checker (`packages/lib/shared/check`) runs every read against one pinned Sepolia block. For an address it establishes, in order:
@@ -174,7 +219,7 @@ One query you can run, which lists who claims the demo router, is in [arkiv/how-
 | `packages/mcp` | MCP server for agents: read-only, holds no keys, returns proceed, ask_user or refuse |
 | `packages/web` | landing page at `/`, lookup site under `/app`, demo with sample contracts and a 7702 wallet under `/demo` (Vite, React) |
 | `packages/demo` | Anvil fork, seed and attack scripts, live-run script. Nothing here ships |
-| `arkiv/` | Arkiv prize documentation |
+| `arkiv/` | How Codemark uses Arkiv: schema, why Arkiv, friction and reach |
 | `.github/actions/codemark-publish` | composite GitHub Action wrapping `publish` |
 
 ## Run it
@@ -330,11 +375,6 @@ Limits:
 - Privacy: Arkiv sees the queried artifact and client IP, and the RPC sees the checked name. There is no read-privacy claim.
 - Codemark does not assess code behaviour.
 - The MCP server protects an honest agent that was handed a bad address. A hijacked agent can skip the check; stopping that takes enforcement in the signer. It does not check amounts or recipients, so a plain transfer returns `ask_user`.
-
-## Partners and prize tracks
-
-- **ENS, Best Use of ENSv2 (Sepolia).** Publisher identity, scoped keys, subtree revocation and expiry all come from ENSv2 registries, EAC roles, PermissionedResolver and the Universal Resolver, with no custom contracts. See "Where ENSv2 is load-bearing".
-- **Arkiv, Build on Arkiv.** Two entity types on Rabdi (`codemark.release.v1`, `codemark.incident.v1`) provide discovery, withdrawal reasons and proof block numbers; the checker reads them with the SDK and re-verifies every row against ENS. See [arkiv/README.md](arkiv/README.md).
 
 ## How AI was used
 
