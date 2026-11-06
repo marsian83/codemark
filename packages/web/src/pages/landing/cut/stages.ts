@@ -11,7 +11,7 @@ export type Stage = {
 	wallet: string;
 };
 
-export const cliLine = "$ bunx @marsian83/codemark-cli \\";
+export const cliLine = "$ bunx @marsian/codemark-cli \\";
 
 export const stages: Stage[] = [
 	{

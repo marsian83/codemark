@@ -18,13 +18,13 @@ if (command === "pin") {
 	console.log(`${name}=${await resolvePubRegistry(ens, name)}`);
 } else if (command) {
 	console.error(
-		"usage: bunx @marsian83/codemark-mcp, or bunx @marsian83/codemark-mcp pin <name.eth>",
+		"usage: bunx @marsian/codemark-mcp, or bunx @marsian/codemark-mcp pin <name.eth>",
 	);
 	process.exit(1);
 } else {
 	if (env.CODEMARK_PINS.length === 0)
 		console.error(
-			"CODEMARK_PINS is empty, so no contract can get a proceed. Run: bunx @marsian83/codemark-mcp pin <name.eth>",
+			"CODEMARK_PINS is empty, so no contract can get a proceed. Run: bunx @marsian/codemark-mcp pin <name.eth>",
 		);
 	const server = createServer({
 		ens,

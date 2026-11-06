@@ -16,7 +16,7 @@ export function parsePins(text: string): Pin[] {
 				!isAddress(pubRegistry, { strict: false })
 			)
 				throw new Error(
-					`CODEMARK_PINS entry "${entry}" must look like name.eth=0xRegistry. Run "bunx @marsian83/codemark-mcp pin name.eth" to get it.`,
+					`CODEMARK_PINS entry "${entry}" must look like name.eth=0xRegistry. Run "bunx @marsian/codemark-mcp pin name.eth" to get it.`,
 				);
 			return {
 				name: parsePublisherName(name),

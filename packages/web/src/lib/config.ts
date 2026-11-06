@@ -23,7 +23,7 @@ export const config = {
 	defaultPin: defaultPin(),
 	snapId:
 		env.VITE_SNAP_ID ||
-		(env.DEV ? "local:http://localhost:8080" : "npm:@marsian83/codemark-snap"),
+		(env.DEV ? "local:http://localhost:8080" : "npm:@marsian/codemark-snap"),
 	ensExplorerUrl: (
 		env.VITE_ENS_EXPLORER_URL || "https://explorer.ens.domains"
 	).replace(/\/$/, ""),

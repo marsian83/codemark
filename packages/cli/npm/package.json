@@ -1,5 +1,5 @@
 {
-	"name": "@marsian83/codemark-cli",
+	"name": "@marsian/codemark-cli",
 	"version": "0.1.0",
 	"description": "Release your contracts, frontends and account upgrades under your ENS name, and check anyone else's.",
 	"type": "module",

@@ -41,7 +41,7 @@ const command = name ? commands[name] : undefined;
 
 if (!command) {
 	console.log(
-		`bunx @marsian83/codemark-cli <command>\n\n${Object.keys(commands).join("\n")}`,
+		`bunx @marsian/codemark-cli <command>\n\n${Object.keys(commands).join("\n")}`,
 	);
 	process.exit(name ? 1 : 0);
 }

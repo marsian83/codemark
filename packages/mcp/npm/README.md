@@ -11,7 +11,7 @@ Needs [Bun](https://bun.sh) 1.4.2 or newer. It holds no keys and signs nothing.
 Get the pin for each team you trust:
 
 ```sh
-bunx @marsian83/codemark-mcp pin pwnmeswap.eth
+bunx @marsian/codemark-mcp pin pwnmeswap.eth
 ```
 
 Add the server to your agent's MCP configuration, with the line that printed:
@@ -21,7 +21,7 @@ Add the server to your agent's MCP configuration, with the line that printed:
 	"mcpServers": {
 		"codemark": {
 			"command": "bunx",
-			"args": ["@marsian83/codemark-mcp"],
+			"args": ["@marsian/codemark-mcp"],
 			"env": {
 				"CODEMARK_PINS": "pwnmeswap.eth=0x8a8d97f3F4d1235c62aE61cDB3644f574162d204"
 			}

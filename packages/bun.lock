@@ -59,7 +59,7 @@
       },
     },
     "snap": {
-      "name": "@marsian83/codemark-snap",
+      "name": "@marsian/codemark-snap",
       "version": "0.1.0",
       "devDependencies": {
         "@codemark/shared": "workspace:*",
@@ -305,7 +305,7 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
-    "@marsian83/codemark-snap": ["@marsian83/codemark-snap@workspace:snap"],
+    "@marsian/codemark-snap": ["@marsian/codemark-snap@workspace:snap"],
 
     "@metamask/analytics-controller": ["@metamask/analytics-controller@1.2.1", "", { "dependencies": { "@metamask/base-controller": "^9.1.0", "@metamask/messenger": "^1.2.0", "@metamask/utils": "^11.11.0", "lodash": "^4.17.21", "uuid": "^8.3.2" } }, "sha512-TvS9wFN5zKG/FajVoNRyi9rp1S4gYuLGOtI5VHrjikOhp078z46DPFu8rfHOYRFDRBxxRQpdSRPvweViF9Jz2g=="],
 

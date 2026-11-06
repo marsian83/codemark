@@ -1,5 +1,5 @@
 {
-	"name": "@marsian83/codemark-mcp",
+	"name": "@marsian/codemark-mcp",
 	"version": "0.1.0",
 	"description": "MCP server that checks who released a contract before an agent signs a payment, approval or account upgrade.",
 	"type": "module",

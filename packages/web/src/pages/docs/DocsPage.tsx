@@ -98,13 +98,13 @@ const action = `- uses: marsian83/codemark/.github/actions/codemark-publish@<com
     ci-key: \${{ secrets.CODEMARK_CI_KEY }}
     arkiv-access-key: \${{ secrets.ARKIV_ACCESS_KEY }}`;
 
-const mcpPin = "bunx @marsian83/codemark-mcp pin pwnmeswap.eth";
+const mcpPin = "bunx @marsian/codemark-mcp pin pwnmeswap.eth";
 
 const mcpConfig = `{
   "mcpServers": {
     "codemark": {
       "command": "bunx",
-      "args": ["@marsian83/codemark-mcp"],
+      "args": ["@marsian/codemark-mcp"],
       "env": {
         "CODEMARK_PINS": "pwnmeswap.eth=0x..."
       }
@@ -311,7 +311,7 @@ export default function DocsPage() {
 							</Link>{" "}
 							and select Install the Snap on the MetaMask Snap card. MetaMask
 							shows what the Snap may do and asks you to confirm. It installs{" "}
-							<Mono>npm:@marsian83/codemark-snap</Mono>.
+							<Mono>npm:@marsian/codemark-snap</Mono>.
 						</Step>
 					</ol>
 					<Sub title="Try it with a demo contract">
@@ -465,7 +465,7 @@ export default function DocsPage() {
 						<Step
 							n={1}
 							title="Register your name"
-							code="bunx @marsian83/codemark-cli init pwnmeswap --sec 0x... --years 1"
+							code="bunx @marsian/codemark-cli init pwnmeswap --sec 0x... --years 1"
 							needs={
 								<>
 									The root key. <Mono>--sec</Mono> is the security key's address
@@ -481,7 +481,7 @@ export default function DocsPage() {
 						<Step
 							n={2}
 							title="Add a release key"
-							code="bunx @marsian83/codemark-cli add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90"
+							code="bunx @marsian/codemark-cli add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90"
 							needs={
 								<>
 									The root key. <Mono>--ci</Mono> is the CI key's address.{" "}
@@ -497,7 +497,7 @@ export default function DocsPage() {
 						<Step
 							n={3}
 							title="Publish a release"
-							code="bunx @marsian83/codemark-cli publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>"
+							code="bunx @marsian/codemark-cli publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>"
 							needs={
 								<>
 									The CI key. <Mono>--component</Mono>, <Mono>--version</Mono>{" "}
@@ -515,7 +515,7 @@ export default function DocsPage() {
 						<Step
 							n={4}
 							title="Verify it"
-							code="bunx @marsian83/codemark-cli verify 0x... --pin pwnmeswap.eth"
+							code="bunx @marsian/codemark-cli verify 0x... --pin pwnmeswap.eth"
 							needs="No keys."
 						>
 							Runs the same check the site and the Snap run. Add{" "}
@@ -533,7 +533,7 @@ export default function DocsPage() {
 							<Step
 								n={1}
 								title="Pull one release"
-								code={`bunx @marsian83/codemark-cli pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"`}
+								code={`bunx @marsian/codemark-cli pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"`}
 								needs={
 									<>
 										The root key. <Mono>--reason</Mono> is required.
@@ -546,7 +546,7 @@ export default function DocsPage() {
 							<Step
 								n={2}
 								title="Cut a leaked key"
-								code={`bunx @marsian83/codemark-cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"`}
+								code={`bunx @marsian/codemark-cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"`}
 								needs={
 									<>
 										The security key. <Mono>--reason</Mono> is required.
@@ -559,7 +559,7 @@ export default function DocsPage() {
 							<Step
 								n={3}
 								title="Move to a new key"
-								code="bunx @marsian83/codemark-cli migrate pwnmeswap.eth ci-1 ci-2 --ci 0x..."
+								code="bunx @marsian/codemark-cli migrate pwnmeswap.eth ci-1 ci-2 --ci 0x..."
 								needs={
 									<>
 										The root key. Pass <Mono>--ci</Mono> or{" "}

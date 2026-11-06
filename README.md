@@ -39,16 +39,16 @@ The full guide, with every command explained, is at [codemark.hetairoi.xyz/app/d
 
 **Check a contract.** Open [codemark.hetairoi.xyz/app](https://codemark.hetairoi.xyz/app), paste an address, and read the verdict. Pin the publishers you trust; only they can mark a contract as verified.
 
-**Check every transaction in MetaMask.** Install [MetaMask Flask](https://metamask.io/flask/) in a separate browser profile, open [Check](https://codemark.hetairoi.xyz/app) and select Install the Snap. It installs `npm:@marsian83/codemark-snap`.
+**Check every transaction in MetaMask.** Install [MetaMask Flask](https://metamask.io/flask/) in a separate browser profile, open [Check](https://codemark.hetairoi.xyz/app) and select Install the Snap. It installs `npm:@marsian/codemark-snap`.
 
-**Protect an agent that spends.** Nobody reads the signing screen when an agent signs, so a web page can hand it a lookalike router or an attacker's account upgrade. The MCP server checks the contracts behind each approval, swap and account upgrade first. Get a pin with `bunx @marsian83/codemark-mcp pin pwnmeswap.eth`, then add the server to your agent:
+**Protect an agent that spends.** Nobody reads the signing screen when an agent signs, so a web page can hand it a lookalike router or an attacker's account upgrade. The MCP server checks the contracts behind each approval, swap and account upgrade first. Get a pin with `bunx @marsian/codemark-mcp pin pwnmeswap.eth`, then add the server to your agent:
 
 ```json
 {
   "mcpServers": {
     "codemark": {
       "command": "bunx",
-      "args": ["@marsian83/codemark-mcp"],
+      "args": ["@marsian/codemark-mcp"],
       "env": { "CODEMARK_PINS": "pwnmeswap.eth=0x8a8d97f3F4d1235c62aE61cDB3644f574162d204" }
     }
   }
@@ -58,10 +58,10 @@ The full guide, with every command explained, is at [codemark.hetairoi.xyz/app/d
 **Publish your releases.** You need [Bun](https://bun.sh) 1.4.2 or newer and three keys: a root key that owns the team Safe, a security key that can only withdraw things, and a CI key that can only add releases. Put them in `.env` in the folder you run the CLI from (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`), then:
 
 ```sh
-bunx @marsian83/codemark-cli init pwnmeswap --years 1                        # register pwnmeswap.eth, deploy the Safe and its registry
-bunx @marsian83/codemark-cli add-key pwnmeswap.eth ci-1 --ci 0x...           # let your CI address publish under ci-1
-bunx @marsian83/codemark-cli publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x...   # release a deployed contract
-bunx @marsian83/codemark-cli verify 0x... --pin pwnmeswap.eth                # check it, the same way the site and the Snap do
+bunx @marsian/codemark-cli init pwnmeswap --years 1                        # register pwnmeswap.eth, deploy the Safe and its registry
+bunx @marsian/codemark-cli add-key pwnmeswap.eth ci-1 --ci 0x...           # let your CI address publish under ci-1
+bunx @marsian/codemark-cli publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x...   # release a deployed contract
+bunx @marsian/codemark-cli verify 0x... --pin pwnmeswap.eth                # check it, the same way the site and the Snap do
 ```
 
 There is nothing to install: `bunx` fetches the CLI when you run it.
@@ -208,7 +208,7 @@ The site is static: it reads Sepolia and Arkiv straight from the browser, so any
 
 ### Snap in MetaMask Flask
 
-The Snap needs [MetaMask Flask](https://metamask.io/flask/), the developer build, because network access for Snaps is only allowed for allowlisted Snaps in stable MetaMask. The deployed site installs the published `npm:@marsian83/codemark-snap`; the local site (`bun web:dev`) installs `local:http://localhost:8080`, and `VITE_SNAP_ID` overrides either.
+The Snap needs [MetaMask Flask](https://metamask.io/flask/), the developer build, because network access for Snaps is only allowed for allowlisted Snaps in stable MetaMask. The deployed site installs the published `npm:@marsian/codemark-snap`; the local site (`bun web:dev`) installs `local:http://localhost:8080`, and `VITE_SNAP_ID` overrides either.
 
 1. `bun snap:build`. Only https://codemark.hetairoi.xyz and http://localhost:3020 may pin publishers in the Snap; set `CODEMARK_SITE_ORIGIN` to allow one more origin.
 2. `bun snap:serve` serves the Snap on http://localhost:8080.
@@ -218,18 +218,18 @@ To release a new version, bump `version` in `packages/snap/package.json`, run `b
 
 ### CLI
 
-Run it with `bunx @marsian83/codemark-cli <command>`. From a clone, `bun cli` in `packages/` runs the same commands.
+Run it with `bunx @marsian/codemark-cli <command>`. From a clone, `bun cli` in `packages/` runs the same commands.
 
 Secrets come from the environment or a `.env` file (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`, `CODEMARK_SAFE`, `SEPOLIA_RPC_URL`, `ARKIV_ACCESS_KEY`). The published CLI reads `.env` in the current folder; `bun cli` reads the one at the repository root. Set `CODEMARK_ENV_FILE` to use another file. A command that needs a signer it was not given fails before sending anything. Every command also takes `--rpc <url>`.
 
 ```sh
-bunx @marsian83/codemark-cli init pwnmeswap --sec 0x... --years 1                       # register pwnmeswap.eth, deploy the Safe and PubRegistry
-bunx @marsian83/codemark-cli add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90        # mount a key (--root-only for a key with no CI grant, such as delegates)
-bunx @marsian83/codemark-cli publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>   # --kind delegate for 7702 delegates, Safe modules and other delegatecall targets
-bunx @marsian83/codemark-cli pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"
-bunx @marsian83/codemark-cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"
-bunx @marsian83/codemark-cli migrate pwnmeswap.eth ci-1 ci-2 --ci 0x...                 # mount ci-2, republish live releases of ci-1
-bunx @marsian83/codemark-cli verify 0x... --pin pwnmeswap.eth --role delegation         # --role call|delegatecall|delegation|approval-spender|permit-spender
+bunx @marsian/codemark-cli init pwnmeswap --sec 0x... --years 1                       # register pwnmeswap.eth, deploy the Safe and PubRegistry
+bunx @marsian/codemark-cli add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90        # mount a key (--root-only for a key with no CI grant, such as delegates)
+bunx @marsian/codemark-cli publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>   # --kind delegate for 7702 delegates, Safe modules and other delegatecall targets
+bunx @marsian/codemark-cli pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"
+bunx @marsian/codemark-cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"
+bunx @marsian/codemark-cli migrate pwnmeswap.eth ci-1 ci-2 --ci 0x...                 # mount ci-2, republish live releases of ci-1
+bunx @marsian/codemark-cli verify 0x... --pin pwnmeswap.eth --role delegation         # --role call|delegatecall|delegation|approval-spender|permit-spender
 ```
 
 `publish --commit` is optional; the GitHub Action fills it with the commit being built. Releases with `--kind delegate` are signed by root rather than the CI key and get no Arkiv row, because delegates only count when their publisher is pinned.

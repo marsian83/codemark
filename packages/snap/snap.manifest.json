@@ -8,12 +8,12 @@
     "directory": "packages/snap"
   },
   "source": {
-    "shasum": "3sa201OeY5+ZBqCzT02MD0bAHtrwQNNiIJQVrOV0mvc=",
+    "shasum": "RtZ6llw18BhbiwqQIR+Huz2kiTfoMwAQ1wl7r4s2Cdc=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
         "iconPath": "images/icon.svg",
-        "packageName": "@marsian83/codemark-snap",
+        "packageName": "@marsian/codemark-snap",
         "registry": "https://registry.npmjs.org/"
       }
     }

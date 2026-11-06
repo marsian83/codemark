@@ -1,5 +1,5 @@
 {
-	"name": "@marsian83/codemark-snap",
+	"name": "@marsian/codemark-snap",
 	"version": "0.1.0",
 	"description": "MetaMask Snap that shows whether the contract, frontend or account upgrade you are about to use was released by the team whose ENS name you trust.",
 	"repository": {
@@ -8,6 +8,9 @@
 		"directory": "packages/snap"
 	},
 	"homepage": "https://codemark.hetairoi.xyz",
+	"publishConfig": {
+		"access": "public"
+	},
 	"keywords": [
 		"metamask",
 		"snap",
