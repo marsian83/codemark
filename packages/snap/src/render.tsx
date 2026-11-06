@@ -1,68 +1,118 @@
+import {
+	explain,
+	notices,
+	roleLabel,
+	type StepState,
+	trustPath,
+} from "@codemark/shared/check/explain";
+import type { Thresholds } from "@codemark/shared/check/severity";
 import type {
 	PublisherVerdict,
 	TargetResult,
 } from "@codemark/shared/check/types";
 import type { Severity } from "@codemark/shared/verdict";
 import {
-	Bold,
+	Address,
+	Banner,
 	Box,
 	Divider,
-	Heading,
+	Icon,
 	Row,
+	Section,
 	Text,
 } from "@metamask/snaps-sdk/jsx";
 import type { PinCheck } from "./pins";
 
-const severityTag: Record<Severity, string> = {
-	info: "OK",
-	amber: "CAUTION",
-	warning: "WARNING",
-	critical: "CRITICAL",
+const bannerSeverity: Record<
+	Severity,
+	"success" | "info" | "warning" | "danger"
+> = {
+	info: "success",
+	amber: "info",
+	warning: "warning",
+	critical: "danger",
 };
 
-function ageText(seconds?: number) {
-	if (seconds === undefined) return undefined;
-	if (seconds < 3600) return `${Math.max(1, Math.round(seconds / 60))} min old`;
-	if (seconds < 172800) return `${Math.round(seconds / 3600)} h old`;
-	return `${Math.round(seconds / 86400)} d old`;
-}
+const stepIcon: Record<
+	StepState,
+	{
+		name: "check" | "minus" | "close" | "full-circle";
+		color: "success" | "warning" | "error" | "muted";
+	}
+> = {
+	ok: { name: "check", color: "success" },
+	caution: { name: "minus", color: "warning" },
+	fail: { name: "close", color: "error" },
+	open: { name: "full-circle", color: "muted" },
+};
 
-function releaseLine(v: PublisherVerdict) {
-	const r = v.release;
-	if (!r) return undefined;
-	return [r.name, r.version && `v${r.version}`, ageText(r.ageSeconds)]
-		.filter(Boolean)
-		.join(" · ");
-}
-
-function VerdictRow({ v }: { v: PublisherVerdict }) {
-	const who = `${v.publisher}${v.pinned ? " (pinned)" : ""}`;
-	const release = releaseLine(v);
+function Path({
+	v,
+	r,
+	thresholds,
+}: {
+	v: PublisherVerdict;
+	r: TargetResult;
+	thresholds: Thresholds;
+}) {
+	const steps = trustPath(v, r.target.role, thresholds);
 	return (
-		<Box>
-			<Row label={who}>
-				<Text>{v.verdict}</Text>
-			</Row>
-			{release ? <Text>{release}</Text> : null}
-			{v.reason ? <Text>{v.reason}</Text> : null}
-		</Box>
+		<Section>
+			{steps.map((step) => (
+				<Box>
+					<Box direction="horizontal" crossAlignment="center">
+						<Icon
+							name={stepIcon[step.state].name}
+							color={stepIcon[step.state].color}
+							size="md"
+						/>
+						<Text
+							fontWeight="medium"
+							color={step.state === "open" ? "muted" : "default"}
+						>
+							{step.value ? `${step.label}: ${step.value}` : step.label}
+						</Text>
+					</Box>
+					{step.note && step.state !== "ok" ? (
+						<Text
+							size="sm"
+							color={step.state === "fail" ? "error" : "alternative"}
+						>
+							{step.note}
+						</Text>
+					) : null}
+				</Box>
+			))}
+		</Section>
 	);
 }
 
-function TargetBlock({ r }: { r: TargetResult }) {
+function TargetBlock({
+	r,
+	thresholds,
+}: {
+	r: TargetResult;
+	thresholds: Thresholds;
+}) {
+	const { title, body } = explain(r, thresholds);
 	return (
 		<Box>
-			<Heading>{`${severityTag[r.severity]}: ${r.headline}`}</Heading>
-			<Row label={r.target.role}>
-				<Text>{r.target.address}</Text>
+			<Banner title={title} severity={bannerSeverity[r.severity]}>
+				<Text>{body || " "}</Text>
+			</Banner>
+			<Row label={roleLabel[r.target.role]}>
+				<Address address={r.target.address} />
 			</Row>
-			<Text>{r.target.via}</Text>
-			{r.verdicts.map((v) => (
-				<VerdictRow v={v} />
+			{r.verdicts
+				.filter((v) => v.key || v.release || v.verdict !== "UNKNOWN")
+				.map((v) => (
+					<Path v={v} r={r} thresholds={thresholds} />
+				))}
+			{notices(r).map((n) => (
+				<Text size="sm" color={n.tone === "error" ? "error" : "alternative"}>
+					{n.text}
+				</Text>
 			))}
-			{r.indexFlooded ? (
-				<Text>The public index is flooded; open discovery is incomplete.</Text>
-			) : null}
 		</Box>
 	);
 }
@@ -71,61 +121,67 @@ export function Report({
 	results,
 	changedPins,
 	unverified = [],
+	thresholds,
 	note,
 }: {
 	results: TargetResult[];
 	changedPins: PinCheck[];
 	unverified?: PinCheck[];
+	thresholds: Thresholds;
 	note?: string;
 }) {
 	return (
 		<Box>
 			{changedPins.map((p) => (
 				<Box>
-					<Heading>CRITICAL: pinned registry changed</Heading>
-					<Text>
-						{`${p.pin.name} now points to a different registry than the one you pinned. Re-confirm it from the Codemark pin screen before trusting it.`}
-					</Text>
-					<Row label="pinned">
-						<Text>{p.pin.pubRegistry}</Text>
+					<Banner
+						title={`${p.pin.name} changed since you pinned it`}
+						severity="danger"
+					>
+						<Text>
+							It now points to a different registry. Don't sign until you've
+							confirmed the team moved it on purpose, then pin it again.
+						</Text>
+					</Banner>
+					<Row label="Pinned registry">
+						<Address address={p.pin.pubRegistry} />
 					</Row>
-					<Row label="current">
-						<Text>{p.current ?? "unknown"}</Text>
-					</Row>
+					{p.current ? (
+						<Row label="Current registry">
+							<Address address={p.current} />
+						</Row>
+					) : (
+						<Row label="Current registry">
+							<Text>Not found</Text>
+						</Row>
+					)}
 					<Divider />
 				</Box>
 			))}
 			{unverified.length > 0 ? (
-				<Box>
-					<Heading>WARNING: could not verify pin</Heading>
+				<Banner title="Couldn't confirm your pins" severity="warning">
 					<Text>
-						{`The registry behind ${unverified.map((p) => p.pin.name).join(", ")} could not be read, so a change to it cannot be ruled out.`}
+						{`Couldn't read the registry behind ${unverified.map((p) => p.pin.name).join(", ")}, so a change can't be ruled out.`}
 					</Text>
-					<Divider />
-				</Box>
+				</Banner>
 			) : null}
 			{results.map((r, i) => (
 				<Box>
-					<TargetBlock r={r} />
+					<TargetBlock r={r} thresholds={thresholds} />
 					{i < results.length - 1 ? <Divider /> : null}
 				</Box>
 			))}
-			{note ? (
-				<Text>
-					<Bold>{note}</Bold>
-				</Text>
-			) : null}
+			{note ? <Text fontWeight="medium">{note}</Text> : null}
 		</Box>
 	);
 }
 
 export function Failure({ message }: { message: string }) {
 	return (
-		<Box>
-			<Heading>WARNING: Codemark could not check this</Heading>
+		<Banner title="Codemark couldn't check this" severity="warning">
 			<Text>{message}</Text>
-			<Text>Nothing is verified. Treat every address here as unknown.</Text>
-		</Box>
+			<Text>Nothing here is verified. Treat every address as unknown.</Text>
+		</Banner>
 	);
 }
 
@@ -142,29 +198,31 @@ export function PinConfirm({
 		previous !== undefined && previous.toLowerCase() !== registry.toLowerCase();
 	return (
 		<Box>
-			<Heading>
-				{replacing ? "Replace pinned publisher" : "Pin publisher"}
-			</Heading>
 			{replacing ? (
-				<Box>
+				<Banner title={`Replace your pin for ${name}?`} severity="warning">
 					<Text>
-						WARNING: this name already has a pin with a different registry.
-						Accept only if you expected the publisher to move.
+						This name is already pinned to a different registry. Only accept if
+						you know the team moved it.
 					</Text>
-					<Row label="old registry">
-						<Text>{previous}</Text>
-					</Row>
-				</Box>
-			) : null}
-			<Text>
-				Releases from this publisher will count as trusted and its revocations
-				as critical.
-			</Text>
-			<Row label="name">
+				</Banner>
+			) : (
+				<Banner title={`Pin ${name}?`} severity="info">
+					<Text>
+						Its releases will count as verified, and a key it revokes will block
+						signing.
+					</Text>
+				</Banner>
+			)}
+			<Row label="Name">
 				<Text>{name}</Text>
 			</Row>
-			<Row label={replacing ? "new registry" : "registry"}>
-				<Text>{registry}</Text>
+			{replacing ? (
+				<Row label="Old registry">
+					<Address address={previous as `0x${string}`} />
+				</Row>
+			) : null}
+			<Row label={replacing ? "New registry" : "Registry"}>
+				<Address address={registry as `0x${string}`} />
 			</Row>
 		</Box>
 	);
@@ -172,9 +230,8 @@ export function PinConfirm({
 
 export function UnpinConfirm({ name }: { name: string }) {
 	return (
-		<Box>
-			<Heading>Unpin publisher</Heading>
-			<Text>{`Stop trusting ${name}?`}</Text>
-		</Box>
+		<Banner title={`Unpin ${name}?`} severity="info">
+			<Text>Its releases will no longer count as verified.</Text>
+		</Banner>
 	);
 }

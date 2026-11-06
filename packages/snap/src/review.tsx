@@ -1,15 +1,13 @@
 import { createArkivReader } from "@codemark/shared/arkiv/client";
 import { createArkivSource } from "@codemark/shared/arkiv/source";
 import { checkTargets } from "@codemark/shared/check";
+import { defaultThresholds as thresholds } from "@codemark/shared/check/severity";
 import type { Target, TargetResult } from "@codemark/shared/check/types";
 import { type OnSignatureResponse, SeverityLevel } from "@metamask/snaps-sdk";
 import { verifyPins } from "./pins";
 import { Failure, Report } from "./render";
 import { createSnapEnsClient } from "./rpc";
 import { createCache, loadState } from "./state";
-
-const delegateMinAgeSeconds = 86400;
-const freshCallAgeSeconds = 3600;
 
 export async function review(
 	targets: Target[],
@@ -33,8 +31,7 @@ export async function review(
 					arkiv: createArkivSource(createArkivReader()),
 					cache: createCache(state),
 					now: Math.floor(Date.now() / 1000),
-					delegateMinAgeSeconds,
-					freshCallAgeSeconds,
+					...thresholds,
 				},
 			),
 		]);
@@ -47,6 +44,7 @@ export async function review(
 				results={results}
 				changedPins={changedPins}
 				unverified={unverified}
+				thresholds={thresholds}
 			/>
 		);
 		return critical

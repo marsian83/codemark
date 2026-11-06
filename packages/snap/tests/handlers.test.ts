@@ -40,7 +40,7 @@ test("pins list starts empty and unknown methods fail", async () => {
 test("transaction with no resolvable target returns null", async () => {
 	const { onTransaction } = await import("../src/index");
 	const out = await onTransaction({
-		transaction: { from: "0x" + "11".repeat(20) },
+		transaction: { from: `0x${"11".repeat(20)}` },
 		chainId: "eip155:11155111",
 		transactionOrigin: "x",
 	} as never);
