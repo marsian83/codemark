@@ -23,8 +23,8 @@
 	"scripts": {
 		"prepare": "cd .. && husky",
 		"fmt-lint": "biome check --write",
-		"typecheck": "tsc -p lib/shared --noEmit && tsc -p lib/shared/tests --noEmit && tsc -p cli --noEmit && tsc -p snap --noEmit && tsc -p demo --noEmit && tsc -b web",
-		"tests": "bun run --cwd lib/shared tests && bun run --cwd cli tests",
+		"typecheck": "tsc -p lib/shared --noEmit && tsc -p lib/shared/tests --noEmit && tsc -p cli --noEmit && tsc -p snap --noEmit && tsc -p demo --noEmit && tsc -b web && tsc -p web/tests --noEmit",
+		"tests": "bun run --cwd lib/shared tests && bun run --cwd cli tests && bun run --cwd web tests",
 		"cli": "bun run --cwd cli start",
 		"snap:build": "bun run --cwd snap build",
 		"snap:serve": "bun run --cwd snap serve",
