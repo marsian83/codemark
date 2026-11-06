@@ -13,7 +13,7 @@ export async function report(
 		const file = `${dir}/codemark-pending-${action}-${Date.now()}.json`;
 		await Bun.write(file, `${toJson(result)}\n`);
 		console.error(
-			`The chain transactions succeeded but the Arkiv row failed (${result.arkiv.reason}). Saved ${file}; run: codemark arkiv-retry ${file}`,
+			`The chain transactions succeeded but the Arkiv row failed (${result.arkiv.reason}). Saved ${file}; run: bunx @marsian83/codemark-cli arkiv-retry ${file}`,
 		);
 		process.exitCode = 3;
 	}

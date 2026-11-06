@@ -7,7 +7,8 @@ function toneOf(line: string, text: string): Tone | undefined {
 
 describe("highlight", () => {
 	test("keeps every character of the line", () => {
-		const line = '$ bun cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"';
+		const line =
+			'$ bunx @marsian83/codemark-cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"';
 		expect(
 			highlight(line)
 				.map((token) => token.text)
@@ -16,8 +17,10 @@ describe("highlight", () => {
 	});
 
 	test("colours a shell command by part", () => {
-		const line = '$ bun cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"';
+		const line =
+			'$ bunx @marsian83/codemark-cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"';
 		expect(toneOf(line, "$")).toBe("dim");
+		expect(toneOf(line, "bunx @marsian83/codemark-cli")).toBe("dim");
 		expect(toneOf(line, "pwnmeswap.eth")).toBe("name");
 		expect(toneOf(line, "ci-1")).toBe("key");
 		expect(toneOf(line, "--reason")).toBe("flag");

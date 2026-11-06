@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "../../../utils/cn";
 import { actionVariants } from "../Action";
 import { Code } from "../code/Code";
-import { type StageId, stages } from "./stages";
+import { cliLine, type StageId, stages } from "./stages";
 
 const holdMs = 4600;
 const typeMs = 18;
@@ -184,7 +184,7 @@ function Typed({ text, reduced }: { text: string; reduced: boolean }) {
 		return () => clearInterval(timer);
 	}, [text, reduced]);
 	return (
-		<p className="h-5 overflow-x-auto text-xs leading-5 whitespace-pre sm:text-sm">
+		<p className="h-10 overflow-hidden text-xs leading-5 whitespace-pre-wrap sm:h-5 sm:text-sm">
 			<Code text={text.slice(0, shown)} />
 			{shown < text.length ? <span className="text-fox">▌</span> : null}
 		</p>
@@ -217,6 +217,9 @@ export function CutDemo() {
 			className="cartouche min-w-0 bg-night-2/95 [--chamfer:1rem]"
 		>
 			<div className="border-b border-hairline px-5 py-4 sm:px-7">
+				<p className="text-xs leading-5 whitespace-pre sm:text-sm">
+					<Code text={cliLine} />
+				</p>
 				<Typed text={stage.command} reduced={reduced} />
 				<p
 					className={cn(

@@ -32,7 +32,7 @@ const inline: [Tone, RegExp][] = [
 	["key", /\bci-\d\b/],
 	["release", /\b[a-z]+[ -]\d+[.-]\d+[.-]\d+\b/],
 	["string", /0x[0-9a-fA-F…]+/],
-	["dim", /published \d+ \w+ ago|\bbun cli\b/],
+	["dim", /published \d+ \w+ ago|bunx @marsian83\/codemark-cli/],
 	["field", /[\w-]+:(?=\s|$)/],
 ];
 

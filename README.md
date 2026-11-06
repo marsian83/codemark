@@ -58,14 +58,13 @@ The full guide, with every command explained, is at [codemark.hetairoi.xyz/app/d
 **Publish your releases.** You need [Bun](https://bun.sh) 1.4.2 or newer and three keys: a root key that owns the team Safe, a security key that can only withdraw things, and a CI key that can only add releases. Put them in `.env` in the folder you run the CLI from (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`), then:
 
 ```sh
-bun add -g @marsian83/codemark-cli                      # installs the codemark command
-codemark init pwnmeswap --years 1                        # register pwnmeswap.eth, deploy the Safe and its registry
-codemark add-key pwnmeswap.eth ci-1 --ci 0x...           # let your CI address publish under ci-1
-codemark publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x...   # release a deployed contract
-codemark verify 0x... --pin pwnmeswap.eth                # check it, the same way the site and the Snap do
+bunx @marsian83/codemark-cli init pwnmeswap --years 1                        # register pwnmeswap.eth, deploy the Safe and its registry
+bunx @marsian83/codemark-cli add-key pwnmeswap.eth ci-1 --ci 0x...           # let your CI address publish under ci-1
+bunx @marsian83/codemark-cli publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x...   # release a deployed contract
+bunx @marsian83/codemark-cli verify 0x... --pin pwnmeswap.eth                # check it, the same way the site and the Snap do
 ```
 
-To only check a contract, nothing needs installing: `bunx @marsian83/codemark-cli verify 0x... --pin pwnmeswap.eth`.
+There is nothing to install: `bunx` fetches the CLI when you run it.
 
 If something goes wrong, `pull` withdraws one release and `cut` withdraws everything a key released, in one transaction each. The [CLI](#cli) section below lists every flag.
 
@@ -158,8 +157,8 @@ Arkiv is an untrusted, searchable index. ENS can say whether a name is valid but
 |---|---|
 | `packages/lib/shared` | checker, ENSv2 addresses/ABIs/reads, record codec, calldata decoding, Arkiv row types. Runs in browser and Snap |
 | `packages/cli` | publisher tool; the only place that signs ENS or Arkiv transactions |
-| `packages/mcp` | MCP server for agents: read-only, holds no keys, returns proceed, ask_user or refuse |
 | `packages/snap` | MetaMask Snap (`onTransaction`, `onSignature`) |
+| `packages/mcp` | MCP server for agents: read-only, holds no keys, returns proceed, ask_user or refuse |
 | `packages/web` | landing page at `/`, lookup site and demo 7702 wallet page under `/app` (Vite, React) |
 | `packages/demo` | Anvil fork, seed and attack scripts, live-run script. Nothing here ships |
 | `arkiv/` | Arkiv prize documentation |
@@ -219,18 +218,18 @@ To release a new version, bump `version` in `packages/snap/package.json`, run `b
 
 ### CLI
 
-Install it with `bun add -g @marsian83/codemark-cli`. From a clone, `bun cli` in `packages/` runs the same commands.
+Run it with `bunx @marsian83/codemark-cli <command>`. From a clone, `bun cli` in `packages/` runs the same commands.
 
-Secrets come from the environment or a `.env` file (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`, `CODEMARK_SAFE`, `SEPOLIA_RPC_URL`, `ARKIV_ACCESS_KEY`). The installed `codemark` reads `.env` in the current folder; `bun cli` reads the one at the repository root. Set `CODEMARK_ENV_FILE` to use another file. A command that needs a signer it was not given fails before sending anything. Every command also takes `--rpc <url>`.
+Secrets come from the environment or a `.env` file (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`, `CODEMARK_SAFE`, `SEPOLIA_RPC_URL`, `ARKIV_ACCESS_KEY`). The published CLI reads `.env` in the current folder; `bun cli` reads the one at the repository root. Set `CODEMARK_ENV_FILE` to use another file. A command that needs a signer it was not given fails before sending anything. Every command also takes `--rpc <url>`.
 
 ```sh
-codemark init pwnmeswap --sec 0x... --years 1                       # register pwnmeswap.eth, deploy the Safe and PubRegistry
-codemark add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90        # mount a key (--root-only for a key with no CI grant, such as delegates)
-codemark publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>   # --kind delegate for 7702 delegates, Safe modules and other delegatecall targets
-codemark pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"
-codemark cut pwnmeswap.eth ci-1 --reason "CI key leaked"
-codemark migrate pwnmeswap.eth ci-1 ci-2 --ci 0x...                 # mount ci-2, republish live releases of ci-1
-codemark verify 0x... --pin pwnmeswap.eth --role delegation         # --role call|delegatecall|delegation|approval-spender|permit-spender
+bunx @marsian83/codemark-cli init pwnmeswap --sec 0x... --years 1                       # register pwnmeswap.eth, deploy the Safe and PubRegistry
+bunx @marsian83/codemark-cli add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90        # mount a key (--root-only for a key with no CI grant, such as delegates)
+bunx @marsian83/codemark-cli publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>   # --kind delegate for 7702 delegates, Safe modules and other delegatecall targets
+bunx @marsian83/codemark-cli pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"
+bunx @marsian83/codemark-cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"
+bunx @marsian83/codemark-cli migrate pwnmeswap.eth ci-1 ci-2 --ci 0x...                 # mount ci-2, republish live releases of ci-1
+bunx @marsian83/codemark-cli verify 0x... --pin pwnmeswap.eth --role delegation         # --role call|delegatecall|delegation|approval-spender|permit-spender
 ```
 
 `publish --commit` is optional; the GitHub Action fills it with the commit being built. Releases with `--kind delegate` are signed by root rather than the CI key and get no Arkiv row, because delegates only count when their publisher is pinned.
@@ -239,7 +238,7 @@ codemark verify 0x... --pin pwnmeswap.eth --role delegation         # --role cal
 
 `verify` also takes `--no-index`, `--block`, `--min-age <seconds>` and `--json`, and exits 0 for no warning, 1 for a warning and 2 for critical.
 
-To release the CLI to npm, run `bun run --cwd cli build`, then `bun publish` from `packages/cli/npm`.
+To release the CLI or the MCP server to npm, run `bun run --cwd cli build` or `bun run --cwd mcp build`, then `bun publish` from `packages/cli/npm` or `packages/mcp/npm`.
 
 ### GitHub Action
 
@@ -311,8 +310,8 @@ Limits:
 - Beacon proxies, diamonds and factory-made contracts are "not attested".
 - Mainnet is out of scope: Sepolia runs contracts-v2 commit `07e55a05`, mainnet a different one.
 - Privacy: Arkiv sees the queried artifact and client IP, and the RPC sees the checked name. There is no read-privacy claim.
-- The MCP server protects an honest agent that was handed a bad address. A hijacked agent can skip the check; stopping that takes enforcement in the signer. It does not check amounts or recipients, so a plain transfer returns `ask_user`.
 - Codemark does not assess code behaviour.
+- The MCP server protects an honest agent that was handed a bad address. A hijacked agent can skip the check; stopping that takes enforcement in the signer. It does not check amounts or recipients, so a plain transfer returns `ask_user`.
 
 ## Partners and prize tracks
 

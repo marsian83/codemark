@@ -40,7 +40,9 @@ const [name, ...rest] = positionals;
 const command = name ? commands[name] : undefined;
 
 if (!command) {
-	console.log(`codemark <command>\n\n${Object.keys(commands).join("\n")}`);
+	console.log(
+		`bunx @marsian83/codemark-cli <command>\n\n${Object.keys(commands).join("\n")}`,
+	);
 	process.exit(name ? 1 : 0);
 }
 

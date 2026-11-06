@@ -388,9 +388,8 @@ export default function DocsPage() {
 						<ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-typography-secondary marker:text-typography-tertiary">
 							<li>
 								<ExternalLink href="https://bun.sh">Bun</ExternalLink> 1.4.2 or
-								newer, and the CLI:{" "}
-								<Mono>bun add -g @marsian83/codemark-cli</Mono>. It installs the{" "}
-								<Mono>codemark</Mono> command.
+								newer. <Mono>bunx</Mono> fetches the CLI when you run it, so
+								there is nothing else to install.
 							</li>
 							<li>
 								Sepolia ETH for gas on the root key and the CI key. The security
@@ -400,8 +399,8 @@ export default function DocsPage() {
 								Test funds on Arkiv's Rabdi testnet for the CI key, which writes
 								each release to the search index, and for the security key,
 								which writes withdrawal notes. Without them a release still
-								checks out for anyone who pinned you, and{" "}
-								<Mono>codemark arkiv-retry</Mono> adds the entry later.
+								checks out for anyone who pinned you, and the{" "}
+								<Mono>arkiv-retry</Mono> command adds the entry later.
 							</li>
 							<li>
 								A{" "}
@@ -466,7 +465,7 @@ export default function DocsPage() {
 						<Step
 							n={1}
 							title="Register your name"
-							code="codemark init pwnmeswap --sec 0x... --years 1"
+							code="bunx @marsian83/codemark-cli init pwnmeswap --sec 0x... --years 1"
 							needs={
 								<>
 									The root key. <Mono>--sec</Mono> is the security key's address
@@ -482,7 +481,7 @@ export default function DocsPage() {
 						<Step
 							n={2}
 							title="Add a release key"
-							code="codemark add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90"
+							code="bunx @marsian83/codemark-cli add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90"
 							needs={
 								<>
 									The root key. <Mono>--ci</Mono> is the CI key's address.{" "}
@@ -498,7 +497,7 @@ export default function DocsPage() {
 						<Step
 							n={3}
 							title="Publish a release"
-							code="codemark publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>"
+							code="bunx @marsian83/codemark-cli publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>"
 							needs={
 								<>
 									The CI key. <Mono>--component</Mono>, <Mono>--version</Mono>{" "}
@@ -516,7 +515,7 @@ export default function DocsPage() {
 						<Step
 							n={4}
 							title="Verify it"
-							code="codemark verify 0x... --pin pwnmeswap.eth"
+							code="bunx @marsian83/codemark-cli verify 0x... --pin pwnmeswap.eth"
 							needs="No keys."
 						>
 							Runs the same check the site and the Snap run. Add{" "}
@@ -534,7 +533,7 @@ export default function DocsPage() {
 							<Step
 								n={1}
 								title="Pull one release"
-								code={`codemark pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"`}
+								code={`bunx @marsian83/codemark-cli pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"`}
 								needs={
 									<>
 										The root key. <Mono>--reason</Mono> is required.
@@ -547,7 +546,7 @@ export default function DocsPage() {
 							<Step
 								n={2}
 								title="Cut a leaked key"
-								code={`codemark cut pwnmeswap.eth ci-1 --reason "CI key leaked"`}
+								code={`bunx @marsian83/codemark-cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"`}
 								needs={
 									<>
 										The security key. <Mono>--reason</Mono> is required.
@@ -560,7 +559,7 @@ export default function DocsPage() {
 							<Step
 								n={3}
 								title="Move to a new key"
-								code="codemark migrate pwnmeswap.eth ci-1 ci-2 --ci 0x..."
+								code="bunx @marsian83/codemark-cli migrate pwnmeswap.eth ci-1 ci-2 --ci 0x..."
 								needs={
 									<>
 										The root key. Pass <Mono>--ci</Mono> or{" "}

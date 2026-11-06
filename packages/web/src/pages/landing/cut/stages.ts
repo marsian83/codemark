@@ -11,10 +11,12 @@ export type Stage = {
 	wallet: string;
 };
 
+export const cliLine = "$ bunx @marsian83/codemark-cli \\";
+
 export const stages: Stage[] = [
 	{
 		id: "live",
-		command: "$ bun cli publish pwnmeswap.eth ci-1 --component router",
+		command: "  publish pwnmeswap.eth ci-1 --component router",
 		result: "ci-1 is live. 2 releases verify",
 		action: "Cut ci-1",
 		keyName: "ci-1",
@@ -22,7 +24,7 @@ export const stages: Stage[] = [
 	},
 	{
 		id: "cut",
-		command: '$ bun cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"',
+		command: '  cut pwnmeswap.eth ci-1 --reason "CI key leaked"',
 		result: "ci-1 cut. None of its releases verify now",
 		action: "Mount ci-2",
 		keyName: "ci-1",
@@ -30,7 +32,7 @@ export const stages: Stage[] = [
 	},
 	{
 		id: "migrated",
-		command: "$ bun cli migrate pwnmeswap.eth ci-1 ci-2 --ci 0x…",
+		command: "  migrate pwnmeswap.eth ci-1 ci-2 --ci 0x…",
 		result: "ci-2 is live. 2 releases verify again",
 		action: "Start over",
 		keyName: "ci-2",
