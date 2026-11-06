@@ -32,6 +32,11 @@ describe("ENSIP-15 normalisation", () => {
 		expect(() => normalizeLabel("ci-1.pwnmeswap")).toThrow(/single label/);
 	});
 
+	test("a lookalike that mixes scripts is rejected, not matched to the real name", () => {
+		expect(() => parsePublisherName("pwnmeswаp.eth")).toThrow(/Cyrillic/);
+		expect(isValidLabel("pwnmeswаp")).toBe(false);
+	});
+
 	test("normalised unicode publisher names are accepted", () => {
 		expect(parsePublisherName("Café.eth")).toBe("café.eth");
 	});

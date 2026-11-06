@@ -118,6 +118,8 @@ The checker (`packages/lib/shared/check`) runs every read against one pinned Sep
 5. Age. The name's registration block is checked from logs. Age is measured from that block, and a delegate must be older than a threshold (24 hours in production, configurable) to pass.
 6. Incidents. A pull or cut counts only if the sec key's role is confirmed on chain and the transaction really contains the unregister event.
 
+Every name that comes in, a typed pin, a publisher or a key, is normalized with ENSIP-15 (`normalize` from `viem/ens`, in `lib/shared/names.ts`) before any lookup. Every label of a release name, including names read from Arkiv rows, must already be normalized and plain `[a-z0-9-]`. A lookalike that mixes scripts, such as `pwnmeswаp.eth` with a Cyrillic `а`, is rejected outright (`tests/names.test.ts`).
+
 The result is one verdict per publisher: VERIFIED, VERIFIED-unproven (Arkiv unreachable, so the proof blocks are unknown), KEY REVOKED, PULLED (with the reason), MISMATCH, or none. Severity follows trust. For delegations and delegatecall targets, anything but a pinned, proven VERIFIED that is old enough is critical, which makes MetaMask show its double confirmation. Pins are explicit (a typed name or a curated list), never automatic.
 
 ### Where ENSv2 is load-bearing
@@ -255,6 +257,20 @@ Outputs are `name` and `forward-name`. The CI key only has `ROLE_REGISTRAR` on o
 | EIP-7702 delegate 1.0.0, published by root | [delegate-1-0-0.delegates.pwnmeswap.eth](https://explorer.ens.domains/delegate-1-0-0.delegates.pwnmeswap.eth) | [`0x5213f6c6…`](https://sepolia.etherscan.io/tx/0x5213f6c61d071f60dcb0f4d30094f37e456aa84b32078e526f39e7061ee984aa) [`0x911e9e58…`](https://sepolia.etherscan.io/tx/0x911e9e5814f348602df662f76f5a7a780cddfacff337b9f2da6e5a4fffe9e5fa) |
 
 The router and portal rows are indexed on Arkiv's Rabdi testnet; the delegate has none, because delegates are only trusted when pinned. Check any of the three targets with `codemark verify <address> --pin pwnmeswap.eth`, or on the lookup page.
+
+To see the records without any Codemark code, ask the canonical Universal Resolver through plain viem (save it as a `.ts` file in `packages/lib/shared`, where viem is installed, and run it with `bun`). The address sits under the Sepolia coin type (ENSIP-11), and the `codemark` text record holds the code hash:
+
+```ts
+import { createPublicClient, http, toCoinType } from "viem";
+import { sepolia } from "viem/chains";
+
+const client = createPublicClient({ chain: sepolia, transport: http("https://sepolia.gateway.tenderly.co") });
+const name = "router-3-1-0.ci-1.pwnmeswap.eth";
+await client.getEnsAddress({ name, coinType: toCoinType(sepolia.id) }); // 0x3bfa4769fb09eefc5a80d6e87c3b9c650f7ae48e
+await client.getEnsText({ name, key: "codemark" }); // v1;k=contract;n=router;c=11155111;h=0xe7f9…71de;v=3.1.0
+```
+
+Plain resolution cannot tell you whether the records could have been rewritten, whether the key is still trusted, or how old the release is. The checker adds those.
 
 ## Security model and known limits
 
