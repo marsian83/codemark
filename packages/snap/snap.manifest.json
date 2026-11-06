@@ -1,5 +1,5 @@
 {
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Shows whether the contract, frontend or account delegate you are about to use was released by the team whose ENS name you trust.",
   "proposedName": "Codemark",
   "repository": {
@@ -8,7 +8,7 @@
     "directory": "packages/snap"
   },
   "source": {
-    "shasum": "fkbAPKbC+RbDJYZhNC2Gh0zkzRA5mKuo1iVqtyFPgtU=",
+    "shasum": "OJEZ60rO+GsffriwN2F7YS88IclzAVcHZz2YvrdDR4M=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
