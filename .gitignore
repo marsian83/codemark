@@ -31,3 +31,5 @@ coverage
 # local / generated
 **/*.local*
 /packages/demo/state
+
+/packages/cli/npm/codemark.js

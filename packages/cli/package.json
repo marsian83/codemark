@@ -7,6 +7,7 @@
 	},
 	"scripts": {
 		"start": "bun index.ts",
+		"build": "bun build index.ts --target bun --define process.env.CODEMARK_BUNDLED='\"1\"' --outfile npm/codemark.js",
 		"tests": "bun test"
 	},
 	"dependencies": {

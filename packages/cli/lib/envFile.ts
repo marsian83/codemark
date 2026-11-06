@@ -1,6 +1,10 @@
 import { resolve } from "node:path";
 
-export const envFilePath = resolve(import.meta.dir, "../../../.env");
+const repoEnvFile = resolve(import.meta.dir, "../../../.env");
+
+export const envFilePath =
+	process.env.CODEMARK_ENV_FILE ??
+	(process.env.CODEMARK_BUNDLED ? resolve(".env") : repoEnvFile);
 
 export async function setEnvValue(
 	key: string,

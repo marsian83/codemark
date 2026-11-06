@@ -1,0 +1,30 @@
+{
+	"name": "@marsian83/codemark-cli",
+	"version": "0.1.0",
+	"description": "Release your contracts, frontends and account upgrades under your ENS name, and check anyone else's.",
+	"type": "module",
+	"bin": {
+		"codemark": "./codemark.js"
+	},
+	"files": [
+		"codemark.js",
+		"README.md"
+	],
+	"engines": {
+		"bun": ">=1.4.2"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/marsian83/codemark.git",
+		"directory": "packages/cli"
+	},
+	"homepage": "https://codemark.hetairoi.xyz/app/docs",
+	"keywords": [
+		"ens",
+		"ensv2",
+		"release",
+		"signing",
+		"sepolia",
+		"supply-chain"
+	]
+}
