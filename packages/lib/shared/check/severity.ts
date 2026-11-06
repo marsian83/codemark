@@ -74,6 +74,7 @@ function revocation(v: PublisherVerdict): string {
 	const why = v.reason ? `: ${v.reason}` : "";
 	if (v.verdict === "KEY REVOKED") return `KEY REVOKED by ${v.publisher}${why}`;
 	if (v.verdict === "PULLED") return `PULLED by ${v.publisher}${why}`;
+	if (v.checkFailed) return `Could not check ${v.publisher}${why}`;
 	return `MISMATCH under ${v.publisher}${why}`;
 }
 

@@ -62,7 +62,7 @@ export const verify: Command = async (args, flags) => {
 			console.log(`  ${r.severity.toUpperCase()}: ${r.headline}`);
 			for (const v of r.verdicts)
 				console.log(
-					`  ${v.verdict.padEnd(17)} ${v.publisher}${v.pinned ? " (pinned)" : ""}${v.release ? `  ${v.release.name}` : ""}${v.reason ? `  ${v.reason}` : ""}`,
+					`  ${(v.checkFailed ? "CHECK FAILED" : v.verdict).padEnd(17)} ${v.publisher}${v.pinned ? " (pinned)" : ""}${v.release ? `  ${v.release.name}` : ""}${v.reason ? `  ${v.reason}` : ""}`,
 				);
 			if (r.error) console.log(`  error: ${r.error}`);
 		}

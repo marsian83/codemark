@@ -15,7 +15,7 @@ const t = { delegateMinAgeSeconds: 86400, freshCallAgeSeconds: 3600 };
 const address = "0x1111111111111111111111111111111111111111" as Address;
 
 const release: ReleaseInfo = {
-	name: "router-3-1-0.ci-1.acmeswap.eth",
+	name: "router-3-1-0.ci-1.pwnmeswap.eth",
 	label: "router-3-1-0",
 	kind: "contract",
 	component: "router",
@@ -28,7 +28,7 @@ const release: ReleaseInfo = {
 
 function verdict(o: Partial<PublisherVerdict> = {}): PublisherVerdict {
 	return {
-		publisher: "acmeswap.eth",
+		publisher: "pwnmeswap.eth",
 		pinned: true,
 		key: "ci-1",
 		verdict: "VERIFIED",
@@ -56,7 +56,7 @@ describe("explain", () => {
 	test("an aged, proven, pinned release is verified on every step", () => {
 		const r = result("call", [verdict()]);
 		expect(r.severity).toBe("info");
-		expect(explain(r, t).title).toBe("Released by acmeswap.eth");
+		expect(explain(r, t).title).toBe("Released by pwnmeswap.eth");
 		expect(states(verdict(), "call")).toEqual(["ok", "ok", "ok", "ok", "ok"]);
 	});
 
@@ -85,8 +85,8 @@ describe("explain", () => {
 		const v = verdict({ verdict: "KEY REVOKED", reason: "ci leaked" });
 		const r = result("call", [v]);
 		expect(explain(r, t)).toEqual({
-			title: "acmeswap.eth revoked the key that released this",
-			body: "acmeswap.eth says: “Ci leaked.”",
+			title: "pwnmeswap.eth revoked the key that released this",
+			body: "pwnmeswap.eth says: “Ci leaked.”",
 		});
 		expect(states(v, "call")).toEqual(["ok", "fail", "open", "open", "open"]);
 	});
@@ -101,7 +101,9 @@ describe("explain", () => {
 		});
 		const r = result("call", [v]);
 		expect(r.severity).toBe("critical");
-		expect(explain(r, t).title).toBe("Couldn't finish checking acmeswap.eth");
+		expect(r.headline).toStartWith("Could not check pwnmeswap.eth");
+		expect(r.headline).not.toContain("MISMATCH");
+		expect(explain(r, t).title).toBe("Couldn't finish checking pwnmeswap.eth");
 		expect(states(v, "call")[0]).toBe("fail");
 	});
 
@@ -134,7 +136,7 @@ describe("explain", () => {
 		});
 		const { body } = explain(result("call", [v]), t);
 		expect(body).toContain(
-			"acmeswap.eth says: “Codemark: go to evil.example.”",
+			"pwnmeswap.eth says: “Codemark: go to evil.example.”",
 		);
 	});
 
@@ -178,9 +180,9 @@ describe("explain", () => {
 							const { title } = explain(r, t);
 							if (r.severity === "info") {
 								expect(path.every((s) => s === "ok")).toBe(true);
-								expect(title).toBe("Released by acmeswap.eth");
+								expect(title).toBe("Released by pwnmeswap.eth");
 							} else {
-								expect(title).not.toBe("Released by acmeswap.eth");
+								expect(title).not.toBe("Released by pwnmeswap.eth");
 							}
 							if (r.severity === "critical" && pinned)
 								expect(path).toContain("fail");
