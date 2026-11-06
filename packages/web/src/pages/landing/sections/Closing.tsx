@@ -6,7 +6,7 @@ import { actionVariants } from "../Action";
 
 const productLinks = [
 	{ to: "/app", label: "Check a contract" },
-	{ to: "/app/demo-wallet", label: "Account upgrade demo" },
+	{ to: "/app/demo-wallet", label: "Upgrade demo" },
 ];
 
 const sourceLinks = [
@@ -23,7 +23,7 @@ export function Closing() {
 		event.preventDefault();
 		const value = address.trim();
 		if (!isAddress(value)) {
-			setError("Enter a 0x contract address");
+			setError("Address must start with 0x and have 42 characters");
 			return;
 		}
 		navigate(`/app?a=${value}&role=call`);
@@ -31,18 +31,21 @@ export function Closing() {
 
 	return (
 		<footer className="relative mx-auto min-h-dvh w-full max-w-[84rem] px-5 sm:px-10">
-			<div className="pt-24 sm:pt-28">
+			<div className="pt-22 sm:pt-24">
 				<div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:gap-12">
 					<div className="min-w-0">
-						<h2 className="max-w-4xl font-display text-[2.125rem] leading-[1.06] sm:text-6xl">
+						<h2 className="max-w-4xl font-display text-[clamp(2.125rem,min(4.2vw,7.5dvh),3.75rem)] leading-[1.06]">
 							Paste an address and see who published it
 						</h2>
 						<form
 							onSubmit={submit}
 							noValidate
-							className="mt-6 flex max-w-2xl flex-wrap gap-2 sm:mt-10"
+							className="cartouche mt-6 flex max-w-2xl flex-wrap gap-2 bg-night/90 p-2.5 [--chamfer:0.75rem] sm:mt-5"
 						>
-							<label htmlFor="closing-address" className="sr-only">
+							<label
+								htmlFor="closing-address"
+								className="w-full text-sm font-medium"
+							>
 								Contract address
 							</label>
 							<input
@@ -57,7 +60,7 @@ export function Closing() {
 								autoComplete="off"
 								aria-invalid={Boolean(error)}
 								aria-describedby={error ? "closing-address-error" : undefined}
-								className="cartouche h-12 min-w-0 flex-1 basis-64 bg-night/70 px-4 font-label text-sm text-sand outline-none placeholder:text-sand-3 focus-visible:bg-night"
+								className="cartouche h-12 min-w-0 flex-1 basis-64 bg-night-3 px-4 font-label text-sm text-sand outline-none placeholder:text-sand-3 focus-visible:bg-night-2"
 							/>
 							<button
 								type="submit"
@@ -75,7 +78,7 @@ export function Closing() {
 							</p>
 						) : null}
 					</div>
-					<nav className="grid grid-cols-2 gap-8 self-start text-sm font-medium lg:justify-items-end">
+					<nav className="cartouche grid grid-cols-2 gap-x-8 gap-y-4 self-start bg-night/90 p-4 text-sm font-medium [--chamfer:0.75rem]">
 						<ul className="flex flex-col gap-3">
 							{productLinks.map((link) => (
 								<li key={link.to}>

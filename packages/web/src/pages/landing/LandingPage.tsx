@@ -28,9 +28,9 @@ function useDarkTheme() {
 
 export default function LandingPage() {
 	useDarkTheme();
-	useTitle("Know who published it before you sign");
+	useTitle("See who published a contract before you sign");
 	return (
-		<div className="relative isolate min-h-dvh overflow-x-clip bg-night font-text text-sand antialiased selection:bg-fox selection:text-night">
+		<div className="relative isolate min-h-dvh overflow-x-clip bg-night font-text text-sand text-pretty antialiased selection:bg-fox selection:text-night">
 			<World />
 			<header className="fixed inset-x-0 top-0 z-20">
 				<div
@@ -51,7 +51,7 @@ export default function LandingPage() {
 							rel="noreferrer"
 							className="hover:text-fox max-sm:hidden"
 						>
-							Source
+							GitHub
 						</a>
 						<Link
 							to="/app"

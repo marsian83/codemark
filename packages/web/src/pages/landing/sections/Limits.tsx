@@ -2,36 +2,45 @@ import { Heading, Section } from "./Section";
 
 const limits = [
 	{
-		name: "Whether code is safe",
-		detail: "It tells you who published it, not what the code does.",
+		question: "Is the code safe?",
+		answer:
+			"Codemark checks who published it, not what it does. Read the audit too.",
 	},
 	{
-		name: "Whether a name is the real team",
-		detail:
-			"A lookalike can publish under its own name. Pinning is what protects you.",
+		question: "Is this the real team?",
+		answer:
+			"A lookalike can publish under its own name. Check a name before you pin it.",
 	},
 	{
-		name: "Anything about teams who haven't joined",
-		detail: "Teams have to publish and wallets have to run the check.",
+		question: "What if a team hasn't joined?",
+		answer:
+			"Their contracts come back as unknown. Teams have to publish, and wallets have to run the check.",
 	},
 	{
-		name: "Anything on mainnet yet",
-		detail: "Codemark runs on Sepolia today.",
+		question: "Does it work on mainnet?",
+		answer: "Not yet. Codemark runs on Sepolia today.",
 	},
 ];
 
 export function Limits() {
 	return (
 		<Section>
-			<Heading>What Codemark doesn't tell you</Heading>
-			<dl className="mt-10 divide-y divide-hairline border-y border-hairline">
+			<Heading>What Codemark can't tell you</Heading>
+			<dl className="mt-10 grid gap-px overflow-hidden bg-hairline md:grid-cols-2">
 				{limits.map((limit) => (
-					<div
-						key={limit.name}
-						className="grid gap-1 py-5 md:grid-cols-2 md:gap-8"
-					>
-						<dt className="text-lg font-semibold">{limit.name}</dt>
-						<dd className="text-sand">{limit.detail}</dd>
+					<div key={limit.question} className="bg-night p-6 sm:p-8">
+						<dt className="flex items-start gap-3 font-display text-2xl leading-tight sm:text-3xl">
+							<span
+								aria-hidden
+								className="cartouche mt-1 grid size-7 shrink-0 place-items-center bg-flare font-text text-base font-bold text-night [--chamfer:0.3rem]"
+							>
+								?
+							</span>
+							{limit.question}
+						</dt>
+						<dd className="mt-3 pl-10 text-lg leading-7 text-balance text-sand">
+							{limit.answer}
+						</dd>
 					</div>
 				))}
 			</dl>

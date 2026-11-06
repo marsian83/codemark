@@ -4,31 +4,30 @@ import { Heading, Lede, Section } from "./Section";
 const features = [
 	{
 		name: "Registries",
-		detail: "A key is a branch you can remove in one transaction.",
+		detail: "Each key is a branch you can remove in one transaction.",
 	},
 	{
 		name: "Roles",
-		detail: '"May add" and "may remove" are separate permissions.',
+		detail: "Adding a release and removing one are separate permissions.",
 	},
 	{
 		name: "Expiry",
-		detail: "A key's 90-day lifetime bounds every release under it.",
+		detail:
+			"A key expires after 90 days, and every release under it goes with it.",
 	},
 ];
 
 export function Foundations() {
 	return (
 		<Section>
-			<Heading size="md">
-				A key can be revoked because ENSv2 gave every name its own registry
-			</Heading>
+			<Heading size="md">Why this needs ENSv2</Heading>
 			<Lede className="mt-8">
 				On ENSv1, deleting <Code text="ci-1.acme.eth" className="text-base" />{" "}
 				leaves{" "}
 				<code className="font-label text-base text-sand">
 					router.ci-1.acme.eth
 				</code>{" "}
-				resolving. On ENSv2, removing a branch ends everything under it.
+				resolving. On ENSv2, removing a name removes everything under it.
 			</Lede>
 			<dl className="mt-12 grid gap-8 md:grid-cols-3">
 				{features.map((feature) => (
@@ -42,11 +41,11 @@ export function Foundations() {
 			</dl>
 			<p className="mt-12 max-w-2xl text-lg leading-8 text-sand-2">
 				<span className="font-medium text-sand">
-					Arkiv is the index, and ENS is the proof.
+					Arkiv finds the claims, and ENS confirms them.
 				</span>{" "}
-				Arkiv finds who claims an address and why a release was withdrawn. Every
-				row is rechecked against ENS, so a forged or flooded index can't turn
-				anything green.
+				Arkiv shows who claims an address and why a release was withdrawn.
+				Codemark rechecks every row against ENS, so a fake or flooded index
+				can't mark anything as verified.
 			</p>
 		</Section>
 	);

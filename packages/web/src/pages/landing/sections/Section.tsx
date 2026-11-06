@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode, Ref } from "react";
+import type { ComponentProps } from "react";
 import { cn } from "../../../utils/cn";
 
 export function Section({
@@ -47,27 +47,5 @@ export function Lede({ className, ...props }: ComponentProps<"p">) {
 			className={cn("max-w-2xl text-lg leading-8 text-sand", className)}
 			{...props}
 		/>
-	);
-}
-
-export function Plaque({
-	children,
-	className,
-	ref,
-}: {
-	children: ReactNode;
-	className?: string;
-	ref?: Ref<HTMLDivElement>;
-}) {
-	return (
-		<div
-			ref={ref}
-			className={cn(
-				"cartouche bg-night-2/90 p-5 backdrop-blur-sm [--chamfer:1rem] sm:p-8",
-				className,
-			)}
-		>
-			{children}
-		</div>
 	);
 }

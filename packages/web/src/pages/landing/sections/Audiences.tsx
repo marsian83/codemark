@@ -48,8 +48,9 @@ export function Audiences() {
 				<div className="min-w-0">
 					<Heading size="md">For people who sign</Heading>
 					<p className="mt-5 text-lg leading-8 text-sand">
-						Install the Snap and pin the teams you trust. You'll see the
-						publisher on every signature. It runs in MetaMask Flask today.
+						Install the Snap and pin the teams you trust. MetaMask then shows
+						who published each contract before you sign. It works in MetaMask
+						Flask today.
 					</p>
 					<Link
 						to="/app"
@@ -61,9 +62,8 @@ export function Audiences() {
 				<div className="min-w-0">
 					<Heading size="md">For teams who ship</Heading>
 					<p className="mt-5 text-lg leading-8 text-sand">
-						Add one step to your release workflow and keep the security key on a
-						hardware wallet. There are no contracts of ours to deploy or audit,
-						only stock ENSv2.
+						Add one step to your release workflow and keep your security key on
+						a hardware wallet. There's no Codemark contract to deploy or audit.
 					</p>
 					<Workflow />
 					<a
