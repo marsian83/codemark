@@ -14,7 +14,7 @@ const schema = z.object({
 	SEPOLIA_RPC_URL: z
 		.string()
 		.url()
-		.default("https://ethereum-sepolia-rpc.publicnode.com"),
+		.default("https://sepolia.gateway.tenderly.co"),
 	FORK_BLOCK: z.coerce.bigint().optional(),
 	ANVIL_BIN: z.string().default(`${process.env.HOME}/.foundry/bin/anvil`),
 	ARKIV_ACCESS_KEY: z.string().default(""),

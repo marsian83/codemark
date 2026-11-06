@@ -3,7 +3,7 @@ import { checkTargets } from "../check";
 import { createEnsClient } from "../ens/client";
 
 const rpc =
-	process.env.SEPOLIA_RPC_URL ?? "https://ethereum-sepolia-rpc.publicnode.com";
+	process.env.SEPOLIA_RPC_URL ?? "https://sepolia.gateway.tenderly.co";
 const live = process.env.CODEMARK_LIVE_TESTS === "0" ? test.skip : test;
 
 const deps = () => ({

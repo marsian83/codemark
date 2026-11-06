@@ -26,6 +26,6 @@ The publisher's `PubRegistry` must give every root role except `ROLE_UNREGISTER`
 
 The per-resolver scan is cached only up to the pinned block minus 12 blocks; the tail is rescanned on every check, so a lagging node that omits recent logs cannot advance the cache past them. Log requests that fail are split in halves down to 256 blocks before giving up (forked and pruned RPCs cap ranges), and backward scans start with a 1 024-block window that doubles up to the chunk size.
 
-Log scans are chunked by `deps.logChunkBlocks` (default 49 000; publicnode caps a range at 50 000) and backward scans stop after `deps.scanDepthBlocks` (default 1.5 M blocks).
+Log scans are chunked by `deps.logChunkBlocks` (default 49 000, under the 50 000-block cap most providers set) and backward scans stop after `deps.scanDepthBlocks` (default 1.5 M blocks).
 
 **Limits.** A request has a deadline (`timeoutMs`, 20 s). Delegation and delegatecall targets are checked first, at most `maxTargets` (32) targets are checked, and each target evaluates its pins plus at most `maxUnpinnedPublishers` (8) names from the index; the rest are listed as skipped. Anything not reached gets `error` set and is critical for delegation and delegatecall targets, a warning otherwise, so a flooded index or an oversized batch cannot time the Snap out into showing nothing. A failed read is dropped from the per-request memo, so one RPC error does not repeat across every target.

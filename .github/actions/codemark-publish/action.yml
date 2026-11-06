@@ -30,7 +30,7 @@ inputs:
   rpc-url:
     description: Sepolia RPC URL
     required: false
-    default: https://ethereum-sepolia-rpc.publicnode.com
+    default: https://sepolia.gateway.tenderly.co
 outputs:
   name:
     description: The release name
