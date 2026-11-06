@@ -1,5 +1,5 @@
 @theme {
-	--font-display: "Gloock", "Brodine", ui-serif, Georgia, serif;
+	--font-display: "Fraunces", ui-serif, Georgia, serif;
 	--font-text: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
 	--font-label: "JetBrains Mono", ui-monospace, monospace;
 
@@ -41,6 +41,9 @@
 }
 
 @layer base {
+	.font-display {
+		font-weight: 500;
+	}
 	button:not(:disabled),
 	[role="button"]:not([aria-disabled="true"]),
 	[role="radio"],

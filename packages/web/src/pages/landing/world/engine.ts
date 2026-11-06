@@ -23,7 +23,7 @@ import { contractGems, gemOrder, hexAtlas, wordmark } from "./textures";
 
 const maxPixelRatio = 1.5;
 const driftPerSecond = 0.006;
-const wordFont = "Gloock, Georgia, serif";
+const wordFont = "Fraunces, Georgia, serif";
 const stoneSpacing = strideLength * 6;
 const stoneSize = 0.94;
 const verifiedStoneSize = 0.74;
@@ -223,7 +223,7 @@ export function startWorld(
 	frame = requestAnimationFrame(render);
 
 	Promise.all([
-		document.fonts.load(`2rem ${wordFont}`),
+		document.fonts.load(`600 2rem ${wordFont}`),
 		document.fonts.load("500 2rem 'JetBrains Mono'"),
 	]).then(() => {
 		updateTexture(gl, 1, wordmark("codemark", wordFont));

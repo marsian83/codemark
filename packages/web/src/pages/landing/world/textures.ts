@@ -25,11 +25,11 @@ export function wordmark(text: string, font: string): HTMLCanvasElement {
 	canvas.height = 512;
 	const pen = canvas.getContext("2d");
 	if (!pen) return canvas;
-	const size = 400;
-	pen.font = `${size}px ${font}`;
+	const size = 560;
+	pen.font = `600 ${size}px ${font}`;
 	const fitted =
 		size * Math.min(1, (canvas.width * 0.98) / pen.measureText(text).width);
-	pen.font = `${fitted}px ${font}`;
+	pen.font = `600 ${fitted}px ${font}`;
 	pen.textAlign = "center";
 	pen.textBaseline = "alphabetic";
 	pen.fillStyle = "#fff";

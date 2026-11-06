@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import { config } from "../lib/config";
 import { Icon } from "../ui/Icon";
 import { cn } from "../utils/cn";
+import { Logo } from "./Logo";
 
 const navLink = ({ isActive }: { isActive: boolean }) =>
 	cn(
@@ -17,8 +18,8 @@ export default function Layout() {
 			<header className="sticky top-0 z-20 border-b border-border-secondary bg-background-layout">
 				<div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-8">
 					<div className="flex min-w-0 items-center gap-4 sm:gap-6">
-						<Link to="/" className="font-mono text-sm font-medium text-primary">
-							codemark
+						<Link to="/" className="shrink-0 text-typography-primary">
+							<Logo className="text-lg" />
 						</Link>
 						<nav className="flex items-center gap-1">
 							<NavLink to="/app" end className={navLink}>
