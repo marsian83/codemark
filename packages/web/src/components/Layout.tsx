@@ -28,6 +28,9 @@ export default function Layout() {
 								<span className="max-sm:hidden">Account upgrade demo</span>
 								<span className="sm:hidden">Demo</span>
 							</NavLink>
+							<NavLink to="/app/docs" className={navLink}>
+								Docs
+							</NavLink>
 						</nav>
 					</div>
 					<a

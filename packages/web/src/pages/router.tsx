@@ -6,6 +6,7 @@ import LandingPage from "./landing/LandingPage";
 const LookupPage = lazy(() => import("./lookup/LookupPage"));
 const PublisherPage = lazy(() => import("./publisher/PublisherPage"));
 const DemoWalletPage = lazy(() => import("./demo-wallet/DemoWalletPage"));
+const DocsPage = lazy(() => import("./docs/DocsPage"));
 const VerdictsPage = lazy(() => import("./dev/VerdictsPage"));
 
 function Lazy({ children }: { children: ReactNode }) {
@@ -43,6 +44,14 @@ export default function Router() {
 						element={
 							<Lazy>
 								<DemoWalletPage />
+							</Lazy>
+						}
+					/>
+					<Route
+						path="docs"
+						element={
+							<Lazy>
+								<DocsPage />
 							</Lazy>
 						}
 					/>
