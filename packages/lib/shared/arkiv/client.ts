@@ -1,9 +1,15 @@
 import { createPublicClient } from "@arkiv-network/sdk";
 import { rabdi } from "@arkiv-network/sdk/chains";
-import { http } from "viem";
+import { failoverTransport } from "../ens/client";
 
 export function createArkivReader(accessKey = "") {
-	return createPublicClient({ chain: rabdi({ accessKey }), transport: http() });
+	const urls = [accessKey, ""].flatMap(
+		(key) => rabdi({ accessKey: key }).rpcUrls.default.http,
+	);
+	return createPublicClient({
+		chain: rabdi({ accessKey }),
+		transport: failoverTransport([...new Set(urls)]),
+	});
 }
 
 export type ArkivReader = ReturnType<typeof createArkivReader>;
