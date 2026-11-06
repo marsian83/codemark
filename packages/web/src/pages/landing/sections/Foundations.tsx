@@ -20,12 +20,17 @@ const features = [
 export function Foundations() {
 	return (
 		<Section>
-			<Heading size="md">Why this needs ENSv2</Heading>
+			<Heading size="md">
+				Why this needs ENS
+				<span className="font-semibold text-fox [text-shadow:0_0_0.08em_rgb(246_133_27_/_0.7),0_0_0.5em_rgb(246_133_27_/_0.45)]">
+					v2
+				</span>
+			</Heading>
 			<Lede className="mt-8">
-				On ENSv1, deleting <Code text="ci-1.acme.eth" className="text-base" />{" "}
-				leaves{" "}
+				On ENSv1, deleting{" "}
+				<Code text="ci-1.pwnmeswap.eth" className="text-base" /> leaves{" "}
 				<code className="font-label text-base text-sand">
-					router.ci-1.acme.eth
+					router.ci-1.pwnmeswap.eth
 				</code>{" "}
 				resolving. On ENSv2, removing a name removes everything under it.
 			</Lede>

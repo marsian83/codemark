@@ -10,7 +10,7 @@ import type { Severity, Verdict } from "@codemark/shared/verdict";
 const threeDays = 3 * 86_400;
 
 const router: NonNullable<PublisherVerdict["release"]> = {
-	name: "router-3-1-0.ci-1.acmeswap.eth",
+	name: "router-3-1-0.ci-1.pwnmeswap.eth",
 	label: "router-3-1-0",
 	kind: "contract",
 	component: "router",
@@ -24,7 +24,7 @@ const router: NonNullable<PublisherVerdict["release"]> = {
 
 function pinned(verdict: Verdict, reason?: string): PublisherVerdict {
 	return {
-		publisher: "acmeswap.eth",
+		publisher: "pwnmeswap.eth",
 		pinned: true,
 		source: "pinned",
 		key: "ci-1",
@@ -42,7 +42,7 @@ export type VerdictExample = {
 	result: TargetResult;
 };
 
-const target = "0x8Df6bff4Ce76d167AcAc373a462CCAA38e11fF93";
+const target = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E";
 const sepolia = 11155111;
 
 function example(
@@ -107,7 +107,7 @@ export const verdictExamples: VerdictExample[] = [
 		[
 			{
 				...pinned("VERIFIED"),
-				publisher: "acmeswap-app.eth",
+				publisher: "pwnmeswap-app.eth",
 				pinned: false,
 				source: "index",
 			},

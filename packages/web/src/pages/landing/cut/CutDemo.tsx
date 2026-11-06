@@ -230,7 +230,7 @@ export function CutDemo() {
 			<div className="relative mx-5 my-3 sm:mx-7">
 				<Branches stage={stage.id} reduced={reduced} />
 				<ul className="relative">
-					<TreeRow stage={stage.id} indent="pl-5" label="acmeswap.eth" />
+					<TreeRow stage={stage.id} indent="pl-5" label="pwnmeswap.eth" />
 					<TreeRow
 						stage={stage.id}
 						indent="pl-8"

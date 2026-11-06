@@ -23,13 +23,13 @@ export function World() {
 				<div className="group-data-[kind=revoked]:hidden">
 					<p className="text-base font-semibold text-signal">Verified</p>
 					<p className="font-label text-xs text-sand">
-						acmeswap.eth · router 3.1.0
+						pwnmeswap.eth · router 3.1.0
 					</p>
 				</div>
 				<div className="hidden group-data-[kind=revoked]:block">
 					<p className="text-base font-semibold text-flare">Key revoked</p>
 					<p className="font-label text-xs text-sand">
-						acmeswap.eth: CI key leaked
+						pwnmeswap.eth: CI key leaked
 					</p>
 				</div>
 			</div>

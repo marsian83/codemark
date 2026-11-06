@@ -8,6 +8,7 @@ import {
 import { defaultThresholds } from "@codemark/shared/check/severity";
 import type { Severity } from "@codemark/shared/verdict";
 import { motion, useReducedMotion } from "motion/react";
+import { shortAddress } from "../../../lib/format";
 import { cn } from "../../../utils/cn";
 import type { VerdictExample } from "../verdicts";
 import { MetaMaskFox } from "./MetaMaskFox";
@@ -92,7 +93,7 @@ function StepRow({ step, index }: { step: Step; index: number }) {
 	);
 }
 
-function InfoRow({
+export function InfoRow({
 	label,
 	children,
 }: {
@@ -107,6 +108,41 @@ function InfoRow({
 	);
 }
 
+export function InsightBanner({
+	severity,
+	title,
+	body,
+}: {
+	severity: Severity;
+	title: string;
+	body?: string;
+}) {
+	const tone = bannerTone[severity];
+	return (
+		<div
+			className={cn(
+				"relative mt-2 h-[5.25rem] overflow-hidden rounded-md py-2 pr-2.5 pl-3.5",
+				tone.box,
+			)}
+		>
+			<span
+				className={cn("absolute inset-y-0 left-0 w-1", tone.bar)}
+				aria-hidden
+			/>
+			<p
+				className={cn("text-[0.8125rem] leading-[1.1rem] font-bold", tone.text)}
+			>
+				{title}
+			</p>
+			{body ? (
+				<p className="mt-0.5 line-clamp-3 text-xs leading-4 text-balance">
+					{body}
+				</p>
+			) : null}
+		</div>
+	);
+}
+
 export function WalletPrompt({ example }: { example: VerdictExample }) {
 	const reduced = useReducedMotion();
 	const { result, severity } = example;
@@ -116,7 +152,6 @@ export function WalletPrompt({ example }: { example: VerdictExample }) {
 		? trustPath(claim, result.target.role, defaultThresholds)
 		: [];
 	const critical = severity === "critical";
-	const tone = bannerTone[severity];
 
 	return (
 		<div
@@ -136,8 +171,10 @@ export function WalletPrompt({ example }: { example: VerdictExample }) {
 			<div className="px-4 pt-3 pb-4">
 				<p className="text-center text-lg font-bold">Transaction request</p>
 				<div className="mt-3 divide-y divide-white rounded-lg bg-[#f3f5f9]">
-					<InfoRow label="Request from">app.acmeswap.eth</InfoRow>
-					<InfoRow label={roleLabel[result.target.role]}>0x8Df6…fF93</InfoRow>
+					<InfoRow label="Request from">app.pwnmeswap.eth</InfoRow>
+					<InfoRow label={roleLabel[result.target.role]}>
+						{shortAddress(result.target.address)}
+					</InfoRow>
 				</div>
 				<div className="mt-2 rounded-lg bg-[#f3f5f9] p-3">
 					<p className="text-[0.8125rem] font-semibold">
@@ -148,26 +185,8 @@ export function WalletPrompt({ example }: { example: VerdictExample }) {
 						initial={reduced ? false : { opacity: 0 }}
 						animate={{ opacity: 1 }}
 						transition={{ duration: 0.2 }}
-						className={cn(
-							"relative mt-2 h-[5.25rem] overflow-hidden rounded-md py-2 pr-2.5 pl-3.5",
-							tone.box,
-						)}
 					>
-						<span
-							className={cn("absolute inset-y-0 left-0 w-1", tone.bar)}
-							aria-hidden
-						/>
-						<p
-							className={cn(
-								"text-[0.8125rem] leading-[1.1rem] font-bold",
-								tone.text,
-							)}
-						>
-							{title}
-						</p>
-						{body ? (
-							<p className="mt-0.5 line-clamp-3 text-xs leading-4">{body}</p>
-						) : null}
+						<InsightBanner severity={severity} title={title} body={body} />
 					</motion.div>
 					<ul key={`${example.name}-steps`} className="mt-2 h-[7.5rem]">
 						{steps.map((step, index) => (

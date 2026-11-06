@@ -7,14 +7,14 @@ const limits = [
 			"Codemark checks who published it, not what it does. Read the audit too.",
 	},
 	{
-		question: "Is this the real team?",
-		answer:
-			"A lookalike can publish under its own name. Check a name before you pin it.",
-	},
-	{
 		question: "What if a team hasn't joined?",
 		answer:
 			"Their contracts come back as unknown. Teams have to publish, and wallets have to run the check.",
+	},
+	{
+		question: "What about imitators?",
+		answer:
+			"They can register a similar name, but they can't publish under the real one. Pin the real name, and an imitator shows up as a publisher you haven't pinned.",
 	},
 	{
 		question: "Does it work on mainnet?",
@@ -25,7 +25,7 @@ const limits = [
 export function Limits() {
 	return (
 		<Section>
-			<Heading>What Codemark can't tell you</Heading>
+			<Heading>What to know before you rely on Codemark</Heading>
 			<dl className="mt-10 grid gap-px overflow-hidden bg-hairline md:grid-cols-2">
 				{limits.map((limit) => (
 					<div key={limit.question} className="bg-night p-6 sm:p-8">
