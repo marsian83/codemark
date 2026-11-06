@@ -189,7 +189,7 @@ bun web:dev            # http://localhost:3020
 bun web:build
 ```
 
-The site is static: it reads Sepolia and Arkiv straight from the browser, so any static host works. Serve `index.html` for every path under `/app` so the client-side routes load. The account-upgrade demo page talks to a local Anvil fork, so it only works on your own machine with `bun run demo:fork` running.
+The site is static: it reads Sepolia and Arkiv straight from the browser, so any static host works. Serve `index.html` for every path under `/app` so the client-side routes load. The account-upgrade demo page checks live Sepolia and signs with a throwaway key made in the browser. It never sends the upgrade, so it needs no gas or server. Set `VITE_DEMO_DELEGATE` and `VITE_DEMO_SWEEPER` at build time to show its two preset contracts.
 
 ### Snap in MetaMask Flask
 

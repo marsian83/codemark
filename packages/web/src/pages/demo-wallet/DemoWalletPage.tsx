@@ -1,9 +1,8 @@
 import type { TargetResult } from "@codemark/shared/check";
-import { formatDuration } from "@codemark/shared/check/explain";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { isAddress } from "viem";
-import { Address, CopyButton } from "../../components/Links";
+import { Address } from "../../components/Links";
 import { VerdictCard } from "../../components/VerdictCard";
 import { runCheck } from "../../lib/checker";
 import { config } from "../../lib/config";
@@ -11,11 +10,10 @@ import {
 	errorMessage,
 	formatTimestamp,
 	rpcErrorMessage,
-	shortAddress,
 } from "../../lib/format";
 import { usePins } from "../../lib/pins";
 import { useTitle } from "../../lib/useTitle";
-import { account, readForkState, upgradeAccount } from "../../lib/wallet";
+import { account, readChainHead, signUpgrade } from "../../lib/wallet";
 import { Button } from "../../ui/Button";
 import { Callout } from "../../ui/Callout";
 import { Card } from "../../ui/Card";
@@ -23,8 +21,6 @@ import { Icon } from "../../ui/Icon";
 import { Input } from "../../ui/Input";
 import { Spinner } from "../../ui/Spinner";
 import { cn } from "../../utils/cn";
-
-const forkCommand = "bun run demo:fork";
 
 function Stat({ label, children }: { label: string; children: ReactNode }) {
 	return (
@@ -35,62 +31,36 @@ function Stat({ label, children }: { label: string; children: ReactNode }) {
 	);
 }
 
-function ForkStatus() {
+function NetworkStatus() {
 	const state = useQuery({
-		queryKey: ["fork-state"],
-		queryFn: readForkState,
-		refetchInterval: (q) => (q.state.status === "error" ? 8000 : 5000),
+		queryKey: ["chain-head"],
+		queryFn: readChainHead,
+		refetchInterval: (q) => (q.state.status === "error" ? 8000 : 12000),
 		retry: false,
 	});
 	if (state.isError)
 		return (
 			<Callout tone="warning">
-				<div className="flex flex-col gap-2">
-					<p>
-						<span className="font-medium text-typography-primary">
-							The demo fork isn't running.
-						</span>{" "}
-						Start it from the packages folder, then this page connects on its
-						own.
-					</p>
-					<div className="flex w-fit items-center gap-1 rounded-md border border-border-secondary bg-background-container py-1 pr-1 pl-2.5 font-mono text-xs text-typography-primary">
-						<Icon
-							name="terminal"
-							className="size-3.5 text-typography-tertiary"
-						/>
-						<span className="pl-1">{forkCommand}</span>
-						<CopyButton value={forkCommand} label="command" />
-					</div>
-					<p className="text-xs text-typography-tertiary">
-						Looking for it at {config.anvilRpc}. {errorMessage(state.error)}
-					</p>
-				</div>
+				Couldn't reach Sepolia. This page keeps trying.{" "}
+				{errorMessage(state.error)}
 			</Callout>
 		);
 	if (!state.data)
 		return (
 			<p className="flex items-center gap-2 text-sm text-typography-tertiary">
-				<Spinner /> Connecting to the fork at {config.anvilRpc}…
+				<Spinner /> Connecting to Sepolia…
 			</p>
 		);
-	const offset = state.data.timestamp - Math.floor(Date.now() / 1000);
 	return (
 		<Card className="px-5 py-4">
-			<dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
-				<Stat label="Network">Local fork of Sepolia</Stat>
-				<Stat label="Fork clock">{formatTimestamp(state.data.timestamp)}</Stat>
-				<Stat label="Ahead of real time">
-					{Math.abs(offset) < 120 ? "No" : formatDuration(Math.abs(offset))}
+			<dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
+				<Stat label="Network">Sepolia</Stat>
+				<Stat label="Latest block">
+					<span className="tabular font-mono">
+						{state.data.blockNumber.toString()}
+					</span>
 				</Stat>
-				<Stat label="Account runs">
-					{state.data.delegate ? (
-						<span className="font-mono">
-							{shortAddress(state.data.delegate)}
-						</span>
-					) : (
-						"Its own code"
-					)}
-				</Stat>
+				<Stat label="Block time">{formatTimestamp(state.data.timestamp)}</Stat>
 			</dl>
 		</Card>
 	);
@@ -125,7 +95,6 @@ function StepHeading({
 export default function DemoWalletPage() {
 	useTitle("Account upgrade demo");
 	const { pins } = usePins();
-	const client = useQueryClient();
 	const [draft, setDraft] = useState("");
 	const [target, setTarget] = useState<`0x${string}` | undefined>();
 	const [draftError, setDraftError] = useState("");
@@ -135,7 +104,7 @@ export default function DemoWalletPage() {
 		enabled: target !== undefined,
 		queryFn: () =>
 			runCheck(
-				"fork",
+				"sepolia",
 				[
 					{
 						address: target as `0x${string}`,
@@ -149,8 +118,7 @@ export default function DemoWalletPage() {
 	});
 
 	const sign = useMutation({
-		mutationFn: upgradeAccount,
-		onSuccess: () => client.invalidateQueries({ queryKey: ["fork-state"] }),
+		mutationFn: signUpgrade,
 	});
 
 	const result: TargetResult | undefined = check.data?.result.results[0];
@@ -192,7 +160,7 @@ export default function DemoWalletPage() {
 			? "Can't sign"
 			: result && result.severity !== "info"
 				? "Sign anyway"
-				: "Sign and upgrade";
+				: "Sign upgrade";
 
 	return (
 		<main className="flex max-w-3xl flex-col gap-8">
@@ -204,14 +172,15 @@ export default function DemoWalletPage() {
 				<p className="max-w-2xl text-base text-typography-secondary text-pretty">
 					An EIP-7702 upgrade gives a contract full control of your account.
 					This wallet checks the contract with Codemark before it lets you sign.
-					It runs on a local fork with a public test key, never on live Sepolia.
+					It checks live Sepolia with a throwaway key made in this tab, and
+					signs the upgrade without sending it, so nothing changes on chain.
 				</p>
 			</header>
 
 			<section className="flex flex-col gap-3">
-				<ForkStatus />
+				<NetworkStatus />
 				<p className="flex flex-wrap items-center gap-1 text-xs text-typography-tertiary">
-					Test account
+					Throwaway account
 					<Address value={account.address} short external={false} />
 				</p>
 			</section>
@@ -280,7 +249,7 @@ export default function DemoWalletPage() {
 				) : null}
 				{check.isFetching ? (
 					<p className="flex items-center gap-2 text-sm text-typography-tertiary">
-						<Spinner /> Checking against the demo fork…
+						<Spinner /> Checking on Sepolia…
 					</p>
 				) : null}
 				{check.isError ? (
@@ -288,9 +257,7 @@ export default function DemoWalletPage() {
 						Couldn't check the contract. {rpcErrorMessage(check.error)}
 					</Callout>
 				) : null}
-				{result && !check.isFetching ? (
-					<VerdictCard result={result} external={false} />
-				) : null}
+				{result && !check.isFetching ? <VerdictCard result={result} /> : null}
 			</section>
 
 			<section className="flex flex-col gap-4">
@@ -330,13 +297,18 @@ export default function DemoWalletPage() {
 					</Callout>
 				) : null}
 				{sign.data ? (
-					<p className="flex flex-wrap items-center gap-1 text-sm text-success">
-						<Icon name="circle-check" />
-						Account upgraded on the fork.
-						<span className="font-mono text-xs text-typography-tertiary break-all">
-							{sign.data}
-						</span>
-					</p>
+					<div className="flex flex-col gap-1 text-sm">
+						<p className="flex flex-wrap items-center gap-1 text-success">
+							<Icon name="circle-check" />
+							Upgrade signed. It wasn't sent, so the account is unchanged.
+						</p>
+						<p className="font-mono text-xs text-typography-tertiary break-all">
+							r {sign.data.r}
+						</p>
+						<p className="font-mono text-xs text-typography-tertiary break-all">
+							s {sign.data.s}
+						</p>
+					</div>
 				) : null}
 			</section>
 		</main>
