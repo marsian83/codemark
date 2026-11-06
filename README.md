@@ -1,5 +1,7 @@
 # Codemark
 
+[![CI](https://github.com/marsian83/codemark/actions/workflows/ci.yml/badge.svg)](https://github.com/marsian83/codemark/actions/workflows/ci.yml)
+
 **Know who published a contract before you sign it.**
 
 Codemark checks that the contract or account upgrade you are about to approve was released by the team you think, under their ENS name, and that the team still stands behind it.
@@ -26,7 +28,25 @@ Codemark tells you who published something and whether they still stand behind i
 |---|---|---|
 | Anyone about to sign | The lookup site at [codemark.hetairoi.xyz](https://codemark.hetairoi.xyz) | A browser. No wallet, no sign-up |
 | A MetaMask user | The Codemark Snap, which checks every transaction before MetaMask asks you to confirm | [MetaMask Flask](https://metamask.io/flask/) for now |
-| A team shipping contracts | The CLI and the GitHub Action, which publish each release under your ENS name | An ENS name on Sepolia and a Safe |
+| A team shipping contracts | The CLI and the GitHub Action, which publish each release under your ENS name | Sepolia ETH. `init` registers the name and sets up the team Safe for you |
+
+## Get started
+
+The full guide, with every command explained, is at [codemark.hetairoi.xyz/app/docs](https://codemark.hetairoi.xyz/app/docs). The short version:
+
+**Check a contract.** Open [codemark.hetairoi.xyz/app](https://codemark.hetairoi.xyz/app), paste an address, and read the verdict. Pin the publishers you trust; only they can mark a contract as verified.
+
+**Publish your releases.** You need [Bun](https://bun.sh) 1.4.2 or newer and three keys: a root key that owns the team Safe, a security key that can only withdraw things, and a CI key that can only add releases. Put them in `.env` at the repository root (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`), then run from `packages/`:
+
+```sh
+bun install
+bun cli init acmeswap --years 1                         # register acmeswap.eth, deploy the Safe and its registry
+bun cli add-key acmeswap.eth ci-1 --ci 0x...            # let your CI address publish under ci-1
+bun cli publish acmeswap.eth ci-1 --component router --version 3.1.0 --target 0x...   # release a deployed contract
+bun cli verify 0x... --pin acmeswap.eth                 # check it, the same way the site and the Snap do
+```
+
+If something goes wrong, `pull` withdraws one release and `cut` withdraws everything a key released, in one transaction each. The [CLI](#cli) section below lists every flag.
 
 Built at ETHGlobal Mumbai on ENSv2 (Sepolia) and Arkiv (Rabdi testnet). Everything on chain is stock ENSv2; there is no custom Solidity.
 
@@ -53,7 +73,17 @@ A Safe is a multisig smart-contract wallet. Here it is the root and needs no cus
 
 Everything on chain is stock ENSv2: registries are `UserRegistry` proxies and release resolvers are `PermissionedResolver` proxies. Both are deployed through `VerifiableFactory`, a CREATE2 factory (CREATE2 gives a contract an address derived from its deployer, salt and code) that can later confirm a given address is one of its proxies and which implementation it runs. ABIs come from contracts-v2 commit `07e55a05`, the source behind the Sepolia deployment. There is no Codemark Solidity.
 
-Which deployment: Sepolia holds two ENSv2 deployments. Codemark uses the one the canonical Universal Resolver (`0xeEeE…EeEe`) reads: its `ROOT_REGISTRY()` is `0xb458…c43f`, whose `eth` subregistry is `0xd4eb…a8b4`. The code reads the root from the Universal Resolver on every check and stops if it changes (`packages/lib/shared/ens/deployment.ts`, asserted by `tests/deployment.live.test.ts`). The same deployment is shown by [explorer.ens.domains](https://explorer.ens.domains).
+### Which ENSv2 deployment
+
+Sepolia has two ENSv2 deployments side by side. If you compare addresses with another reference and see root registry `0x9703…a9ce` with ETHRegistry `0x657e…e09e`, that is the other one. Codemark uses the deployment that the canonical Universal Resolver at `0xeEeE…EeEe` actually reads, because that is what wallets, ENS libraries and [explorer.ens.domains](https://explorer.ens.domains) resolve against:
+
+| Contract | Address |
+|---|---|
+| Root registry, from `ROOT_REGISTRY()` | [`0xb458d6a3a77919449d03e7a6903c26827c1ec43f`](https://sepolia.etherscan.io/address/0xb458d6a3a77919449d03e7a6903c26827c1ec43f) |
+| `eth` registry | [`0xd4ebcbbdf463c9c45784603db0ddd499bc44a8b4`](https://sepolia.etherscan.io/address/0xd4ebcbbdf463c9c45784603db0ddd499bc44a8b4) |
+| VerifiableFactory | [`0xda70306c98e97ece36f997a21368e53298572991`](https://sepolia.etherscan.io/address/0xda70306c98e97ece36f997a21368e53298572991) |
+
+At block 12,078,510 the resolver's `ROOT_REGISTRY()` returned `0xB458…c43f`. You can read it yourself on [Etherscan](https://sepolia.etherscan.io/address/0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe#readProxyContract), or run `bun test tests/deployment.live.test.ts` in `packages/lib/shared`. The checker reads it again at the start of every check and refuses to run if it ever changes (`packages/lib/shared/ens/deployment.ts`), so a redeployment can't silently send checks to the wrong contracts. The `acmeswap.eth` releases under [Live on Sepolia](#live-on-sepolia) all resolve through this deployment. ABIs come from contracts-v2 commit `07e55a05`, the source behind it.
 
 ### What each signer can do
 
@@ -140,7 +170,9 @@ bun run --cwd demo tests   # spikes; starts its own Anvil on :18545
 bun fmt-lint && bun typecheck
 ```
 
-Most tests need nothing but Bun: calldata decoding, record and name parsing, row validation, severity, checker limits, the CLI operations, and the plain-language verdicts (`packages/lib/shared/tests/explain.test.ts` walks every combination of verdict, role, pin, proof and age and checks that nothing unsafe ever reads as verified). The checker's end-to-end tests run against an Anvil fork of Sepolia rather than mocks, because the deployed contracts differ from the repository head; they skip themselves when no fork is running. `check.live.test.ts` reads live Sepolia and is skipped with `CODEMARK_LIVE_TESTS=0`.
+Most tests need nothing but Bun: calldata decoding, record and name parsing, row validation, severity, checker limits, the CLI operations, and the plain-language verdicts (`packages/lib/shared/tests/explain.test.ts` walks every combination of verdict, role, pin, proof and age and checks that nothing unsafe ever reads as verified). The checker's end-to-end tests run against an Anvil fork of Sepolia rather than mocks, because the deployed contracts differ from the repository head; they skip themselves when no fork is running. `deployment.live.test.ts` and `check.live.test.ts` read live Sepolia and are skipped with `CODEMARK_LIVE_TESTS=0`.
+
+CI (`.github/workflows/ci.yml`) runs on every push: the typecheck, lint and all offline tests in one job, and the live Sepolia tests in another, including the check that the canonical Universal Resolver still reads the deployment above. It needs no secrets.
 
 ### Web
 
@@ -161,7 +193,7 @@ The Snap needs [MetaMask Flask](https://metamask.io/flask/), the developer build
 
 ### CLI
 
-Secrets come from the environment (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`, `CODEMARK_SAFE`, `SEPOLIA_RPC_URL`, `ARKIV_ACCESS_KEY`). A command that needs a signer it was not given fails before sending anything. Every command also takes `--rpc <url>`.
+Secrets come from the environment or from `.env` at the repository root, not the current directory (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`, `CODEMARK_SAFE`, `SEPOLIA_RPC_URL`, `ARKIV_ACCESS_KEY`). A command that needs a signer it was not given fails before sending anything. Every command also takes `--rpc <url>`.
 
 ```sh
 bun cli init acmeswap --sec 0x... --years 1                       # register acmeswap.eth, deploy the Safe and PubRegistry
@@ -172,6 +204,8 @@ bun cli cut acmeswap.eth ci-1 --reason "CI key leaked"
 bun cli migrate acmeswap.eth ci-1 ci-2 --ci 0x...                 # mount ci-2, republish live releases of ci-1
 bun cli verify 0x... --pin acmeswap.eth --role delegation         # --role call|delegatecall|delegation|approval-spender|permit-spender
 ```
+
+`publish --commit` is optional; the GitHub Action fills it with the commit being built. Releases with `--kind delegate` are signed by root rather than the CI key and get no Arkiv row, because delegates only count when their publisher is pinned.
 
 `init` does the whole `.eth` registration itself: it mints and approves MockUSDC, commits and then registers through the ENSv2 `ETHRegistrar` with the Safe as owner (`packages/cli/ops/init.ts`).
 
