@@ -1,0 +1,19 @@
+{
+	"name": "@codemark/cli",
+	"private": true,
+	"type": "module",
+	"bin": {
+		"codemark": "./index.ts"
+	},
+	"scripts": {
+		"start": "bun index.ts",
+		"tests": "bun test"
+	},
+	"dependencies": {
+		"@arkiv-network/sdk": "catalog:",
+		"@codemark/shared": "workspace:*",
+		"@safe-global/protocol-kit": "^8.0.11",
+		"viem": "catalog:",
+		"zod": "catalog:"
+	}
+}

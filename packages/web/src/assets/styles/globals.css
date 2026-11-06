@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+:root {
+	color-scheme: light dark;
+}
+
+body {
+	@apply bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+	font-family: ui-sans-serif, system-ui, sans-serif;
+	-webkit-text-size-adjust: 100%;
+}
+
+button:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}

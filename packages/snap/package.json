@@ -1,0 +1,32 @@
+{
+	"name": "@codemark/snap",
+	"version": "0.1.0",
+	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/marsian83/codemark.git"
+	},
+	"type": "module",
+	"main": "./dist/bundle.js",
+	"files": [
+		"dist/",
+		"images/",
+		"snap.manifest.json"
+	],
+	"scripts": {
+		"build": "mm-snap build",
+		"serve": "mm-snap serve",
+		"watch": "mm-snap watch",
+		"manifest": "mm-snap manifest --fix",
+		"tests": "bun test"
+	},
+	"dependencies": {
+		"@codemark/shared": "workspace:*",
+		"@metamask/snaps-sdk": "^12.1.0",
+		"viem": "catalog:"
+	},
+	"devDependencies": {
+		"@metamask/snaps-cli": "^8.4.1",
+		"@metamask/snaps-jest": "^10.2.2"
+	}
+}

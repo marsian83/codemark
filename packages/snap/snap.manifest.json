@@ -1,0 +1,38 @@
+{
+  "version": "0.1.0",
+  "description": "Shows whether the contract, frontend or account delegate you are about to use was released by the team whose ENS name you trust.",
+  "proposedName": "Codemark",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marsian83/codemark.git"
+  },
+  "source": {
+    "shasum": "bbFrpZXJKmz0zip/8CKMe0EK7+sgHte6DJIoW0mqN20=",
+    "location": {
+      "npm": {
+        "filePath": "dist/bundle.js",
+        "iconPath": "images/icon.svg",
+        "packageName": "@codemark/snap",
+        "registry": "https://registry.npmjs.org/"
+      }
+    }
+  },
+  "initialPermissions": {
+    "endowment:transaction-insight": {
+      "allowTransactionOrigin": true
+    },
+    "endowment:signature-insight": {
+      "allowSignatureOrigin": true
+    },
+    "endowment:network-access": {},
+    "endowment:ethereum-provider": {},
+    "endowment:rpc": {
+      "dapps": true,
+      "snaps": false
+    },
+    "snap_manageState": {},
+    "snap_dialog": {}
+  },
+  "platformVersion": "12.1.0",
+  "manifestVersion": "0.1"
+}

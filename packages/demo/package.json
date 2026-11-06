@@ -1,0 +1,21 @@
+{
+	"name": "@codemark/demo",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"fork": "bun scripts/fork.ts",
+		"seed": "bun scripts/seed.ts",
+		"attack": "bun scripts/attack.ts",
+		"warp": "bun scripts/warp.ts",
+		"abi:check": "bun scripts/abiCheck.ts",
+		"abi:gen": "bun scripts/genAbi.ts",
+		"tests": "bun test",
+		"live": "bun scripts/live.ts"
+	},
+	"dependencies": {
+		"@codemark/cli": "workspace:*",
+		"@codemark/shared": "workspace:*",
+		"viem": "catalog:",
+		"zod": "catalog:"
+	}
+}

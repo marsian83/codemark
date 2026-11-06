@@ -1,0 +1,28 @@
+{
+	"name": "@codemark/shared",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./index.ts",
+		"./ens/*": "./ens/*.ts",
+		"./arkiv/*": "./arkiv/*.ts",
+		"./check/*": "./check/*.ts",
+		"./record": "./record.ts",
+		"./names": "./names.ts",
+		"./verdict": "./verdict.ts",
+		"./decode": "./decode/index.ts",
+		"./check": "./check/index.ts"
+	},
+	"scripts": {
+		"tests": "bun test"
+	},
+	"dependencies": {
+		"@arkiv-network/sdk": "catalog:",
+		"viem": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.4.4"
+	}
+}

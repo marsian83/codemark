@@ -1,0 +1,31 @@
+{
+	"name": "@codemark/web",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc -b && vite build",
+		"preview": "vite preview",
+		"serve": "vite preview"
+	},
+	"dependencies": {
+		"@arkiv-network/sdk": "catalog:",
+		"@codemark/shared": "workspace:*",
+		"@tanstack/react-query": "^5.106.1",
+		"react": "^19.3.1",
+		"react-dom": "^19.3.1",
+		"react-router-dom": "^7.18.5",
+		"viem": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@tailwindcss/vite": "^4.3.4",
+		"@types/node": "^24.13.3",
+		"@types/react": "^19.2.18",
+		"@types/react-dom": "^19.2.7",
+		"@vitejs/plugin-react": "^6.2.1",
+		"tailwindcss": "^4.3.4",
+		"vite": "^8.3.6"
+	}
+}
