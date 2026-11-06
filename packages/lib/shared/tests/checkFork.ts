@@ -53,7 +53,7 @@ export const forkRpc = process.env.CODEMARK_FORK_RPC ?? "http://127.0.0.1:8546";
 export const fork = createTestClient({
 	chain: sepoliaChain,
 	mode: "anvil",
-	transport: http(forkRpc),
+	transport: http(forkRpc, { timeout: 90_000 }),
 	pollingInterval: 50,
 }).extend(publicActions);
 
