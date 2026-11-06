@@ -5,7 +5,8 @@ import {
 	foxOriginX,
 	foxPixelsPerUnit,
 	foxSpeed,
-	strideSeconds,
+	midLeapPhase,
+	strideLength,
 } from "./fox";
 import { createProgram, createTexture, fillScreen, updateTexture } from "./gl";
 import { groundAt, groundBaseline } from "./ground";
@@ -23,12 +24,12 @@ import { contractGems, gemOrder, hexAtlas, wordmark } from "./textures";
 const maxPixelRatio = 1.5;
 const driftPerSecond = 0.006;
 const wordFont = "Gloock, Georgia, serif";
-const stoneSpacing = 11;
-const stoneSize = 1.2;
-const verifiedStoneSize = 0.95;
+const stoneSpacing = strideLength * 6;
+const stoneSize = 0.94;
+const verifiedStoneSize = 0.74;
 const calloutAhead = 1.05;
-const calloutHeight = 1.25;
-const calloutAbove = 2.35;
+const calloutHeight = 1;
+const calloutAbove = 1.9;
 const stillPhase = 0.42;
 const contentWidth = 1264;
 const minMoonRoom = 0.05;
@@ -160,7 +161,9 @@ export function startWorld(
 		const spacing = stoneSpacing * unit;
 		const footHeight = groundAt(foxWorld);
 		drawFox(foxPen, {
-			phase: reduced ? stillPhase : (distance / (foxSpeed * strideSeconds)) % 1,
+			phase: reduced
+				? stillPhase
+				: (foxWorld / unit / strideLength + midLeapPhase) % 1,
 			distance,
 			leap: leapAt(foxWorld, spacing, unit),
 			ground: (x) => -(groundAt(foxWorld + x * unit) - footHeight) / unit,

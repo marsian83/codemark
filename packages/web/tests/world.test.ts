@@ -1,7 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import {
+	footOffsets,
 	footPhase,
 	foxSpeed,
+	midLeapPhase,
 	plantedFootX,
 	solveJoint,
 	stanceShare,
@@ -53,7 +55,7 @@ describe("skyAt", () => {
 	});
 });
 
-const spacing = 2.2;
+const spacing = 2.28;
 const unit = 0.2;
 
 describe("stonesAt", () => {
@@ -101,14 +103,30 @@ describe("leapAt", () => {
 		expect(leapAt(revokedWorld + 0.1, spacing, unit).pitch).toBeGreaterThan(0);
 	});
 
+	test("crouches just before take-off and just after landing", () => {
+		const reach = 1.82 * unit;
+		expect(
+			leapAt(revokedWorld - reach - 0.01, spacing, unit).crouch,
+		).toBeGreaterThan(0);
+		expect(
+			leapAt(revokedWorld + reach + 0.01, spacing, unit).crouch,
+		).toBeGreaterThan(0);
+	});
+
 	test("stays on the ground around verified stones", () => {
 		expect(leapAt(spacing, spacing, unit).lift).toBe(0);
 		expect(leapAt(spacing * 3, spacing, unit).lift).toBe(0);
 	});
 
 	test("lands well before the next stone", () => {
-		expect(leapAt(revokedWorld + 0.5, spacing, unit).lift).toBe(0);
-		expect(leapAt(revokedWorld - 0.5, spacing, unit).lift).toBe(0);
+		expect(leapAt(revokedWorld + 0.6, spacing, unit)).toMatchObject({
+			lift: 0,
+			crouch: 0,
+		});
+		expect(leapAt(revokedWorld - 0.6, spacing, unit)).toMatchObject({
+			lift: 0,
+			crouch: 0,
+		});
 	});
 });
 
@@ -120,14 +138,31 @@ describe("fox gait", () => {
 		expect(footTravel / stanceSeconds).toBeCloseTo(foxSpeed, 6);
 	});
 
-	test("every foot spends a third of the stride on the ground", () => {
-		for (const offset of [0, -0.08, -0.34, -0.42]) {
-			const samples = Array.from({ length: 1000 }, (_, index) =>
-				footPhase(index / 1000, offset),
-			);
-			const planted = samples.filter((foot) => foot.planted).length;
-			expect(planted).toBeCloseTo(310, -1);
+	test("no two feet land together", () => {
+		const landings = Object.values(footOffsets).map(
+			(offset) => (1 - offset) % 1,
+		);
+		for (const one of landings) {
+			for (const other of landings) {
+				if (one !== other) {
+					expect(Math.abs(one - other)).toBeGreaterThan(0.2);
+				}
+			}
 		}
+	});
+
+	test("the hind feet push off just as the leap starts", () => {
+		const takeOffPhase = (midLeapPhase - 0.96 + 2) % 1;
+		const hindNear = footPhase(takeOffPhase - 0.02 + 1, footOffsets.hindNear);
+		expect(hindNear.planted).toBe(true);
+		expect(hindNear.progress).toBeGreaterThan(0.9);
+	});
+
+	test("a front foot lands just as the leap ends", () => {
+		const landingPhase = (midLeapPhase + 0.96) % 1;
+		const foreFar = footPhase(landingPhase + 0.01, footOffsets.foreFar);
+		expect(foreFar.planted).toBe(true);
+		expect(foreFar.progress).toBeLessThan(0.1);
 	});
 
 	test("the joint keeps both bone lengths while the target is in reach", () => {

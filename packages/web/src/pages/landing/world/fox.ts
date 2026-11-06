@@ -1,17 +1,16 @@
 import { hash } from "../art/noise";
+import type { Leap } from "./journey";
 
 type Point = readonly [number, number];
 type Pen = CanvasRenderingContext2D;
 
 const palette = {
-	bright: "#f6851b",
-	orange: "#e4761b",
-	mid: "#e2761b",
-	deep: "#cd6116",
-	umber: "#763d16",
-	cream: "#d7c1b3",
-	stone: "#c0ad9e",
-	navy: "#233447",
+	light: "#ff8d5d",
+	bright: "#ff5c16",
+	deep: "#e34807",
+	umber: "#661800",
+	white: "#e7ebf6",
+	silver: "#c0c4cd",
 	black: "#161616",
 };
 
@@ -19,8 +18,16 @@ const tau = Math.PI * 2;
 
 export const foxSpeed = 5;
 export const strideSeconds = 0.38;
-export const stanceShare = 0.31;
-const sweep = foxSpeed * strideSeconds * stanceShare;
+export const stanceShare = 0.33;
+export const footOffsets = {
+	hindFar: 0,
+	hindNear: -0.22,
+	foreFar: -0.48,
+	foreNear: -0.7,
+};
+export const strideLength = foxSpeed * strideSeconds;
+export const midLeapPhase = 0.52;
+const sweep = strideLength * stanceShare;
 
 export const foxCanvasSize = { width: 960, height: 720 };
 export const foxFootLine = 0.86;
@@ -155,20 +162,20 @@ function above(point: Point, tilt: number, length: number): Point {
 
 function paw(pen: Pen, ankle: Point, at: Point, color: string) {
 	limb(pen, ankle, at, 0.025, 0.021, color);
-	limb(pen, at, add(at, [0.06, 0.004]), 0.022, 0.012, palette.navy);
+	limb(pen, at, add(at, [0.06, 0.004]), 0.022, 0.012, palette.black);
 }
 
 type LegColors = { upper: string; lower: string; sock: string };
 
 const nearLeg: LegColors = {
-	upper: palette.orange,
+	upper: palette.bright,
 	lower: palette.deep,
 	sock: palette.umber,
 };
 const farLeg: LegColors = {
 	upper: palette.deep,
 	lower: palette.umber,
-	sock: palette.navy,
+	sock: palette.umber,
 };
 
 function drawHind(
@@ -199,10 +206,10 @@ function drawFore(
 	paw(pen, wrist, target, colors.sock);
 }
 
-function drawTail(pen: Pen, root: Point, phase: number, pitch: number) {
+function drawTail(pen: Pen, root: Point, phase: number, lean: number) {
 	const segments = 8;
 	const points: Point[] = [root];
-	let angle = Math.PI + 0.26 + pitch * 0.6;
+	let angle = Math.PI + 0.26 + lean;
 	for (let index = 0; index < segments; index++) {
 		angle -= 0.015;
 		angle += 0.055 * Math.sin(tau * (phase - index * 0.08));
@@ -233,10 +240,10 @@ function drawTail(pen: Pen, root: Point, phase: number, pitch: number) {
 		const c: Point = [p1[0] + n1[0] * w1, p1[1] + n1[1] * w1];
 		const d: Point = [p1[0] - n1[0] * w1, p1[1] - n1[1] * w1];
 		const tip = index >= segments - 2;
-		facet(pen, tip ? palette.stone : palette.deep, a, c, p1);
-		facet(pen, tip ? palette.stone : palette.deep, a, p1, p0);
-		facet(pen, tip ? palette.cream : palette.bright, b, p0, p1);
-		facet(pen, tip ? palette.cream : palette.orange, b, p1, d);
+		facet(pen, tip ? palette.silver : palette.deep, a, c, p1);
+		facet(pen, tip ? palette.silver : palette.deep, a, p1, p0);
+		facet(pen, tip ? palette.white : palette.bright, b, p0, p1);
+		facet(pen, tip ? palette.white : palette.bright, b, p1, d);
 	}
 }
 
@@ -259,20 +266,20 @@ function drawHead(pen: Pen, base: Point, pitch: number) {
 	facet(pen, palette.umber, [0.0, -0.075], [-0.085, -0.235], [0.05, -0.1]);
 	facet(pen, palette.deep, [0.03, -0.09], [-0.03, -0.262], [0.115, -0.095]);
 	facet(pen, palette.bright, [0.06, -0.095], [-0.03, -0.262], [0.115, -0.095]);
-	facet(pen, palette.navy, [-0.012, -0.21], [-0.03, -0.262], [0.015, -0.218]);
+	facet(pen, palette.black, [-0.012, -0.21], [-0.03, -0.262], [0.015, -0.218]);
 
-	facet(pen, palette.orange, back, cheek, throat);
+	facet(pen, palette.bright, back, cheek, throat);
 	facet(pen, palette.bright, back, crown, cheek);
 	facet(pen, palette.bright, crown, brow, cheek);
-	facet(pen, palette.mid, brow, snout, cheek);
+	facet(pen, palette.deep, brow, snout, cheek);
 	facet(pen, palette.bright, brow, snout, [0.2, -0.03]);
 	facet(pen, palette.deep, cheek, snout, lip);
-	facet(pen, palette.cream, cheek, lip, jaw);
-	facet(pen, palette.cream, lip, snout, chin);
-	facet(pen, palette.stone, lip, chin, jaw);
-	facet(pen, palette.stone, throat, cheek, jaw);
-	facet(pen, palette.navy, snout, nose, [0.305, 0.03]);
-	facet(pen, palette.navy, [0.118, -0.052], [0.178, -0.032], [0.128, -0.022]);
+	facet(pen, palette.white, cheek, lip, jaw);
+	facet(pen, palette.white, lip, snout, chin);
+	facet(pen, palette.silver, lip, chin, jaw);
+	facet(pen, palette.silver, throat, cheek, jaw);
+	facet(pen, palette.black, snout, nose, [0.305, 0.03]);
+	facet(pen, palette.black, [0.118, -0.052], [0.178, -0.032], [0.128, -0.022]);
 	pen.restore();
 }
 
@@ -296,7 +303,7 @@ function drawDust(
 			const y = ground(x) - age * (0.04 + seedB * 0.26);
 			const size = (0.012 + seedB * 0.016) * (1 - age * 0.5);
 			pen.globalAlpha = (1 - age) * 0.8;
-			pen.fillStyle = grain % 3 ? palette.cream : palette.stone;
+			pen.fillStyle = grain % 3 ? palette.white : palette.silver;
 			pen.fillRect(x, y, size, size);
 		}
 	}
@@ -306,10 +313,22 @@ function drawDust(
 export type FoxFrame = {
 	phase: number;
 	distance: number;
-	leap: { lift: number; pitch: number };
+	leap: Leap;
 	ground: Ground;
 	airborne: (x: number) => boolean;
 };
+
+function hindInAir(flight: number): Point {
+	return flight < 0.5
+		? mixPoint([-0.36, 0.5], [-0.46, 0.3], flight / 0.5)
+		: mixPoint([-0.46, 0.3], [-0.02, 0.46], ease((flight - 0.5) / 0.5));
+}
+
+function foreInAir(flight: number): Point {
+	return flight < 0.5
+		? mixPoint([0.1, 0.24], [0.46, 0.3], ease(flight / 0.5))
+		: mixPoint([0.46, 0.3], [0.28, 0.52], (flight - 0.5) / 0.5);
+}
 
 export function drawFox(
 	pen: Pen,
@@ -325,19 +344,20 @@ export function drawFox(
 
 	drawDust(pen, distance, ground, airborne);
 
-	const flight = ease(Math.min(1, leap.lift / 0.3));
-	const stretch = Math.cos(tau * (phase - 0.33));
-	const bob = -0.042 * Math.cos(tau * (phase - 0.86));
-	const rock = 0.075 * Math.cos(tau * (phase - 0.18));
-	const half = bodyHalf + 0.024 * stretch * (1 - flight);
+	const inAir = ease(Math.min(1, leap.lift / 0.32));
+	const flight = Math.min(1, Math.max(0, (leap.along + 1) / 2));
+	const bob = -0.026 * Math.cos(tau * (phase - 0.9));
+	const rock = 0.04 * Math.cos(tau * (phase - 0.15));
+	const half = bodyHalf + 0.012 * Math.cos(tau * (phase - 0.33)) * (1 - inAir);
 	const hipGround = ground(-bodyHalf);
 	const shoulderGround = ground(bodyHalf);
 	const slope = Math.atan2(shoulderGround - hipGround, bodyHalf * 2);
-	const pitch = slope + (-rock * (1 - flight) + leap.pitch);
+	const pitch = slope - rock * (1 - inAir) + leap.pitch;
 	const centerY =
 		(hipGround + shoulderGround) / 2 -
 		(hipHeight + shoulderHeight) / 2 +
-		bob * (1 - flight) -
+		bob * (1 - inAir) +
+		leap.crouch -
 		leap.lift;
 	const cos = Math.cos(pitch);
 	const sin = Math.sin(pitch);
@@ -351,45 +371,51 @@ export function drawFox(
 	const shoulder = place(half - 0.02, 0.1);
 	const shoulderFar = place(half - 0.05, 0.09);
 
-	const stride = (foot: FootPhase, center: number, lift: number) =>
-		footAt(center, foot, lift, ground);
 	const hindCenter = -bodyHalf + 0.02;
 	const foreCenter = bodyHalf + 0.05;
+	const hindFarFoot = footPhase(phase, footOffsets.hindFar);
+	const hindNearFoot = footPhase(phase, footOffsets.hindNear);
+	const foreFarFoot = footPhase(phase, footOffsets.foreFar);
+	const foreNearFoot = footPhase(phase, footOffsets.foreNear);
 
-	const hindFarFoot = footPhase(phase, 0);
-	const hindNearFoot = footPhase(phase, -0.08);
-	const foreFarFoot = footPhase(phase, -0.34);
-	const foreNearFoot = footPhase(phase, -0.42);
+	const leg = (gait: Point, joint: Point, air: Point): Point =>
+		mixPoint(gait, add(joint, air), inAir);
+	const trail = Math.max(0, flight - 0.07);
 
-	const tuck = (gait: Point, air: Point): Point => mixPoint(gait, air, flight);
-	const hindAir: Point = [-0.32, 0.5];
-	const foreAir: Point = [0.36, 0.42];
-
-	const hindFarTarget = tuck(
-		stride(hindFarFoot, hindCenter + 0.05, 0.2),
-		add(hipFar, add(hindAir, [0.05, -0.04])),
+	const hindFarTarget = leg(
+		footAt(hindCenter + 0.05, hindFarFoot, 0.18, ground),
+		hipFar,
+		hindInAir(trail),
 	);
-	const hindNearTarget = tuck(
-		stride(hindNearFoot, hindCenter, 0.2),
-		add(hip, hindAir),
+	const hindNearTarget = leg(
+		footAt(hindCenter, hindNearFoot, 0.18, ground),
+		hip,
+		hindInAir(flight),
 	);
-	const foreFarTarget = tuck(
-		stride(foreFarFoot, foreCenter - 0.05, 0.24),
-		add(shoulderFar, add(foreAir, [-0.06, -0.03])),
+	const foreFarTarget = leg(
+		footAt(foreCenter - 0.05, foreFarFoot, 0.22, ground),
+		shoulderFar,
+		foreInAir(flight),
 	);
-	const foreNearTarget = tuck(
-		stride(foreNearFoot, foreCenter, 0.24),
-		add(shoulder, foreAir),
+	const foreNearTarget = leg(
+		footAt(foreCenter, foreNearFoot, 0.22, ground),
+		shoulder,
+		foreInAir(trail),
 	);
 
 	const hindTilt = (foot: FootPhase) =>
-		mix(ankleTilt(foot, 0.3, -0.72, -1.1), -0.95, flight);
+		mix(ankleTilt(foot, 0.3, -0.72, -1.1), -0.95, inAir);
 	const foreTilt = (foot: FootPhase) =>
-		mix(ankleTilt(foot, 0.1, -0.55, -1.5), 0.4, flight);
+		mix(ankleTilt(foot, 0.1, -0.55, -1.5), mix(-1.3, 0.35, flight), inAir);
 
 	drawHind(pen, hipFar, hindFarTarget, hindTilt(hindFarFoot), farLeg);
 	drawFore(pen, shoulderFar, foreFarTarget, foreTilt(foreFarFoot), farLeg);
-	drawTail(pen, place(-half - 0.09, -0.06), phase, pitch);
+	drawTail(
+		pen,
+		place(-half - 0.09, -0.06),
+		phase,
+		pitch * 0.6 + leap.along * 0.5 * inAir,
+	);
 
 	const spine = (t: number, y: number): Point => place(mix(-half, half, t), y);
 	const rump = place(-half - 0.13, -0.03);
@@ -406,30 +432,30 @@ export function drawFox(
 	const lowC = spine(0.68, 0.115);
 	const lowD = spine(1, 0.19);
 
-	facet(pen, palette.orange, rump, backA, midA);
+	facet(pen, palette.bright, rump, backA, midA);
 	facet(pen, palette.deep, rump, midA, lowA);
-	facet(pen, palette.bright, backA, backB, midB, midA);
+	facet(pen, palette.light, backA, backB, midB, midA);
 	facet(pen, palette.bright, backB, backC, midC, midB);
-	facet(pen, palette.bright, backC, backD, midD, midC);
-	facet(pen, palette.orange, midA, midB, lowB, lowA);
-	facet(pen, palette.orange, midB, midC, lowC, lowB);
-	facet(pen, palette.mid, midC, midD, lowD, lowC);
+	facet(pen, palette.light, backC, backD, midD, midC);
+	facet(pen, palette.bright, midA, midB, lowB, lowA);
+	facet(pen, palette.bright, midB, midC, lowC, lowB);
+	facet(pen, palette.deep, midC, midD, lowD, lowC);
 	facet(pen, palette.deep, lowA, lowB, spine(0.2, 0.12));
-	facet(pen, palette.cream, lowB, lowC, spine(0.5, 0.135));
-	facet(pen, palette.cream, lowC, lowD, spine(0.84, 0.185));
+	facet(pen, palette.white, lowB, lowC, spine(0.5, 0.135));
+	facet(pen, palette.white, lowC, lowD, spine(0.84, 0.185));
 
 	const neckTop = place(half + 0.1, -0.21);
 	const neckFront = place(half + 0.17, -0.04);
 	const chest = place(half + 0.12, 0.13);
-	facet(pen, palette.bright, backC, backD, neckTop);
-	facet(pen, palette.orange, backD, neckFront, neckTop);
-	facet(pen, palette.mid, backD, midD, neckFront);
-	facet(pen, palette.cream, midD, lowD, chest, neckFront);
+	facet(pen, palette.light, backC, backD, neckTop);
+	facet(pen, palette.bright, backD, neckFront, neckTop);
+	facet(pen, palette.deep, backD, midD, neckFront);
+	facet(pen, palette.white, midD, lowD, chest, neckFront);
 
 	drawHind(pen, hip, hindNearTarget, hindTilt(hindNearFoot), nearLeg);
 	drawFore(pen, shoulder, foreNearTarget, foreTilt(foreNearFoot), nearLeg);
 
 	const headBase = place(half + 0.14, -0.2);
-	drawHead(pen, headBase, -pitch * 0.45 + 0.04 + leap.pitch * 0.4);
+	drawHead(pen, headBase, -pitch * 0.55 + 0.04);
 	pen.restore();
 }

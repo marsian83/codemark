@@ -12,7 +12,7 @@ export type Sky = {
 	sunY: number;
 };
 
-const riseScreens = 0.92;
+const riseScreens = 0.8;
 const shortScreen = 900;
 const shortScreenDrop = 0.09;
 
@@ -84,18 +84,36 @@ export function signalAt(
 	return ahead?.kind ?? passed[passed.length - 1]?.kind ?? "verified";
 }
 
-export const leapHeight = 1.2;
-const leapReach = 1.4;
+export const leapHeight = 1.05;
+const leapReach = 1.82;
+const crouchReach = 0.45;
+const crouchDepth = 0.09;
 
-export type Leap = { lift: number; pitch: number };
+export type Leap = {
+	along: number;
+	lift: number;
+	pitch: number;
+	crouch: number;
+};
+
+const grounded: Leap = { along: -2, lift: 0, pitch: 0, crouch: 0 };
 
 export function leapAt(foxWorld: number, spacing: number, unit: number): Leap {
 	const index = Math.round(foxWorld / spacing - 1);
-	if (kindAt(index) !== "revoked") return { lift: 0, pitch: 0 };
+	if (kindAt(index) !== "revoked") return grounded;
 	const along = (foxWorld - (index + 1) * spacing) / (leapReach * unit);
-	if (Math.abs(along) >= 1) return { lift: 0, pitch: 0 };
+	const distance = Math.abs(along);
+	if (distance >= 1 + crouchReach) return grounded;
+	if (distance >= 1) {
+		const settling = 1 - (distance - 1) / crouchReach;
+		const depth = settling * settling * (3 - 2 * settling);
+		return { along, lift: 0, pitch: 0, crouch: depth * crouchDepth };
+	}
+	const flight = (along + 1) / 2;
 	return {
+		along,
 		lift: leapHeight * (1 - along * along),
-		pitch: 0.34 * along * (1 - along ** 4),
+		pitch: 0.42 * along * Math.sqrt(Math.sin(flight * Math.PI)),
+		crouch: 0,
 	};
 }

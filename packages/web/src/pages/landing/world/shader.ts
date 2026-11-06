@@ -159,16 +159,18 @@ void main() {
 
 	float sun = length(sky - uSun);
 	float glow = exp(-sun * 4.6) * (1.0 - uNight) * (1.0 - textShade * 0.8) * (1.0 - portraitShade * 0.85);
-	color = mix(color, tod(rgb(255., 178., 92.), rgb(0., 0., 0.), rgb(255., 224., 180.)), grainy(glow * 0.85, grain2, 0.4));
+	if (glow > 0.001) color = mix(color, tod(rgb(255., 178., 92.), rgb(0., 0., 0.), rgb(255., 224., 180.)), grainy(glow * 0.85, grain2, 0.4));
 
-	float drift = uTime * 0.006 + uTravel * 0.02;
-	vec2 cloudSpace = vec2(p.x * 0.9 + drift, sky.y * 9.0 + 0.4 * sin(p.x * 1.3));
-	float band = clouds(cloudSpace);
-	float bandMask = smoothstep(0.58, 0.76, band) * smoothstep(0.08, 0.2, height) * (1.0 - smoothstep(0.42, 0.62, height)) * (1.0 - uNight) * 0.85;
-	vec3 cloudLit = tod(rgb(255., 150., 72.), rgb(0., 0., 0.), rgb(255., 206., 170.));
-	vec3 cloudDark = tod(rgb(96., 44., 38.), rgb(0., 0., 0.), rgb(116., 100., 116.));
-	float towardSun = exp(-abs(p.x - uSun.x) * 1.1);
-	color = mix(color, mix(cloudDark, cloudLit, grainy(towardSun, grain, 0.4)), grainy(bandMask, grain2, 0.4));
+	if (uNight < 0.995) {
+		float drift = uTime * 0.006 + uTravel * 0.02;
+		vec2 cloudSpace = vec2(p.x * 0.9 + drift, sky.y * 9.0 + 0.4 * sin(p.x * 1.3));
+		float band = clouds(cloudSpace);
+		float bandMask = smoothstep(0.58, 0.76, band) * smoothstep(0.08, 0.2, height) * (1.0 - smoothstep(0.42, 0.62, height)) * (1.0 - uNight) * 0.85;
+		vec3 cloudLit = tod(rgb(255., 150., 72.), rgb(0., 0., 0.), rgb(255., 206., 170.));
+		vec3 cloudDark = tod(rgb(96., 44., 38.), rgb(0., 0., 0.), rgb(116., 100., 116.));
+		float towardSun = exp(-abs(p.x - uSun.x) * 1.1);
+		color = mix(color, mix(cloudDark, cloudLit, grainy(towardSun, grain, 0.4)), grainy(bandMask, grain2, 0.4));
+	}
 
 	float sunSize = min(0.155, aspect * 0.2);
 	float disc = smoothstep(sunSize + 0.001, sunSize - 0.002, sun) * step(0.0, uSun.y + 0.16);
