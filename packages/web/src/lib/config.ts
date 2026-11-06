@@ -16,7 +16,7 @@ function defaultPin() {
 
 export const config = {
 	chainId: sepolia.chainId,
-	sepoliaRpc: env.VITE_SEPOLIA_RPC_URL || "https://sepolia.gateway.tenderly.co",
+	sepoliaRpc: env.VITE_SEPOLIA_RPC_URL || undefined,
 	anvilRpc: env.VITE_ANVIL_RPC_URL || "http://127.0.0.1:8545",
 	arkivAccessKey: env.VITE_ARKIV_ACCESS_KEY || "",
 	thresholds: defaultThresholds,
