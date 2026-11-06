@@ -1,14 +1,38 @@
 # Codemark
 
-Before your wallet signs, Codemark checks that the contract or account upgrade in front of you was published by the team you think, and that the team has not withdrawn it.
+**Know who published a contract before you sign it.**
 
-In February 2025 Bybit's Safe signers approved a SafeTx that delegatecalled an attacker contract after the Safe{Wallet} frontend was replaced. On October 29, 2026 a Binance hot wallet was 7702-delegated to sweeper code. At signing time a wallet has 20 bytes and no answer to "who published this, and do they still stand behind it?"
+Codemark checks that the contract or account upgrade you are about to approve was released by the team you think, under their ENS name, and that the team still stands behind it.
 
-Built at ETHGlobal Mumbai. ENSv2 on Sepolia holds the signing identity, Arkiv (testnet Rabdi) is the public index, and a MetaMask Snap shows the result at signing time.
+**Try it at [codemark.hetairoi.xyz](https://codemark.hetairoi.xyz).** Paste a Sepolia contract address or pick one of the demo contracts. You don't need a wallet.
 
-Codemark answers "who published this", not "is it safe". It does not assess what code does.
+## Why it matters
+
+A wallet shows you 20 bytes and asks you to sign. In February 2025, Bybit's Safe signers approved a transaction that handed their wallet to an attacker's contract, because the web page that built the transaction had been swapped. Nothing on the signing screen could say "this is not code your team released".
+
+Account upgrades (EIP-7702) raise the stakes: one signature lets a contract control your whole account.
+
+## What you see
+
+- **A verdict before you sign:** Verified, Released recently, Not verified, or Don't sign, with the reason in plain words.
+- **The trust path behind it:** publisher, release key, release, record, age. The first step that fails is the one marked in red, so you know why.
+- **Withdrawals that reach every wallet:** if a team's release key leaks, one transaction withdraws everything that key released, and every check after that shows it.
+
+Codemark tells you who published something and whether they still stand behind it. It does not assess what the code does.
+
+## Three ways to use it
+
+| You are | Use | What you need |
+|---|---|---|
+| Anyone about to sign | The lookup site at [codemark.hetairoi.xyz](https://codemark.hetairoi.xyz) | A browser. No wallet, no sign-up |
+| A MetaMask user | The Codemark Snap, which checks every transaction before MetaMask asks you to confirm | [MetaMask Flask](https://metamask.io/flask/) for now |
+| A team shipping contracts | The CLI and the GitHub Action, which publish each release under your ENS name | An ENS name on Sepolia and a Safe |
+
+Built at ETHGlobal Mumbai on ENSv2 (Sepolia) and Arkiv (Rabdi testnet). Everything on chain is stock ENSv2; there is no custom Solidity.
 
 ## How it works
+
+The rest of this page is for people who want the details: how releases are laid out in ENS, what each key can do, and exactly what a check proves.
 
 ### The name tree
 
@@ -82,7 +106,7 @@ Arkiv is an untrusted, searchable index. ENS can say whether a name is valid but
 | `packages/lib/shared` | checker, ENSv2 addresses/ABIs/reads, record codec, calldata decoding, Arkiv row types. Runs in browser and Snap |
 | `packages/cli` | publisher tool; the only place that signs ENS or Arkiv transactions |
 | `packages/snap` | MetaMask Snap (`onTransaction`, `onSignature`) |
-| `packages/web` | lookup site and demo 7702 wallet page (Vite, React) |
+| `packages/web` | landing page at `/`, lookup site and demo 7702 wallet page under `/app` (Vite, React) |
 | `packages/demo` | Anvil fork, seed and attack scripts, live-run script. Nothing here ships |
 | `arkiv/` | Arkiv prize documentation |
 | `.github/actions/codemark-publish` | composite GitHub Action wrapping `publish` |
@@ -111,12 +135,12 @@ bun run --cwd demo abi:check   # check the ABIs against live Sepolia
 ### Tests
 
 ```sh
-bun tests              # shared and cli tests
+bun tests              # shared, cli and web tests
 bun run --cwd demo tests   # spikes; starts its own Anvil on :18545
 bun fmt-lint && bun typecheck
 ```
 
-Checker tests run against an Anvil fork, not mocks, because the deployed contracts differ from the repository head.
+Most tests need nothing but Bun: calldata decoding, record and name parsing, row validation, severity, checker limits, the CLI operations, and the plain-language verdicts (`packages/lib/shared/tests/explain.test.ts` walks every combination of verdict, role, pin, proof and age and checks that nothing unsafe ever reads as verified). The checker's end-to-end tests run against an Anvil fork of Sepolia rather than mocks, because the deployed contracts differ from the repository head; they skip themselves when no fork is running. `check.live.test.ts` reads live Sepolia and is skipped with `CODEMARK_LIVE_TESTS=0`.
 
 ### Web
 
@@ -125,11 +149,13 @@ bun web:dev            # http://localhost:3020
 bun web:build
 ```
 
+The site is static: it reads Sepolia and Arkiv straight from the browser, so any static host works. Serve `index.html` for every path under `/app` so the client-side routes load. The account-upgrade demo page talks to a local Anvil fork, so it only works on your own machine with `bun run demo:fork` running.
+
 ### Snap in MetaMask Flask
 
 The Snap needs [MetaMask Flask](https://metamask.io/flask/), the developer build, because network access for Snaps is only allowed for allowlisted Snaps in stable MetaMask.
 
-1. `bun snap:build` (set `CODEMARK_SITE_ORIGIN` first if the web site is not on localhost:3020; only that origin and localhost:3020 may pin publishers).
+1. `bun snap:build`. Only https://codemark.hetairoi.xyz and http://localhost:3020 may pin publishers in the Snap; set `CODEMARK_SITE_ORIGIN` to allow one more origin.
 2. `bun snap:serve` serves the Snap on http://localhost:8080.
 3. In Flask, install `local:http://localhost:8080`, then sign a transaction. The Snap decodes the call, checks the targets and shows the verdict.
 
@@ -138,7 +164,7 @@ The Snap needs [MetaMask Flask](https://metamask.io/flask/), the developer build
 Secrets come from the environment (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`, `CODEMARK_SAFE`, `SEPOLIA_RPC_URL`, `ARKIV_ACCESS_KEY`). A command that needs a signer it was not given fails before sending anything. Every command also takes `--rpc <url>`.
 
 ```sh
-bun cli init acmeswap --sec 0x... --years 1                       # register the name, deploy the Safe and PubRegistry
+bun cli init acmeswap --sec 0x... --years 1                       # register acmeswap.eth, deploy the Safe and PubRegistry
 bun cli add-key acmeswap.eth ci-1 --ci 0x... --ttl-days 90        # mount a key (--root-only for a key with no CI grant, such as delegates)
 bun cli publish acmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>   # --kind delegate for 7702 delegates, Safe modules and other delegatecall targets
 bun cli pull acmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"
@@ -146,6 +172,8 @@ bun cli cut acmeswap.eth ci-1 --reason "CI key leaked"
 bun cli migrate acmeswap.eth ci-1 ci-2 --ci 0x...                 # mount ci-2, republish live releases of ci-1
 bun cli verify 0x... --pin acmeswap.eth --role delegation         # --role call|delegatecall|delegation|approval-spender|permit-spender
 ```
+
+`init` does the whole `.eth` registration itself: it mints and approves MockUSDC, commits and then registers through the ENSv2 `ETHRegistrar` with the Safe as owner (`packages/cli/ops/init.ts`).
 
 `verify` also takes `--no-index`, `--block`, `--min-age <seconds>` and `--json`, and exits 0 for no warning, 1 for a warning and 2 for critical.
 
@@ -195,7 +223,7 @@ The router and portal rows are indexed on Arkiv's Rabdi testnet; the delegate ha
 
 Limits:
 
-- The Snap runs only in MetaMask Flask. The live demo link is the demo wallet page, which runs the same checker.
+- The Snap runs only in MetaMask Flask. Without it, the lookup site runs the same checker in your browser.
 - Both sides must adopt it: teams must publish and wallets must run the check. Dapps cannot request arbitrary 7702 delegations, so wallet teams call the checker before their "upgrade account" prompt.
 - Lookalikes are reduced by pinning, not removed.
 - A pull or cut is final for the label: a pulled label cannot be reused, and a cut key is never renewed, only replaced with `migrate`.
