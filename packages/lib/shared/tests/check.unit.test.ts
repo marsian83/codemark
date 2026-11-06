@@ -50,9 +50,9 @@ const releaseRow = (
 	row: {
 		artifact,
 		keyRegistry: other,
-		publisher: "acmeswap.eth",
+		publisher: "pwnmeswap.eth",
 		keyLabel: "ci-1",
-		name: "router-3-1-0.ci-1.acmeswap.eth",
+		name: "router-3-1-0.ci-1.pwnmeswap.eth",
 		labelhash: labelhash("router-3-1-0"),
 		resolverBlock: 10n,
 		regBlock: 11n,
@@ -72,13 +72,13 @@ describe("name binding", () => {
 	});
 
 	test("release names split into label, key and publisher", () => {
-		expect(splitReleaseName("router-3-1-0.ci-1.acmeswap.eth")).toEqual({
+		expect(splitReleaseName("router-3-1-0.ci-1.pwnmeswap.eth")).toEqual({
 			label: "router-3-1-0",
 			key: "ci-1",
-			publisher: "acmeswap.eth",
+			publisher: "pwnmeswap.eth",
 		});
-		expect(splitReleaseName("ci-1.acmeswap.eth")).toBeUndefined();
-		expect(splitReleaseName("Router.ci-1.acmeswap.eth")).toBeUndefined();
+		expect(splitReleaseName("ci-1.pwnmeswap.eth")).toBeUndefined();
+		expect(splitReleaseName("Router.ci-1.pwnmeswap.eth")).toBeUndefined();
 	});
 
 	test("a record binds only under its version label or the artifact's forward label", () => {
@@ -171,7 +171,7 @@ describe("name binding", () => {
 describe("index row authentication (shape)", () => {
 	test("a well-formed row passes", () => {
 		expect(releaseRowProblem(releaseRow())).toEqual({
-			split: { label: "router-3-1-0", key: "ci-1", publisher: "acmeswap.eth" },
+			split: { label: "router-3-1-0", key: "ci-1", publisher: "pwnmeswap.eth" },
 		});
 	});
 
@@ -193,7 +193,7 @@ describe("index row authentication (shape)", () => {
 		).toBe(true);
 		expect(
 			"problem" in
-				releaseRowProblem(releaseRow({ publisher: "acmeswap-app.eth" })),
+				releaseRowProblem(releaseRow({ publisher: "pwnmeswap-app.eth" })),
 		).toBe(true);
 		expect(
 			"problem" in
@@ -209,7 +209,7 @@ describe("index row authentication (shape)", () => {
 			row: {
 				action: "cut",
 				keyRegistry: other,
-				name: "ci-1.acmeswap.eth",
+				name: "ci-1.pwnmeswap.eth",
 				reason: "CI key leaked",
 				ensTx: `0x${"11".repeat(32)}`,
 				block: 5n,
@@ -233,8 +233,8 @@ describe("index row authentication (shape)", () => {
 	test("incident reasons are display text: control and bidi characters are stripped", () => {
 		expect(sanitizeReason("CI key‮ leaked\n")).toBe("CI key leaked");
 		expect(sanitizeReason("x".repeat(400)).length).toBe(280);
-		expect(sanitizeReason("acme\u200bswap\ufeff \u0085ok\u2060")).toBe(
-			"acmeswap ok",
+		expect(sanitizeReason("pwnme\u200bswap\ufeff \u0085ok\u2060")).toBe(
+			"pwnmeswap ok",
 		);
 	});
 });
@@ -288,13 +288,13 @@ describe("severity", () => {
 		age = 100_000,
 		proven = true,
 	): PublisherVerdict => ({
-		publisher: "acmeswap.eth",
+		publisher: "pwnmeswap.eth",
 		pinned: true,
 		key: "ci-1",
 		verdict: proven ? "VERIFIED" : "VERIFIED-unproven",
 		source: "pinned",
 		release: {
-			name: "router-3-1-0.ci-1.acmeswap.eth",
+			name: "router-3-1-0.ci-1.pwnmeswap.eth",
 			label: "router-3-1-0",
 			kind: "contract",
 			component: "router",
@@ -311,7 +311,7 @@ describe("severity", () => {
 		const d = decide("call", [verified()], t);
 		expect(d.severity).toBe("info");
 		expect(d.headline).toBe(
-			"acmeswap.eth · ci-1 · router 3.1.0 · proven · published 27 h ago",
+			"pwnmeswap.eth · ci-1 · router 3.1.0 · proven · published 27 h ago",
 		);
 	});
 
@@ -319,7 +319,7 @@ describe("severity", () => {
 		expect(decide("call", [verified({}, 40)], t)).toEqual({
 			severity: "amber",
 			headline:
-				"acmeswap.eth · ci-1 · router 3.1.0 · proven · published 40 s ago",
+				"pwnmeswap.eth · ci-1 · router 3.1.0 · proven · published 40 s ago",
 		});
 	});
 
@@ -360,7 +360,7 @@ describe("severity", () => {
 		);
 		expect(d).toEqual({
 			severity: "critical",
-			headline: "KEY REVOKED by acmeswap.eth: CI key leaked",
+			headline: "KEY REVOKED by pwnmeswap.eth: CI key leaked",
 		});
 	});
 
@@ -378,7 +378,7 @@ describe("severity", () => {
 			t,
 		);
 		expect(d.severity).toBe("warning");
-		expect(d.headline).toStartWith("Disputed by acmeswap.eth");
+		expect(d.headline).toStartWith("Disputed by pwnmeswap.eth");
 	});
 
 	test("unpinned vouches are warnings, never green", () => {
@@ -388,14 +388,14 @@ describe("severity", () => {
 				verified({
 					pinned: false,
 					source: "index",
-					publisher: "acmeswap-app.eth",
+					publisher: "pwnmeswap-app.eth",
 				}),
 			],
 			t,
 		);
 		expect(d).toEqual({
 			severity: "warning",
-			headline: "Vouched for by acmeswap-app.eth (not pinned)",
+			headline: "Vouched for by pwnmeswap-app.eth (not pinned)",
 		});
 	});
 

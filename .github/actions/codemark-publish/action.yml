@@ -2,7 +2,7 @@ name: codemark publish
 description: Publish a contract release under a Codemark CI key (ENSv2 on Sepolia, row on Arkiv).
 inputs:
   publisher:
-    description: Publisher name, e.g. acmeswap.eth
+    description: Publisher name, e.g. pwnmeswap.eth
     required: true
   key:
     description: Key label whose registry the CI key may register under, e.g. ci-1

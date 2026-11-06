@@ -21,7 +21,7 @@ jobs:
           echo "address=$(jq -r .address deployments/sepolia/router.json)" >> "$GITHUB_OUTPUT"
       - uses: ./.github/actions/codemark-publish
         with:
-          publisher: acmeswap.eth
+          publisher: pwnmeswap.eth
           key: ci-1
           component: router
           version: ${{ steps.deployed.outputs.version }}

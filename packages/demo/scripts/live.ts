@@ -21,7 +21,7 @@ const checkOnly = process.argv.includes("--check");
 const label = normalizeLabel(
 	process.argv.slice(2).find((a) => !a.startsWith("--")) ??
 		env.LIVE_LABEL ??
-		"acmeswap",
+		"pwnmeswap",
 );
 const publisher = `${label}.eth`;
 

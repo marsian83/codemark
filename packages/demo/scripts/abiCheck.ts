@@ -56,21 +56,21 @@ await read(
 	}),
 );
 await read(
-	"ETHRegistrar.getRegisterPrice(acmeswap, 1y, USDC)",
+	"ETHRegistrar.getRegisterPrice(pwnmeswap, 1y, USDC)",
 	publicClient.readContract({
 		address: d.ethRegistrar,
 		abi: ethRegistrarAbi,
 		functionName: "getRegisterPrice",
-		args: ["acmeswap", 31536000n, d.mockUsdc],
+		args: ["pwnmeswap", 31536000n, d.mockUsdc],
 	}),
 );
 await read(
-	"ETHRegistrar.isAvailable(acmeswap)",
+	"ETHRegistrar.isAvailable(pwnmeswap)",
 	publicClient.readContract({
 		address: d.ethRegistrar,
 		abi: ethRegistrarAbi,
 		functionName: "isAvailable",
-		args: ["acmeswap"],
+		args: ["pwnmeswap"],
 	}),
 );
 await read(

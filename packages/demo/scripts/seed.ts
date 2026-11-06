@@ -24,7 +24,7 @@ if (env.SEED_ARKIV)
 const node = anvil(url);
 const info = await node.forkInfo();
 const forkBlock = info.forkConfig?.forkBlockNumber;
-const label = process.argv[2] ?? "acmeswap";
+const label = process.argv[2] ?? "pwnmeswap";
 const publisher = `${label}.eth`;
 const root = ctx.signers.root?.account.address;
 const sec = ctx.signers.sec?.account.address;

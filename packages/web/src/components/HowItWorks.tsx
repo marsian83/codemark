@@ -6,7 +6,7 @@ import { NameSegments } from "./Links";
 const steps = [
 	{
 		label: "Publisher",
-		value: <span className="font-mono font-medium">acmeswap.eth</span>,
+		value: <span className="font-mono font-medium">pwnmeswap.eth</span>,
 		text: "The team's ENS name. Pin the publishers you trust. Only they can mark a contract as verified.",
 	},
 	{
@@ -18,8 +18,8 @@ const steps = [
 		label: "Release",
 		value: (
 			<NameSegments
-				name="router-3-1-0.ci-1.acmeswap.eth"
-				publisher="acmeswap.eth"
+				name="router-3-1-0.ci-1.pwnmeswap.eth"
+				publisher="pwnmeswap.eth"
 			/>
 		),
 		text: "Every release is a name under its key that records the contract address and its code hash.",

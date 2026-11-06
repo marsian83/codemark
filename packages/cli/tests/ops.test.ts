@@ -56,7 +56,7 @@ describe("cli ops", () => {
 describe("cli input normalisation", () => {
 	test("publish options are normalised before anything is sent", () => {
 		const options = normalizePublishOptions({
-			publisher: "AcmeSwap.ETH",
+			publisher: "PwnmeSwap.ETH",
 			key: "CI-1",
 			component: "Router",
 			version: " 3.1.0 ",
@@ -64,7 +64,7 @@ describe("cli input normalisation", () => {
 			target,
 			commit: "07E55A05A1B2C3D4E5F60718293A4B5C6D7E8F90",
 		});
-		expect(options.publisher).toBe("acmeswap.eth");
+		expect(options.publisher).toBe("pwnmeswap.eth");
 		expect(options.key).toBe("ci-1");
 		expect(options.component).toBe("router");
 		expect(options.version).toBe("3.1.0");
@@ -76,7 +76,7 @@ describe("cli input normalisation", () => {
 
 	test("non-normalisable input is refused", () => {
 		const base = {
-			publisher: "acmeswap.eth",
+			publisher: "pwnmeswap.eth",
 			key: "ci-1",
 			component: "router",
 			version: "3.1.0",

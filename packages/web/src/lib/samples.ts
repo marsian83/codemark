@@ -17,13 +17,13 @@ function result(
 
 function verdict(v: Partial<PublisherVerdict>): PublisherVerdict {
 	return {
-		publisher: "acmeswap.eth",
+		publisher: "pwnmeswap.eth",
 		pinned: true,
 		key: "ci-1",
 		verdict: "VERIFIED",
 		source: "pinned",
 		release: {
-			name: "router-3-1-0.ci-1.acmeswap.eth",
+			name: "router-3-1-0.ci-1.pwnmeswap.eth",
 			label: "router-3-1-0",
 			kind: "contract",
 			component: "router",
@@ -42,7 +42,7 @@ export const sampleResults: { title: string; result: TargetResult }[] = [
 		title: "VERIFIED, pinned",
 		result: result({
 			severity: "info",
-			headline: "Published by acmeswap.eth · router 3.1.0",
+			headline: "Published by pwnmeswap.eth · router 3.1.0",
 			verdicts: [verdict({})],
 		}),
 	},
@@ -50,14 +50,14 @@ export const sampleResults: { title: string; result: TargetResult }[] = [
 		title: "VERIFIED, pinned, under 1 h",
 		result: result({
 			severity: "amber",
-			headline: "Published by acmeswap.eth 40 s ago",
+			headline: "Published by pwnmeswap.eth 40 s ago",
 			verdicts: [
 				verdict({
 					release: {
 						...(verdict({}).release as NonNullable<
 							ReturnType<typeof verdict>["release"]
 						>),
-						name: "router-3-2-0.ci-1.acmeswap.eth",
+						name: "router-3-2-0.ci-1.pwnmeswap.eth",
 						version: "3.2.0",
 						ageSeconds: 40,
 					},
@@ -69,7 +69,7 @@ export const sampleResults: { title: string; result: TargetResult }[] = [
 		title: "VERIFIED-unproven",
 		result: result({
 			severity: "warning",
-			headline: "Published by acmeswap.eth; resolver could change",
+			headline: "Published by pwnmeswap.eth; resolver could change",
 			verdicts: [
 				verdict({
 					verdict: "VERIFIED-unproven",
@@ -83,12 +83,12 @@ export const sampleResults: { title: string; result: TargetResult }[] = [
 		title: "KEY REVOKED",
 		result: result({
 			severity: "critical",
-			headline: "KEY REVOKED by acmeswap.eth: CI key leaked",
+			headline: "KEY REVOKED by pwnmeswap.eth: CI key leaked",
 			verdicts: [
 				verdict({
 					verdict: "KEY REVOKED",
 					reason:
-						"ci-1 is no longer mounted under acmeswap.eth. CI key leaked.",
+						"ci-1 is no longer mounted under pwnmeswap.eth. CI key leaked.",
 				}),
 			],
 		}),
@@ -97,12 +97,12 @@ export const sampleResults: { title: string; result: TargetResult }[] = [
 		title: "PULLED with reason",
 		result: result({
 			severity: "critical",
-			headline: "Pulled by acmeswap.eth: reentrancy in router 3.0.2",
+			headline: "Pulled by pwnmeswap.eth: reentrancy in router 3.0.2",
 			verdicts: [
 				verdict({
 					verdict: "PULLED",
 					reason:
-						"Unregistered by acmeswap.eth. Reason: reentrancy in router 3.0.2.",
+						"Unregistered by pwnmeswap.eth. Reason: reentrancy in router 3.0.2.",
 				}),
 			],
 		}),
@@ -145,10 +145,10 @@ export const sampleResults: { title: string; result: TargetResult }[] = [
 				via: "authorization",
 			},
 			severity: "critical",
-			headline: "Vouched for by acmeswap-app.eth, which you have not pinned",
+			headline: "Vouched for by pwnmeswap-app.eth, which you have not pinned",
 			verdicts: [
 				verdict({
-					publisher: "acmeswap-app.eth",
+					publisher: "pwnmeswap-app.eth",
 					pinned: false,
 					source: "index",
 					key: "ci-1",
@@ -160,11 +160,11 @@ export const sampleResults: { title: string; result: TargetResult }[] = [
 		title: "Two publishers disagree",
 		result: result({
 			severity: "critical",
-			headline: "acmeswap.eth revoked this; acmeswap-app.eth vouches for it",
+			headline: "pwnmeswap.eth revoked this; pwnmeswap-app.eth vouches for it",
 			verdicts: [
 				verdict({ verdict: "KEY REVOKED", reason: "CI key leaked." }),
 				verdict({
-					publisher: "acmeswap-app.eth",
+					publisher: "pwnmeswap-app.eth",
 					pinned: false,
 					source: "index",
 				}),
@@ -184,7 +184,7 @@ export const sampleResults: { title: string; result: TargetResult }[] = [
 		title: "Index incomplete",
 		result: result({
 			severity: "warning",
-			headline: "Published by acmeswap.eth",
+			headline: "Published by pwnmeswap.eth",
 			verdicts: [verdict({})],
 			indexIncomplete: true,
 		}),

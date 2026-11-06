@@ -157,8 +157,8 @@ export default function DemoWalletPage() {
 	const blocked = result?.severity === "critical";
 	const presets = [
 		{
-			label: "AcmeDelegate",
-			detail: "Released by acmeswap.eth",
+			label: "PwnmeDelegate",
+			detail: "Released by pwnmeswap.eth",
 			value: config.demoDelegate,
 		},
 		{

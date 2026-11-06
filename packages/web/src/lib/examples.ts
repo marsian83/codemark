@@ -10,7 +10,7 @@ export type Example = {
 export const examples: Example[] = [
 	{
 		label: "Router",
-		detail: "Demo router from acmeswap.eth",
+		detail: "Demo router from pwnmeswap.eth",
 		address: "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E",
 		role: "call",
 	},
