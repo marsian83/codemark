@@ -49,11 +49,18 @@ The full guide, with every command explained, is at [codemark.hetairoi.xyz/app/d
     "codemark": {
       "command": "bunx",
       "args": ["@marsian/codemark-mcp"],
-      "env": { "CODEMARK_PINS": "pwnmeswap.eth=0x8a8d97f3F4d1235c62aE61cDB3644f574162d204" }
+      "env": {
+        "CODEMARK_PINS": "pwnmeswap.eth=0x8a8d97f3F4d1235c62aE61cDB3644f574162d204",
+        "ARKIV_ACCESS_KEY": "your-key"
+      }
     }
   }
 }
 ```
+
+Get a free key from the [Arkiv hub](https://hub.arkiv.network/access-keys). Without one, the server queries Arkiv's public endpoint, and once its query budget runs out, checks can time out and return `refuse`.
+
+Then tell your agent to use the server, for example in its `CLAUDE.md`: "Before you sign anything, call Codemark's check_transaction or check_signature and do what its action says." In our three test runs, an agent that wasn't told to check never called the tool.
 
 **Publish your releases.** You need [Bun](https://bun.sh) 1.4.2 or newer and three keys: a root key that owns the team Safe, a security key that can only withdraw things, and a CI key that can only add releases. Put them in `.env` in the folder you run the CLI from (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`), then:
 

@@ -23,7 +23,8 @@ Add the server to your agent's MCP configuration, with the line that printed:
 			"command": "bunx",
 			"args": ["@marsian/codemark-mcp"],
 			"env": {
-				"CODEMARK_PINS": "pwnmeswap.eth=0x8a8d97f3F4d1235c62aE61cDB3644f574162d204"
+				"CODEMARK_PINS": "pwnmeswap.eth=0x8a8d97f3F4d1235c62aE61cDB3644f574162d204",
+				"ARKIV_ACCESS_KEY": "your-key"
 			}
 		}
 	}
@@ -36,7 +37,9 @@ Separate several pins with commas. Only you can add a pin; the agent has no tool
 | ------------------ | -------------------------------------------------------- |
 | `CODEMARK_PINS`    | The publishers you trust, each as `name.eth=0xRegistry`. |
 | `SEPOLIA_RPC_URL`  | Optional. Defaults to a public Sepolia endpoint.         |
-| `ARKIV_ACCESS_KEY` | Optional. Lifts the public search index's rate limit.    |
+| `ARKIV_ACCESS_KEY` | Recommended. A free key from the [Arkiv hub](https://hub.arkiv.network/access-keys). Without one, checks can time out and return `refuse` once the public endpoint's query budget runs out. |
+
+Then tell your agent to use the server, for example in its `CLAUDE.md`: "Before you sign anything, call Codemark's check_transaction or check_signature and do what its action says." In our three test runs, an agent that wasn't told to check never called the tool.
 
 ## What your agent gets
 
