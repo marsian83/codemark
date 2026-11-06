@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://codemark.hetairoi.xyz"><img src="docs/images/banner.jpg" width="100%" alt="The word codemark in large letters over a dusk landscape, with a fox running past" /></a>
+  <a href="https://codemark.hetairoi.xyz"><img src="docs/images/banner.webp" width="100%" alt="The word codemark in large letters over a dusk landscape, with a fox running past" /></a>
 </p>
 
 <h1 align="center">Codemark</h1>
@@ -50,7 +50,7 @@ Account upgrades (EIP-7702) raise the stakes: one signature lets a contract cont
 
 Codemark tells you who published something and whether they still stand behind it. It does not assess what the code does.
 
-<img src="docs/images/verdicts.jpg" width="100%" alt="Three results from the lookup site: Verified with its trust path, Don't sign for an account upgrade, and Not verified for a contract call" />
+<img src="docs/images/verdicts.webp" width="100%" alt="Three results from the lookup site: Verified with its trust path, Don't sign for an account upgrade, and Not verified for a contract call" />
 
 ## Four ways to use it
 
@@ -63,8 +63,8 @@ Codemark tells you who published something and whether they still stand behind i
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/images/wallet-prompt.jpg" width="100%" alt="A preview of a MetaMask transaction request with Codemark's result: released by pwnmeswap.eth" /></td>
-    <td width="50%"><img src="docs/images/agent.jpg" width="100%" alt="The MCP server's proceed, ask_user and refuse responses, each with its reason and instruction" /></td>
+    <td width="50%"><img src="docs/images/wallet-prompt.webp" width="100%" alt="A preview of a MetaMask transaction request with Codemark's result: released by pwnmeswap.eth" /></td>
+    <td width="50%"><img src="docs/images/agent.webp" width="100%" alt="The MCP server's proceed, ask_user and refuse responses, each with its reason and instruction" /></td>
   </tr>
   <tr>
     <td><sub>In your wallet. This is the landing page's preview of what the Snap adds to MetaMask.</sub></td>
@@ -120,7 +120,7 @@ Built on ENSv2 (Sepolia) and Arkiv (Rabdi testnet). Everything on chain is stock
 
 The rest of this page is for people who want the details: how releases are laid out in ENS, what each key can do, and exactly what a check proves.
 
-<img src="docs/images/how-it-works.jpg" width="100%" alt="Summary diagram: a team's name tree with a CI key, a delegates key and a security key, next to the steps every check runs" />
+<img src="docs/images/how-it-works.webp" width="100%" alt="Summary diagram: a team's name tree with a CI key, a delegates key and a security key, next to the steps every check runs" />
 
 ### The name tree
 
@@ -169,7 +169,7 @@ Roles come from ENSv2's access-control scheme (EAC): "may add" and "may remove" 
 - **Pull** withdraws one release. In one Safe batch, root unregisters both names of the release and reserves both labels again, so the CI key cannot simply re-register them. A reserved label can only be promoted by root, and a promoted label is marked and fails the check.
 - **Cut** withdraws a key. The sec key unregisters the key's label in `PubRegistry` in one Sepolia transaction. Every release under that key stops resolving, because ENSv2 resolution walks registries from the root. An incident row on Arkiv records the reason. Root then runs `migrate` to mount a new key and republish the good releases.
 
-<img src="docs/images/cut-a-key.jpg" width="100%" alt="The landing page's walkthrough of cutting ci-1: its releases show key revoked and the wallet shows the reason" />
+<img src="docs/images/cut-a-key.webp" width="100%" alt="The landing page's walkthrough of cutting ci-1: its releases show key revoked and the wallet shows the reason" />
 
 <sub>A cut, as the landing page walks through it. A live pull has run on Sepolia; a live cut hasn't, because it would withdraw the demo releases too.</sub>
 
