@@ -15,7 +15,7 @@ export function CodeBlock({ code, label }: { code: string; label?: string }) {
 
 export function Mono({ children }: { children: React.ReactNode }) {
 	return (
-		<code className="rounded-md bg-background-raised px-1 py-0.5 font-mono text-sm text-typography-primary">
+		<code className="rounded-md bg-background-raised px-1 py-0.5 font-mono whitespace-nowrap text-sm text-typography-primary">
 			{children}
 		</code>
 	);

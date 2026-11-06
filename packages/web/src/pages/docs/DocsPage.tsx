@@ -1,5 +1,6 @@
 import { formatDuration } from "@codemark/shared/check/explain";
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { ExternalLink } from "../../components/Links";
 import { config } from "../../lib/config";
 import { useTitle } from "../../lib/useTitle";
@@ -86,9 +87,9 @@ CODEMARK_SEC_KEY=0x...
 CODEMARK_CI_KEY=0x...
 SEPOLIA_RPC_URL=https://...`;
 
-const action = `- uses: ./.github/actions/codemark-publish
+const action = `- uses: marsian83/codemark/.github/actions/codemark-publish@<commit>
   with:
-    publisher: acmeswap.eth
+    publisher: pwnmeswap.eth
     key: ci-1
     component: router
     version: \${{ steps.deployed.outputs.version }}
@@ -139,6 +140,10 @@ function Sub({
 
 export default function DocsPage() {
 	useTitle("Get started");
+	const { hash } = useLocation();
+	useEffect(() => {
+		if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
+	}, [hash]);
 	return (
 		<div className="grid gap-10 lg:grid-cols-[12rem_minmax(0,1fr)] lg:gap-12">
 			<aside className="max-lg:hidden">
@@ -237,7 +242,7 @@ export default function DocsPage() {
 					<Sub title="Pin the publishers you trust">
 						<p className="text-sm text-typography-secondary">
 							Pinning a publisher means you tell Codemark which ENS names to
-							believe, for example <Mono>acmeswap.eth</Mono>. Only a pinned
+							believe, for example <Mono>pwnmeswap.eth</Mono>. Only a pinned
 							publisher can make a result Verified. Anyone can register a name
 							that looks like a team's, so a publisher you haven't pinned can
 							vouch for a contract but never earns the green result.
@@ -266,22 +271,7 @@ export default function DocsPage() {
 							</ExternalLink>{" "}
 							to that profile and connect it to Sepolia.
 						</Step>
-						<Step n={2} title="Build the Snap" code="bun snap:build">
-							Run it from the <Mono>packages</Mono> folder of the repository.
-							Set <Mono>CODEMARK_SITE_ORIGIN</Mono> first if you serve the site
-							from an address other than{" "}
-							<Mono>https://codemark.hetairoi.xyz</Mono> or{" "}
-							<Mono>http://localhost:3020</Mono>.
-						</Step>
-						<Step n={3} title="Serve it" code="bun snap:serve">
-							This serves the Snap at <Mono>http://localhost:8080</Mono>. Leave
-							it running.
-						</Step>
-						<Step
-							n={4}
-							title="Install it from the site"
-							code="local:http://localhost:8080"
-						>
+						<Step n={2} title="Install the Snap">
 							In the Flask profile, open{" "}
 							<Link
 								to="/app"
@@ -290,7 +280,8 @@ export default function DocsPage() {
 								Check
 							</Link>{" "}
 							and select Install the Snap on the MetaMask Snap card. MetaMask
-							asks you to confirm.
+							shows what the Snap may do and asks you to confirm. It installs{" "}
+							<Mono>npm:@marsian83/codemark-snap</Mono>.
 						</Step>
 					</ol>
 					<Sub title="Try it with a demo contract">
@@ -318,13 +309,20 @@ export default function DocsPage() {
 						<ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-typography-secondary marker:text-typography-tertiary">
 							<li>
 								<ExternalLink href="https://bun.sh">Bun</ExternalLink> 1.4.2 or
-								newer, and the repository with <Mono>bun install</Mono> run in
-								its <Mono>packages</Mono> folder. Run every command below from
-								there.
+								newer, and the CLI:{" "}
+								<Mono>bun add -g @marsian83/codemark-cli</Mono>. It installs the{" "}
+								<Mono>codemark</Mono> command.
 							</li>
 							<li>
 								Sepolia ETH for gas on the root key and the CI key. The security
 								key needs some too if you ever cut a key.
+							</li>
+							<li>
+								Test funds on Arkiv's Rabdi testnet for the CI key, which writes
+								each release to the search index, and for the security key,
+								which writes withdrawal notes. Without them a release still
+								checks out for anyone who pinned you, and{" "}
+								<Mono>codemark arkiv-retry</Mono> adds the entry later.
 							</li>
 							<li>
 								A{" "}
@@ -356,8 +354,8 @@ export default function DocsPage() {
 					<Sub title="Environment variables">
 						<p className="text-sm text-typography-secondary">
 							The CLI reads these from the environment or from a{" "}
-							<Mono>.env</Mono> file at the repository root. A command that
-							needs a key it wasn't given stops before it sends anything.
+							<Mono>.env</Mono> file in the folder you run it from. A command
+							that needs a key it wasn't given stops before it sends anything.
 						</p>
 						<div className="overflow-x-auto rounded-lg border border-border-secondary">
 							<table className="w-full text-left text-sm">
@@ -389,7 +387,7 @@ export default function DocsPage() {
 						<Step
 							n={1}
 							title="Register your name"
-							code="bun cli init acmeswap --sec 0x... --years 1"
+							code="codemark init pwnmeswap --sec 0x... --years 1"
 							needs={
 								<>
 									The root key. <Mono>--sec</Mono> is the security key's address
@@ -398,14 +396,14 @@ export default function DocsPage() {
 								</>
 							}
 						>
-							Registers <Mono>acmeswap.eth</Mono> on Sepolia, deploys your Safe
+							Registers <Mono>pwnmeswap.eth</Mono> on Sepolia, deploys your Safe
 							and sets up the publisher registry, and saves the Safe address as{" "}
 							<Mono>CODEMARK_SAFE</Mono>. It costs Sepolia gas only.
 						</Step>
 						<Step
 							n={2}
 							title="Add a release key"
-							code="bun cli add-key acmeswap.eth ci-1 --ci 0x... --ttl-days 90"
+							code="codemark add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90"
 							needs={
 								<>
 									The root key. <Mono>--ci</Mono> is the CI key's address.{" "}
@@ -413,7 +411,7 @@ export default function DocsPage() {
 								</>
 							}
 						>
-							Creates <Mono>ci-1.acmeswap.eth</Mono> and lets the CI key add
+							Creates <Mono>ci-1.pwnmeswap.eth</Mono> and lets the CI key add
 							releases under it, and nothing else. Use <Mono>--root-only</Mono>{" "}
 							instead of <Mono>--ci</Mono> for a key only root publishes under,
 							such as <Mono>delegates</Mono> for account upgrades.
@@ -421,7 +419,7 @@ export default function DocsPage() {
 						<Step
 							n={3}
 							title="Publish a release"
-							code="bun cli publish acmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>"
+							code="codemark publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>"
 							needs={
 								<>
 									The CI key. <Mono>--component</Mono>, <Mono>--version</Mono>{" "}
@@ -431,7 +429,7 @@ export default function DocsPage() {
 							}
 						>
 							Records the deployed contract at <Mono>--target</Mono> as{" "}
-							<Mono>router-3-1-0.ci-1.acmeswap.eth</Mono> and adds an entry to
+							<Mono>router-3-1-0.ci-1.pwnmeswap.eth</Mono> and adds an entry to
 							the search index. For an account upgrade, a Safe module or other
 							code that runs as your account, add <Mono>--kind delegate</Mono>
 							and publish under a root-only key with the root key.
@@ -439,7 +437,7 @@ export default function DocsPage() {
 						<Step
 							n={4}
 							title="Verify it"
-							code="bun cli verify 0x... --pin acmeswap.eth"
+							code="codemark verify 0x... --pin pwnmeswap.eth"
 							needs="No keys."
 						>
 							Runs the same check the site and the Snap run. Add{" "}
@@ -457,7 +455,7 @@ export default function DocsPage() {
 							<Step
 								n={1}
 								title="Pull one release"
-								code={`bun cli pull acmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"`}
+								code={`codemark pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"`}
 								needs={
 									<>
 										The root key. <Mono>--reason</Mono> is required.
@@ -470,7 +468,7 @@ export default function DocsPage() {
 							<Step
 								n={2}
 								title="Cut a leaked key"
-								code={`bun cli cut acmeswap.eth ci-1 --reason "CI key leaked"`}
+								code={`codemark cut pwnmeswap.eth ci-1 --reason "CI key leaked"`}
 								needs={
 									<>
 										The security key. <Mono>--reason</Mono> is required.
@@ -483,7 +481,7 @@ export default function DocsPage() {
 							<Step
 								n={3}
 								title="Move to a new key"
-								code="bun cli migrate acmeswap.eth ci-1 ci-2 --ci 0x..."
+								code="codemark migrate pwnmeswap.eth ci-1 ci-2 --ci 0x..."
 								needs={
 									<>
 										The root key. Pass <Mono>--ci</Mono> or{" "}

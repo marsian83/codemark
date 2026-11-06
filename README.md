@@ -1,3 +1,5 @@
+<img src="packages/web/public/logo.svg" width="72" alt="" />
+
 # Codemark
 
 [![CI](https://github.com/marsian83/codemark/actions/workflows/ci.yml/badge.svg)](https://github.com/marsian83/codemark/actions/workflows/ci.yml)
@@ -36,15 +38,19 @@ The full guide, with every command explained, is at [codemark.hetairoi.xyz/app/d
 
 **Check a contract.** Open [codemark.hetairoi.xyz/app](https://codemark.hetairoi.xyz/app), paste an address, and read the verdict. Pin the publishers you trust; only they can mark a contract as verified.
 
-**Publish your releases.** You need [Bun](https://bun.sh) 1.4.2 or newer and three keys: a root key that owns the team Safe, a security key that can only withdraw things, and a CI key that can only add releases. Put them in `.env` at the repository root (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`), then run from `packages/`:
+**Check every transaction in MetaMask.** Install [MetaMask Flask](https://metamask.io/flask/) in a separate browser profile, open [Check](https://codemark.hetairoi.xyz/app) and select Install the Snap. It installs `npm:@marsian83/codemark-snap`.
+
+**Publish your releases.** You need [Bun](https://bun.sh) 1.4.2 or newer and three keys: a root key that owns the team Safe, a security key that can only withdraw things, and a CI key that can only add releases. Put them in `.env` in the folder you run the CLI from (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`), then:
 
 ```sh
-bun install
-bun cli init acmeswap --years 1                         # register acmeswap.eth, deploy the Safe and its registry
-bun cli add-key acmeswap.eth ci-1 --ci 0x...            # let your CI address publish under ci-1
-bun cli publish acmeswap.eth ci-1 --component router --version 3.1.0 --target 0x...   # release a deployed contract
-bun cli verify 0x... --pin acmeswap.eth                 # check it, the same way the site and the Snap do
+bun add -g @marsian83/codemark-cli                      # installs the codemark command
+codemark init pwnmeswap --years 1                        # register pwnmeswap.eth, deploy the Safe and its registry
+codemark add-key pwnmeswap.eth ci-1 --ci 0x...           # let your CI address publish under ci-1
+codemark publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x...   # release a deployed contract
+codemark verify 0x... --pin pwnmeswap.eth                # check it, the same way the site and the Snap do
 ```
+
+To only check a contract, nothing needs installing: `bunx @marsian83/codemark-cli verify 0x... --pin pwnmeswap.eth`.
 
 If something goes wrong, `pull` withdraws one release and `cut` withdraws everything a key released, in one transaction each. The [CLI](#cli) section below lists every flag.
 
@@ -59,7 +65,7 @@ The rest of this page is for people who want the details: how releases are laid 
 A publisher is an ENS name. Under it, each signing key gets its own registry (in ENSv2, a registry is a contract that holds the subnames of one name, so every name can have its own). Each release is a name inside a key's registry.
 
 ```
-acmeswap.eth                    owned by the team Safe ("root"); text record codemark.keys = "ci-1,delegates"
+pwnmeswap.eth                    owned by the team Safe ("root"); text record codemark.keys = "ci-1,delegates"
 └─ PubRegistry                  root: all roles. sec: may remove names
    ├─ ci-1  -> KeyRegistry      root: all roles. CI key: may add names. sec: may remove names
    │   ├─ router-3-1-0          resolver: address = router contract, text record "codemark"
@@ -83,7 +89,7 @@ Sepolia has two ENSv2 deployments side by side. If you compare addresses with an
 | `eth` registry | [`0xd4ebcbbdf463c9c45784603db0ddd499bc44a8b4`](https://sepolia.etherscan.io/address/0xd4ebcbbdf463c9c45784603db0ddd499bc44a8b4) |
 | VerifiableFactory | [`0xda70306c98e97ece36f997a21368e53298572991`](https://sepolia.etherscan.io/address/0xda70306c98e97ece36f997a21368e53298572991) |
 
-At block 12,078,510 the resolver's `ROOT_REGISTRY()` returned `0xB458…c43f`. You can read it yourself on [Etherscan](https://sepolia.etherscan.io/address/0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe#readProxyContract), or run `bun test tests/deployment.live.test.ts` in `packages/lib/shared`. The checker reads it again at the start of every check and refuses to run if it ever changes (`packages/lib/shared/ens/deployment.ts`), so a redeployment can't silently send checks to the wrong contracts. The `acmeswap.eth` releases under [Live on Sepolia](#live-on-sepolia) all resolve through this deployment. ABIs come from contracts-v2 commit `07e55a05`, the source behind it.
+At block 12,078,510 the resolver's `ROOT_REGISTRY()` returned `0xB458…c43f`. You can read it yourself on [Etherscan](https://sepolia.etherscan.io/address/0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe#readProxyContract), or run `bun test tests/deployment.live.test.ts` in `packages/lib/shared`. The checker reads it again at the start of every check and refuses to run if it ever changes (`packages/lib/shared/ens/deployment.ts`), so a redeployment can't silently send checks to the wrong contracts. The `pwnmeswap.eth` releases under [Live on Sepolia](#live-on-sepolia) all resolve through this deployment. ABIs come from contracts-v2 commit `07e55a05`, the source behind it.
 
 ### What each signer can do
 
@@ -116,7 +122,7 @@ The result is one verdict per publisher: VERIFIED, VERIFIED-unproven (Arkiv unre
 
 ### Where ENSv2 is load-bearing
 
-- **Hierarchical registries.** A key is a subtree, so one `unregister` ends every name below it. ENSv1 is flat: deleting `ci-1.acme.eth` leaves `router.ci-1.acme.eth` resolving.
+- **Hierarchical registries.** A key is a subtree, so one `unregister` ends every name below it. ENSv1 is flat: deleting `ci-1.pwnmeswap.eth` leaves `router.ci-1.pwnmeswap.eth` resolving.
 - **EAC roles.** Create-only CI key, remove-only security key, root-only delegates and reservations.
 - **Expiry.** A key's 90-day TTL bounds everything below it.
 - **PermissionedResolver via VerifiableFactory.** One resolver per release with root-only setters, which is what makes the "records are immutable to the CI key" proof possible.
@@ -154,7 +160,7 @@ bun install
 
 ```sh
 bun run demo:fork      # Anvil forking Sepolia on :8545
-bun run demo:seed      # second shell; about a minute; builds acmeswap.eth and three releases
+bun run demo:seed      # second shell; about a minute; builds pwnmeswap.eth and three releases
 bun run demo:attack    # same fork; publishes five forged releases the checker must report as MISMATCH
 bun run --cwd demo warp   # optional: move fork time forward (default 24 h) for the delegate age rule
 bun run --cwd demo abi:check   # check the ABIs against live Sepolia
@@ -185,24 +191,28 @@ The site is static: it reads Sepolia and Arkiv straight from the browser, so any
 
 ### Snap in MetaMask Flask
 
-The Snap needs [MetaMask Flask](https://metamask.io/flask/), the developer build, because network access for Snaps is only allowed for allowlisted Snaps in stable MetaMask.
+The Snap needs [MetaMask Flask](https://metamask.io/flask/), the developer build, because network access for Snaps is only allowed for allowlisted Snaps in stable MetaMask. The deployed site installs the published `npm:@marsian83/codemark-snap`; the local site (`bun web:dev`) installs `local:http://localhost:8080`, and `VITE_SNAP_ID` overrides either.
 
 1. `bun snap:build`. Only https://codemark.hetairoi.xyz and http://localhost:3020 may pin publishers in the Snap; set `CODEMARK_SITE_ORIGIN` to allow one more origin.
 2. `bun snap:serve` serves the Snap on http://localhost:8080.
-3. In Flask, install `local:http://localhost:8080`, then sign a transaction. The Snap decodes the call, checks the targets and shows the verdict.
+3. In Flask, install it from the local site, then sign a transaction. The Snap decodes the call, checks the targets and shows the verdict.
+
+To release a new version, bump `version` in `packages/snap/package.json`, run `bun snap:build` and `bun run --cwd snap manifest` so the manifest checksum matches, then `bun publish` from `packages/snap`.
 
 ### CLI
 
-Secrets come from the environment or from `.env` at the repository root, not the current directory (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`, `CODEMARK_SAFE`, `SEPOLIA_RPC_URL`, `ARKIV_ACCESS_KEY`). A command that needs a signer it was not given fails before sending anything. Every command also takes `--rpc <url>`.
+Install it with `bun add -g @marsian83/codemark-cli`. From a clone, `bun cli` in `packages/` runs the same commands.
+
+Secrets come from the environment or a `.env` file (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`, `CODEMARK_SAFE`, `SEPOLIA_RPC_URL`, `ARKIV_ACCESS_KEY`). The installed `codemark` reads `.env` in the current folder; `bun cli` reads the one at the repository root. Set `CODEMARK_ENV_FILE` to use another file. A command that needs a signer it was not given fails before sending anything. Every command also takes `--rpc <url>`.
 
 ```sh
-bun cli init acmeswap --sec 0x... --years 1                       # register acmeswap.eth, deploy the Safe and PubRegistry
-bun cli add-key acmeswap.eth ci-1 --ci 0x... --ttl-days 90        # mount a key (--root-only for a key with no CI grant, such as delegates)
-bun cli publish acmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>   # --kind delegate for 7702 delegates, Safe modules and other delegatecall targets
-bun cli pull acmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"
-bun cli cut acmeswap.eth ci-1 --reason "CI key leaked"
-bun cli migrate acmeswap.eth ci-1 ci-2 --ci 0x...                 # mount ci-2, republish live releases of ci-1
-bun cli verify 0x... --pin acmeswap.eth --role delegation         # --role call|delegatecall|delegation|approval-spender|permit-spender
+codemark init pwnmeswap --sec 0x... --years 1                       # register pwnmeswap.eth, deploy the Safe and PubRegistry
+codemark add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90        # mount a key (--root-only for a key with no CI grant, such as delegates)
+codemark publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>   # --kind delegate for 7702 delegates, Safe modules and other delegatecall targets
+codemark pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"
+codemark cut pwnmeswap.eth ci-1 --reason "CI key leaked"
+codemark migrate pwnmeswap.eth ci-1 ci-2 --ci 0x...                 # mount ci-2, republish live releases of ci-1
+codemark verify 0x... --pin pwnmeswap.eth --role delegation         # --role call|delegatecall|delegation|approval-spender|permit-spender
 ```
 
 `publish --commit` is optional; the GitHub Action fills it with the commit being built. Releases with `--kind delegate` are signed by root rather than the CI key and get no Arkiv row, because delegates only count when their publisher is pinned.
@@ -211,14 +221,16 @@ bun cli verify 0x... --pin acmeswap.eth --role delegation         # --role call|
 
 `verify` also takes `--no-index`, `--block`, `--min-age <seconds>` and `--json`, and exits 0 for no warning, 1 for a warning and 2 for critical.
 
+To release the CLI to npm, run `bun run --cwd cli build`, then `bun publish` from `packages/cli/npm`.
+
 ### GitHub Action
 
-`.github/workflows/release.example.yml` publishes on a `router-v*` tag push:
+`.github/workflows/release.example.yml` publishes on a `router-v*` tag push. From your own repository, reference the action by path and pin it to a commit:
 
 ```yaml
-- uses: ./.github/actions/codemark-publish
+- uses: marsian83/codemark/.github/actions/codemark-publish@<commit>
   with:
-    publisher: acmeswap.eth
+    publisher: pwnmeswap.eth
     key: ci-1
     component: router
     version: ${{ steps.deployed.outputs.version }}
@@ -231,18 +243,18 @@ Outputs are `name` and `forward-name`. The CI key only has `ROLE_REGISTRAR` on o
 
 ## Live on Sepolia
 
-`acmeswap.eth` is registered on the canonical ENSv2 Sepolia deployment, owned by a 1-of-1 Safe ([`0x5A0b…A9b0`](https://sepolia.etherscan.io/address/0x5A0bb1DC428466707EfA52E6A5f55bE33652A9b0)). Browse it on [explorer.ens.domains](https://explorer.ens.domains/acmeswap.eth).
+`pwnmeswap.eth` is registered on the canonical ENSv2 Sepolia deployment, owned by a 1-of-1 Safe ([`0x5A0b…A9b0`](https://sepolia.etherscan.io/address/0x5A0bb1DC428466707EfA52E6A5f55bE33652A9b0)). Browse it on [explorer.ens.domains](https://explorer.ens.domains/pwnmeswap.eth).
 
 | Step | Name | Transactions |
 |---|---|---|
-| Publisher registry, `.eth` commit and register | [acmeswap.eth](https://explorer.ens.domains/acmeswap.eth) | [`0xf114f757…`](https://sepolia.etherscan.io/tx/0xf114f757788dea44c4206e05e5ff0d990a5ab2dcccea202152354a8d47ae1da7) [`0x139449e8…`](https://sepolia.etherscan.io/tx/0x139449e8a0322c492811848b2b2b680211169904dd4f0bca1599c8124acc522c) [`0xdd2447d0…`](https://sepolia.etherscan.io/tx/0xdd2447d0d7553bb37f65a3566388f712ec5deff2d5fcc173c84ab6118eb003b3) |
-| CI key (`ROLE_REGISTRAR` for the CI address) | [ci-1.acmeswap.eth](https://explorer.ens.domains/ci-1.acmeswap.eth) | [`0x57d618ec…`](https://sepolia.etherscan.io/tx/0x57d618ecd5e2c9bb6773f3a4695fe7578707015a06948759a4417fd56d7b9b36) [`0x94cdf677…`](https://sepolia.etherscan.io/tx/0x94cdf677a7fbc48cca75a7a8b7b6cd3022569aff9e7e90585edb4a89bceb612f) |
-| Root-only delegates key | [delegates.acmeswap.eth](https://explorer.ens.domains/delegates.acmeswap.eth) | [`0x462dfad5…`](https://sepolia.etherscan.io/tx/0x462dfad5aeae8277850d1e3869c9a56f18c77e06f845701ae9b336fb9fa3bbec) [`0x378e3fa1…`](https://sepolia.etherscan.io/tx/0x378e3fa12e4934506722a2204c9f51d3aaa4a0f1e22aca40b67dc4091d5b9dba) |
-| Router 3.1.0, published by CI | [router-3-1-0.ci-1.acmeswap.eth](https://explorer.ens.domains/router-3-1-0.ci-1.acmeswap.eth) | [`0x3c0f8e2d…`](https://sepolia.etherscan.io/tx/0x3c0f8e2df56e5d152dda74ea7b5e11131f9facf8501efecf40569fd819e76ea3) [`0x70d1d6a5…`](https://sepolia.etherscan.io/tx/0x70d1d6a5a4977e99700ab98ecf3ff3b5c31aa0904cbc711935adaab6fd769870) |
-| Portal 2.0.0 (proxy, implementation pinned) | [portal-2-0-0.ci-1.acmeswap.eth](https://explorer.ens.domains/portal-2-0-0.ci-1.acmeswap.eth) | [`0x3a0f3510…`](https://sepolia.etherscan.io/tx/0x3a0f351056312324fce08aa4907430922cd4a29052c46163b05307f65328b65b) [`0x238670b5…`](https://sepolia.etherscan.io/tx/0x238670b5e6d624ac6d06622b78eeeedad8c7c8c09511cec3cf91903212d6377c) |
-| EIP-7702 delegate 1.0.0, published by root | [delegate-1-0-0.delegates.acmeswap.eth](https://explorer.ens.domains/delegate-1-0-0.delegates.acmeswap.eth) | [`0xefb3fba3…`](https://sepolia.etherscan.io/tx/0xefb3fba32c871d580fa497c86e81e1197c6c1aea925978123ea35ab5c277cb08) [`0x4e0af269…`](https://sepolia.etherscan.io/tx/0x4e0af26972c780b4804575b5d89908eed6010ba36420e593c05d71276072a713) |
+| Publisher registry, `.eth` commit and register | [pwnmeswap.eth](https://explorer.ens.domains/pwnmeswap.eth) | [`0x3a586172…`](https://sepolia.etherscan.io/tx/0x3a586172d6336290fc8f0443e3499742e337959cf96270f8cbdf27fd379c6a5b) [`0xd866bc54…`](https://sepolia.etherscan.io/tx/0xd866bc54042bceea42b11745fb5d70dbd7239a6079a3f4d818baeef972662550) [`0x30170433…`](https://sepolia.etherscan.io/tx/0x30170433292da4b1e36b13d9580755cdc9e8c49a145f04bd33bffdb7050c51f4) |
+| CI key (`ROLE_REGISTRAR` for the CI address) | [ci-1.pwnmeswap.eth](https://explorer.ens.domains/ci-1.pwnmeswap.eth) | [`0x01e6b9b0…`](https://sepolia.etherscan.io/tx/0x01e6b9b066511186654f750aec7381833ede52b85d91bb876322ff65564163a7) [`0x1265ff6f…`](https://sepolia.etherscan.io/tx/0x1265ff6f3f33014b2a9f5d222a474d539611682a6f932a2dae2184b6ab378b02) |
+| Root-only delegates key | [delegates.pwnmeswap.eth](https://explorer.ens.domains/delegates.pwnmeswap.eth) | [`0xc6d15084…`](https://sepolia.etherscan.io/tx/0xc6d1508408db5c26b599c85376d098a2db4b4cf475694387c1124a33f70e3a69) [`0x67a669c3…`](https://sepolia.etherscan.io/tx/0x67a669c321d3e33c43f1980f7d1a2a1e36675981cf5177bf414f24283992b5d9) |
+| Router 3.1.0, published by CI | [router-3-1-0.ci-1.pwnmeswap.eth](https://explorer.ens.domains/router-3-1-0.ci-1.pwnmeswap.eth) | [`0xe1b956a1…`](https://sepolia.etherscan.io/tx/0xe1b956a1edb7759ef33cb21263856d4a8a2bfa037885cd5183b016cb6fc18e72) [`0x2ae77cae…`](https://sepolia.etherscan.io/tx/0x2ae77cae1701bdb694a7d45c789e6c71147a0c31a400d257e7e68fe024618da7) |
+| Portal 2.0.0 (proxy, implementation pinned) | [portal-2-0-0.ci-1.pwnmeswap.eth](https://explorer.ens.domains/portal-2-0-0.ci-1.pwnmeswap.eth) | [`0x3ca5b578…`](https://sepolia.etherscan.io/tx/0x3ca5b578a0d452580ac1dfd93457331b3ff39bc918c5b09683c2af9feea9fd7b) [`0x1e67f392…`](https://sepolia.etherscan.io/tx/0x1e67f39296a1cef481394448c03127295b33b16fbcbc21079c328b58bb5adcd8) |
+| EIP-7702 delegate 1.0.0, published by root | [delegate-1-0-0.delegates.pwnmeswap.eth](https://explorer.ens.domains/delegate-1-0-0.delegates.pwnmeswap.eth) | [`0x5213f6c6…`](https://sepolia.etherscan.io/tx/0x5213f6c61d071f60dcb0f4d30094f37e456aa84b32078e526f39e7061ee984aa) [`0x911e9e58…`](https://sepolia.etherscan.io/tx/0x911e9e5814f348602df662f76f5a7a780cddfacff337b9f2da6e5a4fffe9e5fa) |
 
-The router and portal rows are indexed on Arkiv's Rabdi testnet; the delegate has none, because delegates are only trusted when pinned. Check any of the three targets with `bun cli verify <address> --pin acmeswap.eth`, or on the lookup page.
+The router and portal rows are indexed on Arkiv's Rabdi testnet; the delegate has none, because delegates are only trusted when pinned. Check any of the three targets with `codemark verify <address> --pin pwnmeswap.eth`, or on the lookup page.
 
 ## Security model and known limits
 
