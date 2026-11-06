@@ -1,16 +1,36 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+
 @import "tailwindcss";
 
-:root {
-	color-scheme: light dark;
+@import "./theme.css";
+@import "./app.css";
+
+@layer base {
+	* {
+		@apply border-border-secondary;
+	}
+
+	html {
+		-webkit-text-size-adjust: 100%;
+	}
+
+	body {
+		@apply bg-background-layout font-sans text-sm text-typography-primary antialiased;
+	}
+
+	::selection {
+		@apply bg-primary/20;
+	}
+
+	:focus-visible {
+		@apply outline-2 outline-offset-2 outline-primary;
+	}
 }
 
-body {
-	@apply bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
-	font-family: ui-sans-serif, system-ui, sans-serif;
-	-webkit-text-size-adjust: 100%;
+@utility flex-center {
+	@apply flex items-center justify-center;
 }
 
-button:disabled {
-	opacity: 0.45;
-	cursor: not-allowed;
+@utility tabular {
+	font-variant-numeric: tabular-nums;
 }

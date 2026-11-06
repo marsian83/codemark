@@ -1,0 +1,41 @@
+@theme {
+	--font-display: "Gloock", "Brodine", ui-serif, Georgia, serif;
+	--font-text: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-label: "JetBrains Mono", ui-monospace, monospace;
+
+	--color-paper: #fbfbf8;
+	--color-ink: #10131c;
+	--color-ink-2: #474d5c;
+	--color-ink-3: #6b7180;
+	--color-rule: rgb(16 19 28 / 0.1);
+	--color-cobalt: #1b3ccf;
+	--color-seal: #d6361b;
+
+	--color-night: #0d1b23;
+	--color-night-2: #15272f;
+	--color-night-3: #1e343d;
+	--color-sand: #f6e8d6;
+	--color-sand-2: #e2d6c5;
+	--color-sand-3: #b4b2a8;
+	--color-hairline: rgb(246 232 214 / 0.12);
+	--color-fox: #f6851b;
+	--color-fox-deep: #cd6116;
+	--color-signal: #7fd8be;
+	--color-flare: #ff7a5e;
+	--color-sky: #8fd0ea;
+	--color-gold: #f4cb7e;
+}
+
+@utility cartouche {
+	--chamfer: 0.5rem;
+	clip-path: polygon(
+		var(--chamfer) 0,
+		calc(100% - var(--chamfer)) 0,
+		100% var(--chamfer),
+		100% calc(100% - var(--chamfer)),
+		calc(100% - var(--chamfer)) 100%,
+		var(--chamfer) 100%,
+		0 calc(100% - var(--chamfer)),
+		0 var(--chamfer)
+	);
+}
