@@ -1,5 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { CheckResult } from "@codemark/shared/check";
+import { sepoliaRpcUrls } from "@codemark/shared/ens/client";
 import { isUnfinished, retryUntilFinished } from "../src/lib/checker";
 import { createEns, rpcOrder } from "../src/lib/rpc";
 
@@ -35,23 +36,20 @@ function result(fields: Partial<CheckResult["results"][number]>) {
 }
 
 describe("rpcOrder", () => {
-	test("tries the keyed RPC first and keeps every public one", () => {
-		const order = rpcOrder("https://keyed", ["https://a", "https://b"]);
-		expect(order[0]).toBe("https://keyed");
-		expect(order.slice(1).sort()).toEqual(["https://a", "https://b"]);
+	test("keeps the public RPCs in their set order", () => {
+		expect(rpcOrder(undefined)).toEqual(sepoliaRpcUrls);
 	});
 
-	test("starts visitors on different public RPCs", () => {
-		const publicRpcs = ["https://a", "https://b"];
-		const first = rpcOrder(undefined, publicRpcs, () => 0)[0];
-		let draws = 0;
-		const other = rpcOrder(undefined, publicRpcs, () => 1 - draws++)[0];
-		expect(first).toBe("https://a");
-		expect(other).toBe("https://b");
+	test("tries a keyed RPC first", () => {
+		expect(rpcOrder("https://keyed")).toEqual([
+			"https://keyed",
+			...sepoliaRpcUrls,
+		]);
 	});
 
 	test("does not repeat a keyed RPC that is also public", () => {
-		expect(rpcOrder("https://a", ["https://a"])).toEqual(["https://a"]);
+		const first = sepoliaRpcUrls[0] as string;
+		expect(rpcOrder(first)).toEqual(sepoliaRpcUrls);
 	});
 });
 
