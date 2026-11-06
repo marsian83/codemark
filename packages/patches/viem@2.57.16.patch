@@ -1,0 +1,68 @@
+diff --git a/_cjs/clients/createClient.js b/_cjs/clients/createClient.js
+index 4e4eb0e2acaa2a59660ac03bbb14474e86f6312c..459b2bc8071cc573c4d253a9de7b1512bc77f931 100644
+--- a/_cjs/clients/createClient.js
++++ b/_cjs/clients/createClient.js
+@@ -123,11 +123,13 @@ function bindActionDecorators(client, action) {
+     ])
+         if (Object.hasOwn(action, key)) {
+             const helper = action[key];
+-            wrapped[key] = (args = {}) => {
++            // Object.defineProperty, not assignment: `call` is inherited from Function.prototype,
++// which is frozen under SES (MetaMask Snaps), so assigning it throws.
++Object.defineProperty(wrapped, key, { writable: true, enumerable: true, configurable: true, value: (args = {}) => {
+                 if (helper.length === 1)
+                     return helper(args);
+                 return helper(client, args);
+-            };
++            } });
+         }
+     for (const key of ['extractEvent', 'extractEvents'])
+         if (Object.hasOwn(action, key))
+diff --git a/_esm/clients/createClient.js b/_esm/clients/createClient.js
+index 1cd8227e1f7e865e25e746e6985d4044866cc79c..d68d86be301386202545ec1dc2dd97220612d372 100644
+--- a/_esm/clients/createClient.js
++++ b/_esm/clients/createClient.js
+@@ -142,7 +142,9 @@ export function bindActionDecorators(client, action) {
+     ])
+         if (Object.hasOwn(action, key)) {
+             const helper = action[key];
+-            wrapped[key] = (args = {}) => {
++            // Object.defineProperty, not assignment: `call` is inherited from Function.prototype,
++// which is frozen under SES (MetaMask Snaps), so assigning it throws.
++Object.defineProperty(wrapped, key, { writable: true, enumerable: true, configurable: true, value: (args = {}) => {
+                 // Single-parameter helpers are client-less (e.g. `dex.buy.call(args)`).
+                 // Everything else is called with `(client, args)`: two-parameter
+                 // helpers, rest-parameter helpers that accept `(client, args)` or
+@@ -151,7 +153,7 @@ export function bindActionDecorators(client, action) {
+                 if (helper.length === 1)
+                     return helper(args);
+                 return helper(client, args);
+-            };
++            } });
+         }
+     for (const key of ['extractEvent', 'extractEvents'])
+         if (Object.hasOwn(action, key))
+diff --git a/clients/createClient.ts b/clients/createClient.ts
+index 58c6a1274961461852cd7fe84dc0ea8072efa420..964033f871185d41a8c4ade85fb39c1b5112b4e1 100644
+--- a/clients/createClient.ts
++++ b/clients/createClient.ts
+@@ -477,7 +477,9 @@ export function bindActionDecorators(
+   ] as const)
+     if (Object.hasOwn(action, key)) {
+       const helper = action[key]
+-      wrapped[key] = (args: any = {}) => {
++      // Object.defineProperty, not assignment: `call` is inherited from Function.prototype,
++// which is frozen under SES (MetaMask Snaps), so assigning it throws.
++Object.defineProperty(wrapped, key, { writable: true, enumerable: true, configurable: true, value: (args: any = {}) => {
+         // Single-parameter helpers are client-less (e.g. `dex.buy.call(args)`).
+         // Everything else is called with `(client, args)`: two-parameter
+         // helpers, rest-parameter helpers that accept `(client, args)` or
+@@ -485,7 +487,7 @@ export function bindActionDecorators(
+         // zero-argument helpers, which ignore the extra arguments.
+         if (helper.length === 1) return helper(args)
+         return helper(client, args)
+-      }
++      } })
+     }
+   for (const key of ['extractEvent', 'extractEvents'] as const)
+     if (Object.hasOwn(action, key)) wrapped[key] = action[key]

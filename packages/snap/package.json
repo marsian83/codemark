@@ -1,6 +1,7 @@
 {
 	"name": "@marsian/codemark-snap",
-	"version": "0.1.0",
+	"version": "0.1.2",
+	"license": "MIT",
 	"description": "MetaMask Snap that shows whether the contract, frontend or account upgrade you are about to use was released by the team whose ENS name you trust.",
 	"repository": {
 		"type": "git",
@@ -23,20 +24,22 @@
 	"files": [
 		"dist/",
 		"images/",
-		"snap.manifest.json"
+		"snap.manifest.json",
+		"LICENSE"
 	],
 	"scripts": {
 		"build": "mm-snap build",
 		"serve": "mm-snap serve",
 		"watch": "mm-snap watch",
 		"manifest": "mm-snap manifest --fix",
-		"tests": "bun test"
+		"tests": "mm-snap build && bun test"
 	},
 	"devDependencies": {
 		"@codemark/shared": "workspace:*",
-		"@metamask/snaps-sdk": "^12.1.0",
-		"viem": "catalog:",
 		"@metamask/snaps-cli": "^8.4.1",
-		"@metamask/snaps-jest": "^10.2.2"
+		"@metamask/snaps-jest": "^10.2.2",
+		"@metamask/snaps-sdk": "^12.1.0",
+		"ses": "2.3.0",
+		"viem": "catalog:"
 	}
 }

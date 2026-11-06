@@ -60,12 +60,13 @@
     },
     "snap": {
       "name": "@marsian/codemark-snap",
-      "version": "0.1.0",
+      "version": "0.1.2",
       "devDependencies": {
         "@codemark/shared": "workspace:*",
         "@metamask/snaps-cli": "^8.4.1",
         "@metamask/snaps-jest": "^10.2.2",
         "@metamask/snaps-sdk": "^12.1.0",
+        "ses": "2.3.0",
         "viem": "catalog:",
       },
     },
@@ -99,9 +100,12 @@
       },
     },
   },
+  "patchedDependencies": {
+    "viem@2.57.16": "patches/viem@2.57.16.patch",
+  },
   "catalog": {
     "@arkiv-network/sdk": "1.0.1",
-    "viem": "^2.57.16",
+    "viem": "2.57.16",
     "zod": "^4.6.7",
   },
   "packages": {
