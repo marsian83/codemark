@@ -5,6 +5,7 @@ export function Problem() {
 	return (
 		<section
 			id="replay"
+			data-section-stop
 			className="mx-auto flex w-full max-w-[84rem] scroll-mt-0 flex-col px-5 pt-24 pb-6 sm:px-10 lg:h-dvh lg:min-h-[43rem]"
 		>
 			<div className="flex flex-col gap-2 pb-5">

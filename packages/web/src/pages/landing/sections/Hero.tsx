@@ -1,9 +1,25 @@
+import { useReducedMotion } from "motion/react";
+import type { MouseEvent } from "react";
 import { Link } from "react-router-dom";
 import { actionVariants } from "../Action";
 import { Code } from "../code/Code";
+import { stopsFor } from "../sectionStops";
 import { verifiedLine } from "../verdicts";
+import { audiencesId } from "./Audiences";
 
 export function Hero() {
+	const reduced = useReducedMotion();
+
+	function goToAudiences(event: MouseEvent) {
+		const target = document.getElementById(audiencesId);
+		if (!target) return;
+		event.preventDefault();
+		window.scrollTo({
+			top: stopsFor(target)[0],
+			behavior: reduced ? "auto" : "smooth",
+		});
+	}
+
 	return (
 		<section className="relative mx-auto flex min-h-dvh w-full max-w-[84rem] flex-col justify-between px-5 pt-24 pb-6 sm:px-10 sm:pt-28">
 			<div>
@@ -18,15 +34,19 @@ export function Hero() {
 					<Link to="/app" className={actionVariants()}>
 						Check a contract
 					</Link>
-					<a href="#replay" className={actionVariants({ tone: "night" })}>
-						See how it works
+					<a
+						href={`#${audiencesId}`}
+						onClick={goToAudiences}
+						className={actionVariants({ tone: "night" })}
+					>
+						Get started
 					</a>
 				</div>
 			</div>
 			<div className="cartouche mt-16 self-start bg-night px-4 py-2 font-label text-xs leading-5 [--chamfer:0.375rem] max-sm:hidden">
 				<Code text={verifiedLine} className="block" />
 				<p className="text-sand-2">
-					Example from acmeswap.eth, a demo team on Sepolia
+					Example from pwnmeswap.eth, a demo team on Sepolia
 				</p>
 			</div>
 		</section>

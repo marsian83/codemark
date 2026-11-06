@@ -1,5 +1,6 @@
 import { useLayoutEffect } from "react";
 import { Link } from "react-router-dom";
+import { Logo } from "../../components/Logo";
 import { config } from "../../lib/config";
 import { useTitle } from "../../lib/useTitle";
 import { actionVariants } from "./Action";
@@ -12,6 +13,7 @@ import { Hero } from "./sections/Hero";
 import { Keys } from "./sections/Keys";
 import { Limits } from "./sections/Limits";
 import { Problem } from "./sections/Problem";
+import { useSectionKeys } from "./useSectionKeys";
 import { World } from "./world/World";
 
 function useDarkTheme() {
@@ -28,7 +30,8 @@ function useDarkTheme() {
 
 export default function LandingPage() {
 	useDarkTheme();
-	useTitle("See who published a contract before you sign");
+	useTitle("");
+	useSectionKeys();
 	return (
 		<div className="relative isolate min-h-dvh overflow-x-clip bg-night font-text text-sand text-pretty antialiased selection:bg-fox selection:text-night">
 			<World />
@@ -38,13 +41,13 @@ export default function LandingPage() {
 					aria-hidden
 				/>
 				<div className="relative mx-auto flex h-20 max-w-[84rem] items-center justify-between gap-4 px-5 sm:px-10">
-					<Link to="/" className="font-display text-2xl">
-						codemark
+					<Link to="/">
+						<Logo className="text-2xl" />
 					</Link>
 					<nav className="flex items-center gap-6 text-sm font-medium">
-						<a href="#replay" className="hover:text-fox max-sm:hidden">
-							How it works
-						</a>
+						<Link to="/app/docs" className="hover:text-fox max-sm:hidden">
+							Docs
+						</Link>
 						<a
 							href={config.repoUrl}
 							target="_blank"

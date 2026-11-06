@@ -8,6 +8,7 @@ export function Section({
 }: ComponentProps<"section">) {
 	return (
 		<section
+			data-section-stop
 			className={cn(
 				"mx-auto w-full max-w-[84rem] px-5 py-20 sm:px-10 sm:py-28",
 				className,
