@@ -15,7 +15,7 @@
   <br />
   <a href="#where-ensv2-is-load-bearing"><img src="https://img.shields.io/badge/ENSv2-Sepolia-5298FF" alt="Built on ENSv2 on Sepolia" /></a>
   <a href="#arkivs-role"><img src="https://img.shields.io/badge/Arkiv-Rabdi_testnet-0E7490" alt="Indexed on the Arkiv Rabdi testnet" /></a>
-  <a href="#the-name-tree"><img src="https://img.shields.io/badge/custom_Solidity-none-2F9E77" alt="No custom Solidity" /></a>
+  <a href="docs/how-it-works.md#the-name-tree"><img src="https://img.shields.io/badge/custom_Solidity-none-2F9E77" alt="No custom Solidity" /></a>
   <a href="https://bun.sh"><img src="https://img.shields.io/badge/Bun-%E2%89%A51.4.2-black?logo=bun" alt="Needs Bun 1.4.2 or newer" /></a>
   <a href="packages"><img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="Written in TypeScript" /></a>
 </p>
@@ -27,14 +27,21 @@
   &nbsp;·&nbsp;
   <a href="https://codemark.hetairoi.xyz/app/docs">Docs</a>
   &nbsp;·&nbsp;
-  <a href="#how-it-works">How it works</a>
+  <a href="docs/how-it-works.md">How it works</a>
   &nbsp;·&nbsp;
   <a href="#live-on-sepolia">Live on Sepolia</a>
+  &nbsp;·&nbsp;
+  <a href="docs/security.md">Security model</a>
 </p>
 
 Codemark checks that the contract or account upgrade you are about to approve was released by the team you think, under their ENS name, and that the team still stands behind it.
 
-**Try it at [codemark.hetairoi.xyz](https://codemark.hetairoi.xyz).** Paste a Sepolia contract address, or open [the demo](https://codemark.hetairoi.xyz/demo) to see each result with a sample team. You don't need a wallet.
+<p align="center">
+  <img src="docs/images/verdict-verified.webp" width="400" alt="Verified: released by pwnmeswap.eth, with all five steps of the trust path passing" />
+  <img src="docs/images/verdict-dont-sign.webp" width="400" alt="Don't sign: pwnmeswap.eth pulled this release, with the Release step in red and the team's reason" />
+</p>
+
+Paste a Sepolia contract address at [codemark.hetairoi.xyz](https://codemark.hetairoi.xyz), or open [the demo](https://codemark.hetairoi.xyz/demo) to see each result with a sample team. You don't need a wallet.
 
 ## Why it matters
 
@@ -50,8 +57,6 @@ Account upgrades (EIP-7702) raise the stakes: one signature lets a contract cont
 
 Codemark tells you who published something and whether they still stand behind it. It does not assess what the code does.
 
-<img src="docs/images/verdicts.webp" width="100%" alt="Three results from the lookup site: Verified with its trust path, Don't sign for an account upgrade, and Not verified for a contract call" />
-
 ## Four ways to use it
 
 | You are | Use | What you need |
@@ -61,26 +66,36 @@ Codemark tells you who published something and whether they still stand behind i
 | Running an AI agent that spends | The Codemark MCP server, which tells your agent to proceed, ask you or refuse before it signs | Bun and an MCP-capable agent. It holds no keys |
 | A team shipping contracts | The CLI and the GitHub Action, which publish each release under your ENS name | Sepolia ETH. `init` registers the name and sets up the team Safe for you |
 
-<table>
-  <tr>
-    <td width="50%"><img src="docs/images/wallet-prompt.webp" width="100%" alt="A preview of a MetaMask transaction request with Codemark's result: released by pwnmeswap.eth" /></td>
-    <td width="50%"><img src="docs/images/agent.webp" width="100%" alt="The MCP server's proceed, ask_user and refuse responses, each with its reason and instruction" /></td>
-  </tr>
-  <tr>
-    <td><sub>In your wallet. This is the landing page's preview of what the Snap adds to MetaMask.</sub></td>
-    <td><sub>For your agent. Real MCP server responses from Sepolia.</sub></td>
-  </tr>
-</table>
+**In your wallet.** The landing page's preview of what the Snap adds to MetaMask.
+
+<p align="center"><img src="docs/images/wallet-prompt.webp" width="360" alt="A preview of a MetaMask transaction request with Codemark's result: released by pwnmeswap.eth" /></p>
+
+**For your agent.** A real Claude Code session using the MCP server on Sepolia: `proceed` for a release from a team the user pinned, `refuse` for an account upgrade nobody released. No signer was attached, so nothing was signed.
+
+<img src="docs/images/agent-session.webp" width="100%" alt="A Claude Code session. The agent checks a router with Codemark, gets proceed and says it would sign. It then checks an EIP-7702 account upgrade, gets refuse and declines to sign" />
 
 ## Get started
 
-The full guide, with every command explained, is at [codemark.hetairoi.xyz/app/docs](https://codemark.hetairoi.xyz/app/docs). The short version:
+The [full guide](https://codemark.hetairoi.xyz/app/docs) explains every command. The short version for each of the four:
 
-**Check a contract.** Open [codemark.hetairoi.xyz/app](https://codemark.hetairoi.xyz/app), paste an address, and read the verdict. Pin the publishers you trust; only they can mark a contract as verified.
+<details>
+<summary><strong>Check a contract</strong></summary>
 
-**Check every transaction in MetaMask.** Install [MetaMask Flask](https://metamask.io/flask/) in a separate browser profile, open [Check](https://codemark.hetairoi.xyz/app) and select Install the Snap. It installs `npm:@marsian/codemark-snap`.
+Open [codemark.hetairoi.xyz/app](https://codemark.hetairoi.xyz/app), paste an address, and read the verdict. Pin the publishers you trust; only they can mark a contract as verified.
 
-**Protect an agent that spends.** Nobody reads the signing screen when an agent signs, so a web page can hand it a lookalike router or an attacker's account upgrade. The MCP server checks the contracts behind each approval, swap and account upgrade first. Get a pin with `bunx @marsian/codemark-mcp pin pwnmeswap.eth`, then add the server to your agent:
+</details>
+
+<details>
+<summary><strong>Check every transaction in MetaMask</strong></summary>
+
+Install [MetaMask Flask](https://metamask.io/flask/) in a separate browser profile, open [Check](https://codemark.hetairoi.xyz/app) and select Install the Snap. It installs `npm:@marsian/codemark-snap`.
+
+</details>
+
+<details>
+<summary><strong>Protect an agent that spends</strong></summary>
+
+Nobody reads the signing screen when an agent signs, so a web page can hand it a lookalike router or an attacker's account upgrade. The MCP server checks the contracts behind each approval, swap and account upgrade first. Get a pin with `bunx @marsian/codemark-mcp pin pwnmeswap.eth`, then add the server to your agent:
 
 ```json
 {
@@ -101,7 +116,12 @@ Get a free key from the [Arkiv hub](https://hub.arkiv.network/access-keys). With
 
 Then tell your agent to use the server, for example in its `CLAUDE.md`: "Before you sign anything, call Codemark's check_transaction or check_signature and do what its action says." In our three test runs, an agent that wasn't told to check never called the tool.
 
-**Publish your releases.** You need [Bun](https://bun.sh) 1.4.2 or newer and three keys: a root key that owns the team Safe, a security key that can only withdraw things, and a CI key that can only add releases. Put them in `.env` in the folder you run the CLI from (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`), then:
+</details>
+
+<details>
+<summary><strong>Publish your releases</strong></summary>
+
+You need [Bun](https://bun.sh) 1.4.2 or newer and three keys: a root key that owns the team Safe, a security key that can only withdraw things, and a CI key that can only add releases. Put them in `.env` in the folder you run the CLI from (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`), then:
 
 ```sh
 bunx @marsian/codemark-cli init pwnmeswap --years 1                        # register pwnmeswap.eth, deploy the Safe and its registry
@@ -112,83 +132,25 @@ bunx @marsian/codemark-cli verify 0x... --pin pwnmeswap.eth                # che
 
 There is nothing to install: `bunx` fetches the CLI when you run it.
 
-If something goes wrong, `pull` withdraws one release and `cut` withdraws everything a key released, in one transaction each. The [CLI](#cli) section below lists every flag.
+If something goes wrong, `pull` withdraws one release and `cut` withdraws everything a key released, in one transaction each. The [CLI reference](docs/cli.md) lists every flag.
 
-Built on ENSv2 (Sepolia) and Arkiv (Rabdi testnet). Everything on chain is stock ENSv2; there is no custom Solidity.
+</details>
 
 ## How it works
 
-The rest of this page is for people who want the details: how releases are laid out in ENS, what each key can do, and exactly what a check proves.
+A publisher is an ENS name. Each signing key gets its own branch under that name, and each release is a name on that branch, recording the contract's address and code hash. A check walks that path on Sepolia, so the first step that fails is the one it shows you.
 
 <img src="docs/images/how-it-works.webp" width="100%" alt="Summary diagram: a team's name tree with a CI key, a delegates key and a security key, next to the steps every check runs" />
 
-### The name tree
+If a key leaks, the team's security key removes its branch in one transaction, and every release under it stops verifying. Everything on chain is stock ENSv2; there is no custom Solidity.
 
-A publisher is an ENS name. Under it, each signing key gets its own registry (in ENSv2, a registry is a contract that holds the subnames of one name, so every name can have its own). Each release is a name inside a key's registry.
-
-```
-pwnmeswap.eth                    owned by the team Safe ("root"); text record codemark.keys = "ci-1,delegates"
-└─ PubRegistry                  root: all roles. sec: may remove names
-   ├─ ci-1  -> KeyRegistry      root: all roles. CI key: may add names. sec: may remove names
-   │   ├─ router-3-1-0          resolver: address = router contract, text record "codemark"
-   │   ├─ a-1f2e3d4c5b6a        forward name for the same artifact, same resolver
-   │   └─ web-3-1-0             contenthash = IPFS CID of a frontend build
-   └─ delegates -> KeyRegistry  only root may add names. sec: may remove names
-       └─ delegate-1-0-0        address = an EIP-7702 delegate
-```
-
-A Safe is a multisig smart-contract wallet. Here it is the root and needs no custom contract. An EIP-7702 delegation lets an ordinary account point at contract code and run it, so a signature that sets a delegate can hand the account to whoever wrote that code. The `delegates` key exists so that code of that kind can only be published by root. The same goes for anything that runs with the signer's authority: a Safe module, guard or fallback handler, a delegatecall target, a proxy upgrade or an ERC-7579 module only passes if it was published as a delegate.
-
-Everything on chain is stock ENSv2: registries are `UserRegistry` proxies and release resolvers are `PermissionedResolver` proxies. Both are deployed through `VerifiableFactory`, a CREATE2 factory (CREATE2 gives a contract an address derived from its deployer, salt and code) that can later confirm a given address is one of its proxies and which implementation it runs. ABIs come from contracts-v2 commit `07e55a05`, the source behind the Sepolia deployment. There is no Codemark Solidity.
-
-### Which ENSv2 deployment
-
-Sepolia has two ENSv2 deployments side by side. If you compare addresses with another reference and see root registry `0x9703…a9ce` with ETHRegistry `0x657e…e09e`, that is the other one. Codemark uses the deployment that the canonical Universal Resolver at `0xeEeE…EeEe` actually reads, because that is what wallets, ENS libraries and [explorer.ens.domains](https://explorer.ens.domains) resolve against:
-
-| Contract | Address |
-|---|---|
-| Root registry, from `ROOT_REGISTRY()` | [`0xb458d6a3a77919449d03e7a6903c26827c1ec43f`](https://sepolia.etherscan.io/address/0xb458d6a3a77919449d03e7a6903c26827c1ec43f) |
-| `eth` registry | [`0xd4ebcbbdf463c9c45784603db0ddd499bc44a8b4`](https://sepolia.etherscan.io/address/0xd4ebcbbdf463c9c45784603db0ddd499bc44a8b4) |
-| VerifiableFactory | [`0xda70306c98e97ece36f997a21368e53298572991`](https://sepolia.etherscan.io/address/0xda70306c98e97ece36f997a21368e53298572991) |
-
-At block 12,078,510 the resolver's `ROOT_REGISTRY()` returned `0xB458…c43f`. You can read it yourself on [Etherscan](https://sepolia.etherscan.io/address/0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe#readProxyContract), or run `bun test tests/deployment.live.test.ts` in `packages/lib/shared`. The checker reads it again at the start of every check and refuses to run if it ever changes (`packages/lib/shared/ens/deployment.ts`), so a redeployment can't silently send checks to the wrong contracts. The `pwnmeswap.eth` releases under [Live on Sepolia](#live-on-sepolia) all resolve through this deployment. ABIs come from contracts-v2 commit `07e55a05`, the source behind it.
-
-### What each signer can do
-
-| Signer | Holds | Can | Cannot |
-|---|---|---|---|
-| root (team Safe) | every role on the publisher and key registries | create keys, publish delegates, pull, migrate | nothing is out of its reach; a stolen root is total, as with a stolen GitHub org |
-| ci (release pipeline, hot key) | `ROLE_REGISTRAR` on one key registry | add release names | remove or overwrite names, publish delegates, change a release's records after publishing |
-| sec (hardware key) | `ROLE_UNREGISTER` | cut a key, write incident rows | publish anything |
-
-Roles come from ENSv2's access-control scheme (EAC): "may add" and "may remove" are separate permissions.
-
-### Publish, pull, cut
-
-- **Publish.** The CI key deploys one resolver for the release and registers two names for it, the version name and the forward name `a-<first 12 hex of keccak(artifact)>`. The resolver is created with its records and with setter roles for root only, so the CI key cannot change the records afterwards. The CI key also writes an Arkiv row.
-- **Pull** withdraws one release. In one Safe batch, root unregisters both names of the release and reserves both labels again, so the CI key cannot simply re-register them. A reserved label can only be promoted by root, and a promoted label is marked and fails the check.
-- **Cut** withdraws a key. The sec key unregisters the key's label in `PubRegistry` in one Sepolia transaction. Every release under that key stops resolving, because ENSv2 resolution walks registries from the root. An incident row on Arkiv records the reason. Root then runs `migrate` to mount a new key and republish the good releases.
-
-<img src="docs/images/cut-a-key.webp" width="100%" alt="The landing page's walkthrough of cutting ci-1: its releases show key revoked and the wallet shows the reason" />
+<p align="center"><img src="docs/images/cut-a-key.gif" width="640" alt="Animation of the landing page's walkthrough: ci-1 publishes and verifies, cutting ci-1 strikes out its releases and the wallet shows key revoked, then ci-2 is mounted and they verify again" /></p>
 
 <sub>A cut, as the landing page walks through it. A live pull has run on Sepolia; a live cut hasn't, because it would withdraw the demo releases too.</sub>
 
-### What the checker proves
+[How it works in detail](docs/how-it-works.md) covers the name tree, what each key can do and exactly what a check proves.
 
-The checker (`packages/lib/shared/check`) runs every read against one pinned Sepolia block. For an address it establishes, in order:
-
-1. Candidate names. Either the publishers the user pinned (looked up directly in ENS, no index) or rows found in Arkiv by artifact.
-2. Any Arkiv row counts only if its creator is the account that holds the registrar role on the named key registry in ENS, and that registry is the one the publisher's registry links today. Other rows are dropped.
-3. The name is exactly `<label>.<key>.<publisher>`, the Universal Resolver resolves it with no inherited parent answer, and its address and `codemark` text record match the target. The target's code hash matches the recorded one, and for an EIP-1967 proxy so do the implementation slot and implementation code hash.
-4. The records cannot have been changed by the CI key. The resolver must be a genuine `VerifiableFactory` proxy running `PermissionedResolverImpl`, its logs since creation must show no record, role or upgrade changes, and root must be the only holder of its roles. Anything else is MISMATCH.
-5. Age. The name's registration block is checked from logs. Age is measured from that block, and a delegate must be older than a threshold (24 hours in production, configurable) to pass.
-6. Incidents. A pull or cut counts only if the sec key's role is confirmed on chain and the transaction really contains the unregister event.
-
-Every name that comes in, a typed pin, a publisher or a key, is normalized with ENSIP-15 (`normalize` from `viem/ens`, in `lib/shared/names.ts`) before any lookup. Every label of a release name, including names read from Arkiv rows, must already be normalized and plain `[a-z0-9-]`. A lookalike that mixes scripts, such as `pwnmeswаp.eth` with a Cyrillic `а`, is rejected outright (`tests/names.test.ts`).
-
-The result is one verdict per publisher: VERIFIED, VERIFIED-unproven (Arkiv unreachable, so the proof blocks are unknown), KEY REVOKED, PULLED (with the reason), MISMATCH, or none. Severity follows trust. For delegations and delegatecall targets, anything but a pinned, proven VERIFIED that is old enough is critical, which makes MetaMask show its double confirmation. Pins are explicit (a typed name or a curated list), never automatic.
-
-### Where ENSv2 is load-bearing
+## Where ENSv2 is load-bearing
 
 - **Hierarchical registries.** A key is a subtree, so one `unregister` ends every name below it. ENSv1 is flat: deleting `ci-1.pwnmeswap.eth` leaves `router.ci-1.pwnmeswap.eth` resolving.
 - **EAC roles.** Create-only CI key, remove-only security key, root-only delegates and reservations.
@@ -209,118 +171,14 @@ Wallets that wrote our entities on Rabdi: the CI key `0x47Fccf73d86473357c74c8ae
 
 One query you can run, which lists who claims the demo router, is in [arkiv/how-you-use-arkiv.md](arkiv/how-you-use-arkiv.md#one-query-you-can-run). The rest of the write-up: [schema](arkiv/schema.md), [friction](arkiv/friction.md), [reach](arkiv/reach.md), [why Arkiv](arkiv/why-arkiv.md) and [how we use it](arkiv/how-you-use-arkiv.md).
 
-## Repository layout
-
-| Path | What |
-|---|---|
-| `packages/lib/shared` | checker, ENSv2 addresses/ABIs/reads, record codec, calldata decoding, Arkiv row types. Runs in browser and Snap |
-| `packages/cli` | publisher tool; the only place that signs ENS or Arkiv transactions |
-| `packages/snap` | MetaMask Snap (`onTransaction`, `onSignature`) |
-| `packages/mcp` | MCP server for agents: read-only, holds no keys, returns proceed, ask_user or refuse |
-| `packages/web` | landing page at `/`, lookup site under `/app`, demo with sample contracts and a 7702 wallet under `/demo` (Vite, React) |
-| `packages/demo` | Anvil fork, seed and attack scripts, live-run script. Nothing here ships |
-| `arkiv/` | How Codemark uses Arkiv: schema, why Arkiv, friction and reach |
-| `.github/actions/codemark-publish` | composite GitHub Action wrapping `publish` |
-
-## Run it
-
-Prerequisites: [Bun](https://bun.sh) 1.4.2 or newer, and [Foundry](https://getfoundry.sh) (for `anvil`). Run everything below from `packages/`.
-
-```sh
-cd packages
-bun install
-```
-
-### Demo fork
-
-```sh
-bun run demo:fork      # Anvil forking Sepolia on :8545
-bun run demo:seed      # second shell; about a minute; builds pwnmeswap.eth and three releases
-bun run demo:attack    # same fork; publishes five forged releases the checker must report as MISMATCH
-bun run --cwd demo warp   # optional: move fork time forward (default 24 h) for the delegate age rule
-bun run --cwd demo abi:check   # check the ABIs against live Sepolia
-```
-
-`demo:seed` writes `packages/demo/state/seed.json`. See `packages/demo/CONTEXT.md` for its env variables. Arkiv rows are only written if `SEED_ARKIV=1` is set.
-
-### Tests
-
-```sh
-bun tests              # shared, cli, mcp and web tests
-bun run --cwd demo tests   # spikes; starts its own Anvil on :18545
-bun fmt-lint && bun typecheck
-```
-
-Most tests need nothing but Bun: calldata decoding, record and name parsing, row validation, severity, checker limits, the CLI operations, and the plain-language verdicts (`packages/lib/shared/tests/explain.test.ts` walks every combination of verdict, role, pin, proof and age and checks that nothing unsafe ever reads as verified). The checker's end-to-end tests run against an Anvil fork of Sepolia rather than mocks, because the deployed contracts differ from the repository head; they skip themselves when no fork is running. `deployment.live.test.ts` and `check.live.test.ts` read live Sepolia and are skipped with `CODEMARK_LIVE_TESTS=0`.
-
-CI (`.github/workflows/ci.yml`) runs on every push: the typecheck, lint and all offline tests in one job, and the live Sepolia tests in another, including the check that the canonical Universal Resolver still reads the deployment above. It needs no secrets.
-
-### Web
-
-```sh
-bun web:dev            # http://localhost:3020
-bun web:build
-```
-
-The site is static: it reads Sepolia and Arkiv straight from the browser, so any static host works. Serve `index.html` for every path under `/app` and `/demo` so the client-side routes load. The demo reads live Sepolia, trusts its sample team only inside the demo, and leaves your pins alone. Its account-upgrade page signs with a throwaway key made in the browser and never sends the upgrade, so it needs no gas or server. That page accepts a release after 1 hour so the whole flow can be shown, and says so; real checks wait 1 day.
-
-The site keeps working when an RPC rate limits or goes down. It tries `VITE_SEPOLIA_RPC_URL` first if you set one, then several public Sepolia RPCs in a random order per visitor, and it reruns a check that couldn't finish. With `VITE_ARKIV_ACCESS_KEY` set, it falls back to Arkiv's public endpoint if the key stops working. Both values are public in the built site, so restrict them to your domain where the provider allows it.
-
-### Snap in MetaMask Flask
-
-The Snap needs [MetaMask Flask](https://metamask.io/flask/), the developer build, because network access for Snaps is only allowed for allowlisted Snaps in stable MetaMask. The site installs the published `npm:@marsian/codemark-snap`. To develop against a local Snap, set `VITE_SNAP_ID=local:http://localhost:8080`.
-
-1. `bun snap:build`. Only https://codemark.hetairoi.xyz and http://localhost:3020 may pin publishers in the Snap; set `CODEMARK_SITE_ORIGIN` to allow one more origin.
-2. `bun snap:serve` serves the Snap on http://localhost:8080.
-3. In Flask, install it from the local site, then sign a transaction. The Snap decodes the call, checks the targets and shows the verdict.
-
-To release a new version, bump `version` in `packages/snap/package.json`, run `bun snap:build` and `bun run --cwd snap manifest` so the manifest checksum matches, then `bun publish` from `packages/snap`.
-
-### CLI
-
-Run it with `bunx @marsian/codemark-cli <command>`. From a clone, `bun cli` in `packages/` runs the same commands.
-
-Secrets come from the environment or a `.env` file (`CODEMARK_ROOT_KEY`, `CODEMARK_SEC_KEY`, `CODEMARK_CI_KEY`, `CODEMARK_SAFE`, `SEPOLIA_RPC_URL`, `ARKIV_ACCESS_KEY`). The published CLI reads `.env` in the current folder; `bun cli` reads the one at the repository root. Set `CODEMARK_ENV_FILE` to use another file. A command that needs a signer it was not given fails before sending anything. Every command also takes `--rpc <url>`.
-
-```sh
-bunx @marsian/codemark-cli init pwnmeswap --sec 0x... --years 1                       # register pwnmeswap.eth, deploy the Safe and PubRegistry
-bunx @marsian/codemark-cli add-key pwnmeswap.eth ci-1 --ci 0x... --ttl-days 90        # mount a key (--root-only for a key with no CI grant, such as delegates)
-bunx @marsian/codemark-cli publish pwnmeswap.eth ci-1 --component router --version 3.1.0 --target 0x... --commit <40-hex>   # --kind delegate for 7702 delegates, Safe modules and other delegatecall targets
-bunx @marsian/codemark-cli pull pwnmeswap.eth ci-1 router-3-1-0 --reason "wrong constructor args"
-bunx @marsian/codemark-cli cut pwnmeswap.eth ci-1 --reason "CI key leaked"
-bunx @marsian/codemark-cli migrate pwnmeswap.eth ci-1 ci-2 --ci 0x...                 # mount ci-2, republish live releases of ci-1
-bunx @marsian/codemark-cli verify 0x... --pin pwnmeswap.eth --role delegation         # --role call|delegatecall|delegation|approval-spender|permit-spender
-```
-
-`publish --commit` is optional; the GitHub Action fills it with the commit being built. Releases with `--kind delegate` are signed by root rather than the CI key and get no Arkiv row, because delegates only count when their publisher is pinned.
-
-`init` does the whole `.eth` registration itself: it mints and approves MockUSDC, commits and then registers through the ENSv2 `ETHRegistrar` with the Safe as owner (`packages/cli/ops/init.ts`).
-
-`verify` also takes `--no-index`, `--block`, `--min-age <seconds>` and `--json`, and exits 0 for no warning, 1 for a warning and 2 for critical.
-
-To release the CLI or the MCP server to npm, run `bun run --cwd cli build` or `bun run --cwd mcp build`, then `bun publish` from `packages/cli/npm` or `packages/mcp/npm`.
-
-### GitHub Action
-
-`.github/workflows/release.example.yml` publishes on a `router-v*` tag push. From your own repository, reference the action by path and pin it to a commit:
-
-```yaml
-- uses: marsian83/codemark/.github/actions/codemark-publish@<commit>
-  with:
-    publisher: pwnmeswap.eth
-    key: ci-1
-    component: router
-    version: ${{ steps.deployed.outputs.version }}
-    target: ${{ steps.deployed.outputs.address }}
-    ci-key: ${{ secrets.CODEMARK_CI_KEY }}
-    arkiv-access-key: ${{ secrets.ARKIV_ACCESS_KEY }}   # optional; lifts the public endpoint's rate limit
-```
-
-Outputs are `name` and `forward-name`. The CI key only has `ROLE_REGISTRAR` on one key registry.
-
 ## Live on Sepolia
 
 `pwnmeswap.eth` is registered on the canonical ENSv2 Sepolia deployment, owned by a 1-of-1 Safe ([`0x5A0b…A9b0`](https://sepolia.etherscan.io/address/0x5A0bb1DC428466707EfA52E6A5f55bE33652A9b0)). Browse it on [explorer.ens.domains](https://explorer.ens.domains/pwnmeswap.eth).
+
+The withdrawn release shows what a pull looks like: open [`0x65aF…DAE5` in the demo](https://codemark.hetairoi.xyz/demo?c=withdrawn) and it says Don't sign, with the reason read from its Arkiv incident row. The router and portal, under the same key, still verify. No `cut` has run live, because it would withdraw those too; cuts are tested on an Anvil fork.
+
+<details>
+<summary><strong>Every transaction behind the demo team</strong></summary>
 
 | Step | Name | Transactions |
 |---|---|---|
@@ -332,9 +190,12 @@ Outputs are `name` and `forward-name`. The CI key only has `ROLE_REGISTRAR` on o
 | EIP-7702 delegate 1.0.0, published by root | [delegate-1-0-0.delegates.pwnmeswap.eth](https://explorer.ens.domains/delegate-1-0-0.delegates.pwnmeswap.eth) | [`0x5213f6c6…`](https://sepolia.etherscan.io/tx/0x5213f6c61d071f60dcb0f4d30094f37e456aa84b32078e526f39e7061ee984aa) [`0x911e9e58…`](https://sepolia.etherscan.io/tx/0x911e9e5814f348602df662f76f5a7a780cddfacff337b9f2da6e5a4fffe9e5fa) |
 | Withdrawn demo release, published then pulled by root | withdrawn-1-0-0.ci-1.pwnmeswap.eth | [`0xb1febb21…`](https://sepolia.etherscan.io/tx/0xb1febb21e80e035fbb902fbc77b12735ac48e829acd4c457128b947cfd848a5f) [`0x5f43c019…`](https://sepolia.etherscan.io/tx/0x5f43c019f4eb4d383a62f4cc79e89b011e096d41426c68217d17b2f8b1a07c2d) |
 
-The withdrawn release shows what a pull looks like: open [`0x65aF…DAE5` in the demo](https://codemark.hetairoi.xyz/demo?c=withdrawn) and it says Don't sign, with the reason read from its Arkiv incident row. The router and portal, under the same key, still verify. No `cut` has run live, because it would withdraw those too; cuts are tested on an Anvil fork.
-
 The router, portal and withdrawn release are indexed on Arkiv's Rabdi testnet; the delegate has none, because delegates are only trusted when pinned. Check any of the three targets with `bunx @marsian/codemark-cli verify <address> --pin pwnmeswap.eth`, in [the demo](https://codemark.hetairoi.xyz/demo), or on the lookup page after you pin `pwnmeswap.eth`.
+
+</details>
+
+<details>
+<summary><strong>Read the records yourself, without any Codemark code</strong></summary>
 
 To see the records without any Codemark code, ask the canonical Universal Resolver through plain viem (save it as a `.ts` file in `packages/lib/shared`, where viem is installed, and run it with `bun`). The address sits under the Sepolia coin type (ENSIP-11), and the `codemark` text record holds the code hash:
 
@@ -350,31 +211,24 @@ await client.getEnsText({ name, key: "codemark" }); // v1;k=contract;n=router;c=
 
 Plain resolution cannot tell you whether the records could have been rewritten, whether the key is still trusted, or how old the release is. The checker adds those.
 
-## Security model and known limits
+</details>
 
-| Attacker | Outcome |
-|---|---|
-| Phishing clone with its own contract or delegate | UNKNOWN, or "vouched for" by a lookalike publisher; critical for delegations and delegatecall targets |
-| Forged or spam Arkiv rows | Fail the creator and on-chain checks. Flooding yields "index flooded", never green; pinned lookups skip the index |
-| Stolen CI key | Can publish non-delegate releases until cut. Cannot alter passing releases, publish delegates or revive pulled labels. Can grief by reserving labels, which root clears |
-| Stolen sec key | Can pull, cut or clear reservations: a visible denial of service. Cannot publish |
-| Stolen root | Total. Use a multisig |
-| Arkiv down | Pinned lookups still resolve on-chain, but without the indexed proof blocks a release is VERIFIED-unproven: a warning, critical for delegations. Open discovery returns UNKNOWN; never a false green |
+## What it won't do
 
-Limits:
+- It tells you who published something, not whether the code is safe.
+- Both sides must adopt it: teams have to publish, and wallets have to run the check.
+- The Snap runs only in [MetaMask Flask](https://metamask.io/flask/) for now, and it has no Arkiv access key. When Arkiv's public endpoint is rate limiting, a release shows a warning instead of Verified. It never shows a false pass.
+- Mainnet is out of scope: Sepolia runs a different ENSv2 commit.
+- The MCP server protects an honest agent that was handed a bad address. A hijacked agent can skip the check, and it doesn't check amounts or recipients.
 
-- The Snap runs only in MetaMask Flask. Without it, the lookup site runs the same checker in your browser.
-- Both sides must adopt it: teams must publish and wallets must run the check. Dapps cannot request arbitrary 7702 delegations, so wallet teams call the checker before their "upgrade account" prompt.
-- Lookalikes are reduced by pinning, not removed.
-- A pull or cut is final for the label: a pulled label cannot be reused, and a cut key is never renewed, only replaced with `migrate`.
-- A cut withdraws that key's good releases too until `migrate` republishes them.
-- The sec key's emergency `unregister` leaves a window before root reserves the label in which a CI key can re-register it; the checker treats a release registered after a pull incident as MISMATCH.
-- A key that lapses makes its releases UNKNOWN.
-- Beacon proxies, diamonds and factory-made contracts are "not attested".
-- Mainnet is out of scope: Sepolia runs contracts-v2 commit `07e55a05`, mainnet a different one.
-- Privacy: Arkiv sees the queried artifact and client IP, and the RPC sees the checked name. There is no read-privacy claim.
-- Codemark does not assess code behaviour.
-- The MCP server protects an honest agent that was handed a bad address. A hijacked agent can skip the check; stopping that takes enforcement in the signer. It does not check amounts or recipients, so a plain transfer returns `ask_user`.
+The [security model](docs/security.md) covers each kind of attacker and every known limit.
+
+## More
+
+- [How it works in detail](docs/how-it-works.md)
+- [CLI and GitHub Action reference](docs/cli.md)
+- [Security model and known limits](docs/security.md)
+- [Developing Codemark](docs/development.md): repository layout, the demo fork, tests and releases
 
 ## How AI was used
 
