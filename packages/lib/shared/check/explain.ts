@@ -179,6 +179,14 @@ export function explain(
 			body: `${sentence(result.error)} Run the check again in a moment.`,
 		};
 
+	if (result.indexUnavailable || result.indexIncomplete)
+		return {
+			title: "Couldn't find a publisher for this contract",
+			body: strict
+				? "Nothing ties this code to a team's ENS name yet, and the search for publishers didn't finish. Don't hand your account to it."
+				: "Nothing ties this contract to a team's ENS name yet, but the search for publishers didn't finish.",
+		};
+
 	return {
 		title: "No publisher released this contract",
 		body: strict

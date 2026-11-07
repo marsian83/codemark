@@ -146,6 +146,20 @@ describe("explain", () => {
 		expect(explain(r, t).title).toBe("No publisher released this contract");
 	});
 
+	test("an unfinished search doesn't claim nobody released it", () => {
+		for (const flag of ["indexUnavailable", "indexIncomplete"] as const) {
+			const call = { ...result("call", []), [flag]: true };
+			expect(explain(call, t).title).toBe(
+				"Couldn't find a publisher for this contract",
+			);
+			const upgrade = { ...result("delegation", []), [flag]: true };
+			expect(upgrade.severity).toBe("critical");
+			expect(explain(upgrade, t).body).toContain(
+				"Don't hand your account to it.",
+			);
+		}
+	});
+
 	test("no combination reads as safe unless every step passed", () => {
 		const verdicts: Verdict[] = [
 			"VERIFIED",

@@ -1,6 +1,6 @@
 {
 	"name": "@marsian/codemark-snap",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"license": "MIT",
 	"description": "MetaMask Snap that shows whether the contract, frontend or account upgrade you are about to use was released by the team whose ENS name you trust.",
 	"repository": {
