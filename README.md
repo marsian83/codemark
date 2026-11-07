@@ -68,7 +68,7 @@ Codemark tells you who published something and whether they still stand behind i
 
 **In your wallet.** The Snap in MetaMask Flask, checking the same router. This one is yellow because Arkiv's public endpoint was rate limiting: the release and its key check out on chain, but without Arkiv's proof blocks Codemark won't call the record write-once. With them, it reads "Released by pwnmeswap.eth" and every step passes.
 
-<p align="center"><img src="docs/images/wallet-prompt.webp" width="440" alt="Insights from Codemark in MetaMask Flask: released by pwnmeswap.eth, but the record could still be rewritten. Publisher, release key and release pass, the record step warns and the age step couldn't be read" /></p>
+<p align="center"><img src="docs/images/wallet-flask.webp" width="440" alt="Insights from Codemark in MetaMask Flask: released by pwnmeswap.eth, but the record could still be rewritten. Publisher, release key and release pass, the record step warns and the age step couldn't be read" /></p>
 
 **For your agent.** A real Claude Code session using the MCP server on Sepolia: `proceed` for a release from a team the user pinned, `refuse` for an account upgrade nobody released. No signer was attached, so nothing was signed.
 
