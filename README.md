@@ -13,7 +13,7 @@
   <a href="https://www.npmjs.com/package/@marsian/codemark-mcp"><img src="https://img.shields.io/npm/v/@marsian/codemark-mcp?label=mcp&color=F97316" alt="MCP server version on npm" /></a>
   <a href="https://www.npmjs.com/package/@marsian/codemark-snap"><img src="https://img.shields.io/npm/v/@marsian/codemark-snap?label=snap&color=F97316" alt="Snap version on npm" /></a>
   <br />
-  <a href="#where-ensv2-is-load-bearing"><img src="https://img.shields.io/badge/ENSv2-Sepolia-5298FF" alt="Built on ENSv2 on Sepolia" /></a>
+  <a href="#why-ensv2"><img src="https://img.shields.io/badge/ENSv2-Sepolia-5298FF" alt="Built on ENSv2 on Sepolia" /></a>
   <a href="#arkivs-role"><img src="https://img.shields.io/badge/Arkiv-Rabdi_testnet-0E7490" alt="Indexed on the Arkiv Rabdi testnet" /></a>
   <a href="docs/how-it-works.md#the-name-tree"><img src="https://img.shields.io/badge/custom_Solidity-none-2F9E77" alt="No custom Solidity" /></a>
   <a href="https://bun.sh"><img src="https://img.shields.io/badge/Bun-%E2%89%A51.4.2-black?logo=bun" alt="Needs Bun 1.4.2 or newer" /></a>
@@ -43,19 +43,19 @@ Codemark checks that the contract or account upgrade you are about to approve wa
 
 Paste a Sepolia contract address at [codemark.hetairoi.xyz](https://codemark.hetairoi.xyz), or open [the demo](https://codemark.hetairoi.xyz/demo) to see each result with a sample team. You don't need a wallet.
 
-## Why it matters
+## The problem
 
 A wallet shows you 20 bytes and asks you to sign. In February 2025, Bybit's Safe signers approved a transaction that handed their wallet to an attacker's contract, because the web page that built the transaction had been swapped. Nothing on the signing screen could say "this is not code your team released".
 
-Account upgrades (EIP-7702) raise the stakes: one signature lets a contract control your whole account.
+An account upgrade (EIP-7702) is worse: one signature lets a contract control your whole account.
 
 ## What you see
 
-- **A verdict before you sign:** Verified, Released recently, Not verified, or Don't sign, with the reason in plain words.
-- **The trust path behind it:** publisher, release key, release, record, age. The first step that fails is the one marked in red, so you know why.
-- **Withdrawals that reach every wallet:** if a team's release key leaks, one transaction withdraws everything that key released, and every check after that shows it.
+Every check ends in one of four verdicts: Verified, Released recently, Not verified or Don't sign, with the reason.
 
-Codemark tells you who published something and whether they still stand behind it. It does not assess what the code does.
+Below the verdict is the path it followed: publisher, release key, release, record, age. The step that failed is marked in red.
+
+If a team's release key leaks, one transaction withdraws everything that key released, and every check after that shows it.
 
 ## Four ways to use it
 
@@ -66,7 +66,7 @@ Codemark tells you who published something and whether they still stand behind i
 | Running an AI agent that spends | The Codemark MCP server, which tells your agent to proceed, ask you or refuse before it signs | Bun and an MCP-capable agent. It holds no keys |
 | A team shipping contracts | The CLI and the GitHub Action, which publish each release under your ENS name | Sepolia ETH. `init` registers the name and sets up the team Safe for you |
 
-**In your wallet.** The Snap in MetaMask Flask, checking the same router. This one is yellow because Arkiv's public endpoint was rate limiting: the release and its key check out on chain, but without Arkiv's proof blocks Codemark won't call the record write-once. With them, it reads "Released by pwnmeswap.eth" and every step passes.
+**In your wallet.** The Snap adds its result to the MetaMask confirmation. This one is yellow because Arkiv's public endpoint was rate limiting. The release and its key still check out on chain, but without Arkiv's block numbers Codemark can't prove the record never changed, so it warns. When Arkiv answers, every step passes.
 
 <p align="center"><img src="docs/images/wallet-flask.webp" width="440" alt="Insights from Codemark in MetaMask Flask: released by pwnmeswap.eth, but the record could still be rewritten. Publisher, release key and release pass, the record step warns and the age step couldn't be read" /></p>
 
@@ -76,7 +76,7 @@ Codemark tells you who published something and whether they still stand behind i
 
 ## Get started
 
-The [full guide](https://codemark.hetairoi.xyz/app/docs) explains every command. The short version for each of the four:
+The [full guide](https://codemark.hetairoi.xyz/app/docs) explains every command. The short version:
 
 <details>
 <summary><strong>Check a contract</strong></summary>
@@ -88,7 +88,7 @@ Open [codemark.hetairoi.xyz/app](https://codemark.hetairoi.xyz/app), paste an ad
 <details>
 <summary><strong>Check every transaction in MetaMask</strong></summary>
 
-Install [MetaMask Flask](https://metamask.io/flask/) in a separate browser profile, open [Check](https://codemark.hetairoi.xyz/app) and select Install the Snap. It installs `npm:@marsian/codemark-snap`.
+Install [MetaMask Flask](https://metamask.io/flask/) in a separate browser profile, open [the lookup site](https://codemark.hetairoi.xyz/app) and select Install the Snap. It installs `npm:@marsian/codemark-snap`.
 
 </details>
 
@@ -144,13 +144,11 @@ A publisher is an ENS name. Each signing key gets its own branch under that name
 
 If a key leaks, the team's security key removes its branch in one transaction, and every release under it stops verifying. Everything on chain is stock ENSv2; there is no custom Solidity.
 
-<p align="center"><img src="docs/images/cut-a-key.gif" width="640" alt="Animation of the landing page's walkthrough: ci-1 publishes and verifies, cutting ci-1 strikes out its releases and the wallet shows key revoked, then ci-2 is mounted and they verify again" /></p>
+<p align="center"><img src="docs/images/cut-a-key.gif" width="640" alt="Animation: ci-1 publishes and verifies, cutting ci-1 strikes out its releases and the wallet shows key revoked, then ci-2 is mounted and they verify again" /></p>
 
-<sub>A cut, as the landing page walks through it. A live pull has run on Sepolia; a live cut hasn't, because it would withdraw the demo releases too.</sub>
+[How it works in detail](docs/how-it-works.md) covers the name tree, what each key can do and what a check proves.
 
-[How it works in detail](docs/how-it-works.md) covers the name tree, what each key can do and exactly what a check proves.
-
-## Where ENSv2 is load-bearing
+## Why ENSv2
 
 - **Hierarchical registries.** A key is a subtree, so one `unregister` ends every name below it. ENSv1 is flat: deleting `ci-1.pwnmeswap.eth` leaves `router.ci-1.pwnmeswap.eth` resolving.
 - **EAC roles.** Create-only CI key, remove-only security key, root-only delegates and reservations.
@@ -159,17 +157,15 @@ If a key leaks, the team's security key removes its branch in one transaction, a
 - **Universal Resolver `findResolver`.** An offset other than 0 means the name has no resolver of its own (unregistered, pulled, or under a cut key) and is rejected.
 - **Token versions.** Token ids change on every register and role change, so releases are keyed by labelhash and the current id is read from the registry.
 
-Without ENSv2 the publisher identity users already know disappears, and a key cannot be a revocable subtree.
+Without ENSv2, a key couldn't be a subtree you revoke in one transaction, and teams would lose the name people already know them by.
 
 ## Arkiv's role
 
 Arkiv is an untrusted, searchable index. ENS can say whether a name is valid but cannot be searched by address. Arkiv adds discovery (which publisher claims an unknown address), withdrawal reasons (a pulled release otherwise looks never published), and the two proof block numbers per release. Rows are never trusted: each one is re-checked against ENS before it can change a verdict, and a missing or flooded index never turns anything green. Schemas, query examples and the trust model are in [arkiv/README.md](arkiv/README.md).
 
-### Arkiv details
+Two wallets wrote our entities on Rabdi: the CI key `0x47Fccf73d86473357c74c8ae393C7099Cdc06934` writes release rows, and the security key `0x703389487942788EC4AD8461A51e03a9F79F9186` writes incident rows.
 
-Wallets that wrote our entities on Rabdi: the CI key `0x47Fccf73d86473357c74c8ae393C7099Cdc06934` writes release rows, and the security key `0x703389487942788EC4AD8461A51e03a9F79F9186` writes incident rows.
-
-One query you can run, which lists who claims the demo router, is in [arkiv/how-you-use-arkiv.md](arkiv/how-you-use-arkiv.md#one-query-you-can-run). The rest of the write-up: [schema](arkiv/schema.md), [friction](arkiv/friction.md), [reach](arkiv/reach.md), [why Arkiv](arkiv/why-arkiv.md) and [how we use it](arkiv/how-you-use-arkiv.md).
+[This query](arkiv/how-you-use-arkiv.md#one-query-you-can-run) lists who claims the demo router. See also: [schema](arkiv/schema.md), [friction](arkiv/friction.md), [reach](arkiv/reach.md), [why Arkiv](arkiv/why-arkiv.md) and [how we use it](arkiv/how-you-use-arkiv.md).
 
 ## Live on Sepolia
 
@@ -197,7 +193,7 @@ The router, portal and withdrawn release are indexed on Arkiv's Rabdi testnet; t
 <details>
 <summary><strong>Read the records yourself, without any Codemark code</strong></summary>
 
-To see the records without any Codemark code, ask the canonical Universal Resolver through plain viem (save it as a `.ts` file in `packages/lib/shared`, where viem is installed, and run it with `bun`). The address sits under the Sepolia coin type (ENSIP-11), and the `codemark` text record holds the code hash:
+Ask the canonical Universal Resolver through plain viem. Save this as a `.ts` file in `packages/lib/shared`, where viem is installed, and run it with `bun`. The address sits under the Sepolia coin type (ENSIP-11), and the `codemark` text record holds the code hash:
 
 ```ts
 import { createPublicClient, http, toCoinType } from "viem";
@@ -213,13 +209,13 @@ Plain resolution cannot tell you whether the records could have been rewritten, 
 
 </details>
 
-## What it won't do
+## Limits
 
 - It tells you who published something, not whether the code is safe.
 - Both sides must adopt it: teams have to publish, and wallets have to run the check.
 - The Snap runs only in [MetaMask Flask](https://metamask.io/flask/) for now, and it has no Arkiv access key. When Arkiv's public endpoint is rate limiting, a release shows a warning instead of Verified. It never shows a false pass.
 - Mainnet is out of scope: Sepolia runs a different ENSv2 commit.
-- The MCP server protects an honest agent that was handed a bad address. A hijacked agent can skip the check, and it doesn't check amounts or recipients.
+- The MCP server protects an honest agent that was handed a bad address. A hijacked agent can skip the check, and the check doesn't cover amounts or recipients.
 
 The [security model](docs/security.md) covers each kind of attacker and every known limit.
 
