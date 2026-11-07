@@ -7,7 +7,6 @@ const sepolia = 11155111;
 const router = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E";
 const weth = "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14";
 const pwnmeswap = "pwnmeswap.eth=0x8a8d97f3F4d1235c62aE61cDB3644f574162d204";
-const acmeswap = "acmeswap.eth=0x3360E31fF0F0A5D6ecA22AA76e810c5F550B0bEB";
 const approveSelector = "0x095ea7b3";
 const maxAmount = "f".repeat(64);
 const live = process.env.CODEMARK_LIVE_TESTS === "0" ? test.skip : test;
@@ -93,13 +92,13 @@ describe("over MCP, live Sepolia", () => {
 	live(
 		"an aged release from a pinned publisher proceeds",
 		async () => {
-			const c = await connect({ CODEMARK_PINS: acmeswap });
+			const c = await connect({ CODEMARK_PINS: pwnmeswap });
 			const decision = await call(c, "check_transaction", {
 				chainId: sepolia,
 				calls: [{ to: router }],
 			});
 			expect(decision.action).toBe("proceed");
-			expect(decision.reason).toContain("Released by acmeswap.eth");
+			expect(decision.reason).toContain("Released by pwnmeswap.eth");
 		},
 		60_000,
 	);
