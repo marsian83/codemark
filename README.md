@@ -66,9 +66,9 @@ If a team's release key leaks, one transaction withdraws everything that key rel
 | Running an AI agent that spends | The Codemark MCP server, which tells your agent to proceed, ask you or refuse before it signs | Bun and an MCP-capable agent. It holds no keys |
 | A team shipping contracts | The CLI and the GitHub Action, which publish each release under your ENS name | Sepolia ETH. `init` registers the name and sets up the team Safe for you |
 
-**In your wallet.** The Snap adds its result to the MetaMask confirmation. This one is yellow because Arkiv's public endpoint was rate limiting. The release and its key still check out on chain, but without Arkiv's block numbers Codemark can't prove the record never changed, so it warns. When Arkiv answers, every step passes.
+**In your wallet.** The Snap adds its result to the MetaMask confirmation. This is a real check of the demo router in MetaMask Flask.
 
-<p align="center"><img src="docs/images/wallet-flask.webp" width="440" alt="Insights from Codemark in MetaMask Flask: released by pwnmeswap.eth, but the record could still be rewritten. Publisher, release key and release pass, the record step warns and the age step couldn't be read" /></p>
+<p align="center"><img src="docs/images/wallet-flask-verified.webp" width="440" alt="Insights from Codemark in MetaMask Flask: released by pwnmeswap.eth, router 3.1.0. Publisher, release key, release, record and age all pass" /></p>
 
 **For your agent.** A real Claude Code session using the MCP server on Sepolia: `proceed` for a release from a team the user pinned, `refuse` for an account upgrade nobody released. No signer was attached, so nothing was signed.
 
