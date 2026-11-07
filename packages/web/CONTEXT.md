@@ -4,15 +4,15 @@ Vite, React 19, React Router, TanStack Query, Tailwind 4. Runs the same checker 
 
 ## Screens
 
-| Route | Page | What it shows |
-| --- | --- | --- |
-| `/` | `pages/landing` | Landing scene. |
-| `/app?a=0x…&role=…` | `pages/lookup/LookupPage.tsx` | Check one address in one role (call, account upgrade, delegatecall, approval spender). The address and role live in the URL, so a result can be shared and the back button walks through earlier checks. Without an address it shows `HowItWorks`. Side panel: `PinsEditor` and `SnapPanel`. |
-| `/app/p/:publisher` | `pages/publisher/PublisherPage.tsx` | A team's name: its registry, each release key with its status (Live, Revoked, Expired) and the releases the Arkiv index lists under it, each with a Check button that opens the lookup. |
-| `/app/docs` | `pages/docs/DocsPage.tsx` | Guide: check, the Snap, agents (MCP), publishing, limits. |
-| `/demo?c=…` | `pages/demo/DemoPage.tsx` | Sample contracts released by the demo team, one per verdict, checked live; with the Snap installed, Send proposes the transaction so the wallet shows the same verdict. |
-| `/demo/upgrade` | `pages/demo/UpgradeDemoPage.tsx` | An EIP-7702 account upgrade checked as a delegation before a throwaway in-memory key signs the authorization. Nothing is broadcast. |
-| `/app/dev/verdicts` | `pages/dev/VerdictsPage.tsx` | Every verdict card state; dev builds only. |
+| Route               | Page                                | What it shows                                                                                                                                                                                                                                                                                |
+| ------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                 | `pages/landing`                     | Landing scene.                                                                                                                                                                                                                                                                               |
+| `/app?a=0x…&role=…` | `pages/lookup/LookupPage.tsx`       | Check one address in one role (call, account upgrade, delegatecall, approval spender). The address and role live in the URL, so a result can be shared and the back button walks through earlier checks. Without an address it shows `HowItWorks`. Side panel: `PinsEditor` and `SnapPanel`. |
+| `/app/p/:publisher` | `pages/publisher/PublisherPage.tsx` | A team's name: its registry, each release key with its status (Live, Revoked, Expired) and the releases the Arkiv index lists under it, each with a Check button that opens the lookup.                                                                                                      |
+| `/app/docs`         | `pages/docs/DocsPage.tsx`           | Guide: check, the Snap, agents (MCP), publishing, limits.                                                                                                                                                                                                                                    |
+| `/demo?c=…`         | `pages/demo/DemoPage.tsx`           | Sample contracts released by the demo team, one per verdict, checked live; with the Snap installed, Send proposes the transaction so the wallet shows the same verdict.                                                                                                                      |
+| `/demo/upgrade`     | `pages/demo/UpgradeDemoPage.tsx`    | An EIP-7702 account upgrade checked as a delegation before a throwaway in-memory key signs the authorization. Nothing is broadcast.                                                                                                                                                          |
+| `/app/dev/verdicts` | `pages/dev/VerdictsPage.tsx`        | Every verdict card state; dev builds only.                                                                                                                                                                                                                                                   |
 
 ## How a verdict is shown
 
