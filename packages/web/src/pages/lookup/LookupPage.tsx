@@ -39,6 +39,12 @@ export default function LookupPage() {
 	const [draftRole, setDraftRole] = useState<TargetRole>(role);
 	const [draftError, setDraftError] = useState("");
 
+	useEffect(() => {
+		setDraft(address);
+		setDraftRole(role);
+		setDraftError("");
+	}, [address, role]);
+
 	const query = useQuery({
 		queryKey: ["check", address, role, pins],
 		enabled: isAddress(address),
@@ -64,10 +70,12 @@ export default function LookupPage() {
 			return;
 		}
 		setDraftError("");
-		setParams({
-			a: contractArtifact(config.chainId, value).split(":")[2] ?? value,
-			role: draftRole,
-		});
+		const a = contractArtifact(config.chainId, value).split(":")[2] ?? value;
+		if (a.toLowerCase() === address.toLowerCase() && draftRole === role) {
+			query.refetch();
+			return;
+		}
+		setParams({ a, role: draftRole });
 	}
 
 	const done = query.isSuccess;

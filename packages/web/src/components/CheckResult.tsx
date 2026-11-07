@@ -1,6 +1,7 @@
 import type { CheckResult as Result } from "@codemark/shared/check";
 import type { Thresholds } from "@codemark/shared/check/severity";
 import type { UseQueryResult } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { formatTimestamp, rpcErrorMessage } from "../lib/format";
 import { Button } from "../ui/Button";
 import { Callout } from "../ui/Callout";
@@ -11,6 +12,11 @@ import { BlockLink } from "./Links";
 import { VerdictCard } from "./VerdictCard";
 
 function Pending() {
+	const [slow, setSlow] = useState(false);
+	useEffect(() => {
+		const timer = setTimeout(() => setSlow(true), 10000);
+		return () => clearTimeout(timer);
+	}, []);
 	return (
 		<Card className="flex items-start gap-3 p-5">
 			<Spinner className="mt-0.5 text-typography-tertiary" />
@@ -18,7 +24,10 @@ function Pending() {
 				<p className="font-medium">Checking on Sepolia</p>
 				<p className="text-typography-secondary">
 					Finding the release, then confirming its record can't change and its
-					key is still active. This takes a few seconds.
+					key is still active.{" "}
+					{slow
+						? "Still going: public Sepolia endpoints are slow right now, so this can take up to a minute."
+						: "This takes a few seconds."}
 				</p>
 			</div>
 		</Card>
