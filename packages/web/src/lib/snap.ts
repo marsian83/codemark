@@ -49,3 +49,21 @@ export const snapPin = (name: string) =>
 	invoke<{ pinned: boolean }>("codemark_pin", { name });
 export const snapUnpin = (name: string) =>
 	invoke<{ unpinned: boolean }>("codemark_unpin", { name });
+
+const sepoliaHex = `0x${config.chainId.toString(16)}`;
+
+export async function proposeTransaction(to: `0x${string}`) {
+	const eth = provider();
+	if (!eth) throw new Error("No wallet found");
+	const [from] = (await eth.request({
+		method: "eth_requestAccounts",
+	})) as string[];
+	await eth.request({
+		method: "wallet_switchEthereumChain",
+		params: [{ chainId: sepoliaHex }],
+	});
+	return (await eth.request({
+		method: "eth_sendTransaction",
+		params: [{ from, to, value: "0x0" }],
+	})) as string;
+}

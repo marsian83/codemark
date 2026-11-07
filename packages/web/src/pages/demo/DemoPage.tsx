@@ -1,5 +1,5 @@
 import type { TargetRole } from "@codemark/shared/check";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { isAddress } from "viem";
@@ -7,7 +7,11 @@ import { CheckResult } from "../../components/CheckResult";
 import { runCheck } from "../../lib/checker";
 import { config } from "../../lib/config";
 import { demoScenarios, demoTeam } from "../../lib/demo";
+import { errorMessage } from "../../lib/format";
+import { proposeTransaction } from "../../lib/snap";
 import { useTitle } from "../../lib/useTitle";
+import { Button } from "../../ui/Button";
+import { Callout } from "../../ui/Callout";
 import { Card } from "../../ui/Card";
 import { Icon } from "../../ui/Icon";
 import { cn } from "../../utils/cn";
@@ -34,6 +38,9 @@ export default function DemoPage() {
 				pins,
 			),
 	});
+
+	const send = useMutation({ mutationFn: proposeTransaction });
+	useEffect(() => send.reset(), [address]);
 
 	const chosen = params.get("c");
 	const done = query.isSuccess && !query.isFetching;
@@ -107,6 +114,40 @@ export default function DemoPage() {
 						: "You trust no team in this check"}
 				</p>
 				<CheckResult query={query} />
+				<Card className="flex flex-col gap-3 p-5">
+					<h2 className="flex items-center gap-2 font-medium">
+						<Icon name="wallet" className="text-typography-tertiary" />
+						Try it in your wallet
+					</h2>
+					<p className="text-typography-secondary">
+						Opens a Sepolia transaction to this contract in your wallet. With
+						the Codemark Snap installed, the same check shows up in the
+						confirmation. Reject it and nothing is sent.
+					</p>
+					<div className="flex flex-wrap items-center gap-3">
+						<Button
+							variant="secondary"
+							loading={send.isPending}
+							onClick={() => send.mutate(address)}
+						>
+							<Icon name="wallet" />
+							{send.isPending
+								? "Waiting for wallet…"
+								: "Try wallet transaction"}
+						</Button>
+					</div>
+					{send.isError ? (
+						<Callout tone="warning">
+							Nothing was sent. {errorMessage(send.error)}
+						</Callout>
+					) : null}
+					{send.data ? (
+						<p className="flex items-center gap-1.5 font-medium text-success">
+							<Icon name="circle-check" />
+							Sent. This was a real Sepolia transaction.
+						</p>
+					) : null}
+				</Card>
 			</section>
 		</main>
 	);

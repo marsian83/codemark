@@ -49,7 +49,8 @@ export default function DemoLayout() {
 						<Icon name="info" className="mt-0.5 opacity-80" />
 						<span>
 							{demoTeam.name} is a sample team. Every check reads live Sepolia,
-							and nothing here touches your wallet or your pins.
+							and nothing here touches your pins. Your wallet is only used if
+							you press Try wallet transaction.
 						</span>
 					</p>
 				</div>
