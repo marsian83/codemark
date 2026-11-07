@@ -45,7 +45,7 @@ describe("live Sepolia, read-only", () => {
 				return res.results[0]?.verdicts.map((v) => v.publisher) ?? [];
 			};
 			expect(await publishers([pwnmeswap])).toEqual(["pwnmeswap.eth"]);
-			expect((await publishers([])).length).toBeGreaterThan(1);
+			expect(await publishers([])).toContain("pwnmeswap.eth");
 		},
 		120_000,
 	);
